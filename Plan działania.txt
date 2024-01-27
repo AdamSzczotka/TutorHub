@@ -1,0 +1,61 @@
+Plan
+1.Wybór Technologii: 
+    Zdecydować o stosie technologicznym, 
+    który najlepiej pasuje do Twoich wymagań.
+
+2.Projektowanie Architektury Aplikacji: 
+    Ustalenie architektury, w tym podziału na front-end, 
+    back-end i bazę danych.
+
+3.Tworzenie Prototypu: 
+    Rozwój prototypu aplikacji, począwszy 
+    od podstawowej funkcjonalności.
+
+4.Iteracyjny Rozwój: 
+    Dodawanie kolejnych funkcji i modułów w cyklu iteracyjnym.
+
+5.Testowanie i Debugowanie: 
+    Systematyczne testowanie i naprawianie błędów.
+
+6.Wdrażanie i Integracja: P
+    rzygotowanie aplikacji do wdrożenia 
+    i zintegrowanie wersji webowej z aplikacjami mobilnymi.
+
+1.Technologie i języki:
+    -Backend: 
+        Python z frameworkiem Django i Django REST Framework do obsługi backendu.
+
+    -Frontend Web: JavaScript z biblioteką React do tworzenia interfejsu użytkownika.
+
+    -Mobilna Aplikacja: React Native dla współdzielenia kodu między Androidem i iOS.
+
+    -Baza Danych: SQL, np. PostgreSQL, ze względu na jego niezawodność 
+        i wsparcie dla złożonych zapytań.
+
+    -Dodatkowe Narzędzia: Git do kontroli wersji, Docker do konteneryzacji 
+        aplikacji, oraz narzędzia do ciągłej integracji i wdrażania.
+
+2.Podział MVC dla Aplikacji
+    -Model: 
+        Tutaj będą przechowywane wszystkie dane aplikacji, 
+        logika biznesowa i reguły. Obejmuje to:
+            -Dane użytkowników (korepetytorów, uczniów, pracowników firmy).
+            -Informacje o terminarzach i dostępności.
+            -Logika przypisywania lekcji.
+            -Przechowywanie historii czatów i sesji korepetycji.
+
+    -View: 
+        Jest to warstwa prezentacji, odpowiedzialna za wyświetlanie 
+        danych użytkownikom. Obejmować to będzie:
+            -Strony profilowe użytkowników.
+            -Widoki terminarza i możliwości zapisu na lekcje.
+            -Interfejs czatu.
+            -Raporty i podsumowania dla właściciela firmy.
+
+    -Controller: 
+        Kontrolery będą zarządzać przepływem danych między Modelami 
+        a Widokami, obsługując żądania użytkowników. Obejmuje to:
+            -Przetwarzanie zapisów na lekcje.
+            -Zarządzanie interakcjami w czacie.
+            -Koordynacja aktualizacji profili użytkowników.
+            -Generowanie raportów i podsumowań.
