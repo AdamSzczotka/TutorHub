@@ -1,34 +1,29 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
-from .serializers import UserSerializer
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import UserRegistrationSerializer, UserLoginSerializer
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = get_user_model().objects.all()
-    permission_classes = (AllowAny,)
-    serializer_class = UserSerializer
+class UserRegistrationView(APIView):
+    """
+    API view for registering new users.
+    """
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        user = get_user_model().objects.get(username=serializer.data['username'])
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_201_CREATED, headers=headers)
 
-class LoginView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
+class UserLoginView(APIView):
+    """
+    View for user login, returns a token on successful authentication.
+    """
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -56,6 +56,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'TutorHub.urls'
 
+CORS_ALLOW_ALL_ORIGINS = True  # Dla celów deweloperskich, w produkcji określ konkretne domeny
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -137,3 +140,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+AUTH_USER_MODEL = 'accounts.CustomUser'

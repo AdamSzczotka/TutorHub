@@ -1,25 +1,37 @@
 import requests
 
-# Dane dostępowe do API
-api_url = 'http://localhost:8000/api/'  # Zmień na odpowiedni adres URL Twojego API
-register_url = f'{api_url}register/'  # Endpoint rejestracji
-login_url = f'{api_url}login/'  # Endpoint logowania
+# URLs for the registration and login endpoints
+registration_url = 'http://localhost:8000/accounts/register/'
+login_url = 'http://localhost:8000/accounts/login/'
 
-# Przykładowe dane użytkownika do rejestracji
+# User data for testing
 user_data = {
-    'username': 'testuser2',
-    'password': 'testpassword',
-    'email': 'test@example.com',
+    'email': 'tes2t@example.com',
+    'first_name': 'Test',
+    'last_name': 'User',
+    'password': 'password123'
 }
 
-# Rejestracja użytkownika
-response = requests.post(register_url, data=user_data)
-if response.status_code == 201:
-    print('Rejestracja udana')
-    print(response.json())  # Odpowiedź API
-else:
-    print('Błąd rejestracji')
-    #print(response.text)  # Wiadomość o błędzie
+def test_user_registration():
+    """
+    Test user registration endpoint.
+    """
+    response = requests.post(registration_url, data=user_data)
+    assert response.status_code == 201, f"Expected status code 201, got {response.status_code}"
+    print("Registration test passed.")
 
+def test_user_login():
+    """
+    Test user login endpoint.
+    """
+    login_data = {
+        'email': user_data['email'],
+        'password': user_data['password']
+    }
+    response = requests.post(login_url, data=login_data)
+    assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
+    print("Login test passed.")
 
-
+if __name__ == "__main__":
+    test_user_registration()
+    test_user_login()
