@@ -49,3 +49,21 @@ class UserLoginSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+class PasswordResetSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    uid = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
+
+
+
+
