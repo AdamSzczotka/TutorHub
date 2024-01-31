@@ -6,9 +6,9 @@ login_url = 'http://localhost:8000/accounts/login/'
 
 # User data for testing
 user_data = {
-    'email': 'tes2t@example.com',
-    'first_name': 'Test',
-    'last_name': 'User',
+    'email': 'adam.szczotka0@gmail.com',
+    'first_name': 'Adam',
+    'last_name': 'Szczotka',
     'password': 'password123'
 }
 
@@ -25,12 +25,13 @@ def test_user_login():
     Test user login endpoint.
     """
     login_data = {
-        'email': user_data['email'],
-        'password': user_data['password']
+        'email': user_data['email'],  # Corrected key access
+        'password': user_data['old_password']  # Assuming this is the current password
     }
     response = requests.post(login_url, data=login_data)
     assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
     print("Login test passed.")
+
 
 if __name__ == "__main__":
     test_user_registration()
