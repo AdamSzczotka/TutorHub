@@ -106,3 +106,93 @@ class UserRegistrationSerializerTest(TestCase):
         # Asserting the serializer is invalid when provided with incorrect data.
         self.assertFalse(serializer.is_valid())
 
+# tests/test_serializers.py
+from accounts.serializers import (
+    PasswordChangeSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetSerializer
+)
+
+# Test cases for PasswordChangeSerializer
+class PasswordChangeSerializerTest(TestCase):
+    # Test the serializer with valid data to ensure it validates correctly.
+    # This checks the serializer's ability to handle correct data as expected.
+    def test_serializer_with_valid_data(self):
+        valid_data = {"old_password": "oldpassword", "new_password": "newsecurepassword"}
+        serializer = PasswordChangeSerializer(data=valid_data)
+        self.assertTrue(serializer.is_valid())
+
+    # Test the serializer with missing required fields to ensure it raises validation errors.
+    # This validates the serializer's requirement for specific fields, enhancing security by ensuring password change requests include all necessary information.
+    def test_serializer_with_missing_field(self):
+        invalid_data = {"old_password": "oldpassword"}  # Missing new_password field
+        serializer = PasswordChangeSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("new_password", serializer.errors)
+
+# Test cases for PasswordResetRequestSerializer
+class PasswordResetRequestSerializerTest(TestCase):
+    # Test the serializer with a valid email to ensure it validates correctly.
+    # Validates the ability to initiate a password reset for valid user emails.
+    def test_serializer_with_valid_email(self):
+        valid_data = {"email": "user@example.com"}
+        serializer = PasswordResetRequestSerializer(data=valid_data)
+        self.assertTrue(serializer.is_valid())
+
+    # Test the serializer with an invalid email to ensure it raises validation errors.
+    # Ensures that password reset requests reject improperly formatted email addresses.
+    def test_serializer_with_invalid_email(self):
+        invalid_data = {"email": "invalid-email"}  # Incorrect email format
+        serializer = PasswordResetRequestSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
+
+# Test cases for PasswordResetSerializer
+class PasswordResetSerializerTest(TestCase):
+    # Test the serializer with all required fields provided and valid.
+    # Checks the serializer's ability to handle the reset process with correct data.
+    def test_serializer_with_valid_data(self):
+        valid_data = {"token": "sometoken", "uid": "someuid", "new_password": "newsecurepassword"}
+        serializer = PasswordResetSerializer(data=valid_data)
+        self.assertTrue(serializer.is_valid())
+
+    # Test the serializer with missing fields to ensure it raises validation errors.
+    # Validates that all necessary fields are present for password reset to proceed, ensuring the integrity of the reset process.
+    def test_serializer_with_missing_field(self):
+        invalid_data = {"token": "sometoken", "new_password": "newsecurepassword"}  # Missing uid field
+        serializer = PasswordResetSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("uid", serializer.errors)
+
+
+
+# tests/test_views.py
+from rest_framework.test import APIClient
+from .models import CustomUser  
+
+class ChangePasswordViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        # Create a CustomUser instance using email and password
+        self.user = CustomUser.objects.create_user(email='user@example.com', password='oldpassword', first_name='Test', last_name='User')
+        
+        # Log in to retrieve the token, using email and password
+        response = self.client.post(reverse('login'), {'email': 'user@example.com', 'password': 'oldpassword'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK, msg="Login failed")
+        token = response.data['token']
+        
+        # Set the token in the Authorization header for subsequent requests
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        
+        self.url = reverse('change-password')
+
+    def test_change_password_success(self):
+        data = {"old_password": "oldpassword", "new_password": "newsecurepassword"}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_change_password_wrong_old_password(self):
+        data = {"old_password": "wrongpassword", "new_password": "newsecurepassword"}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
