@@ -6,6 +6,45 @@ from pathlib import Path
 
 import environ
 
+# Exported settings for split settings pattern
+__all__ = [
+    'BASE_DIR',
+    'env',
+    'SECRET_KEY',
+    'DEBUG',
+    'ALLOWED_HOSTS',
+    'INSTALLED_APPS',
+    'MIDDLEWARE',
+    'ROOT_URLCONF',
+    'TEMPLATES',
+    'WSGI_APPLICATION',
+    'AUTH_USER_MODEL',
+    'AUTH_PASSWORD_VALIDATORS',
+    'LANGUAGE_CODE',
+    'TIME_ZONE',
+    'USE_I18N',
+    'USE_TZ',
+    'STATIC_URL',
+    'STATICFILES_DIRS',
+    'STATIC_ROOT',
+    'MEDIA_URL',
+    'MEDIA_ROOT',
+    'DEFAULT_AUTO_FIELD',
+    'CRISPY_ALLOWED_TEMPLATE_PACKS',
+    'CRISPY_TEMPLATE_PACK',
+    'CELERY_BROKER_URL',
+    'CELERY_RESULT_BACKEND',
+    'CELERY_ACCEPT_CONTENT',
+    'CELERY_TASK_SERIALIZER',
+    'CELERY_RESULT_SERIALIZER',
+    'CELERY_TIMEZONE',
+    'EMAIL_BACKEND',
+    'DEFAULT_FROM_EMAIL',
+    'SESSION_ENGINE',
+    'SESSION_COOKIE_AGE',
+    'SESSION_EXPIRE_AT_BROWSER_CLOSE',
+]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
