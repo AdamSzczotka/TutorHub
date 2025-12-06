@@ -1,0 +1,103 @@
+{% if students %}
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Uczeń</th>
+                <th>Klasa</th>
+                <th>Imię rodzica</th>
+                <th>Email rodzica</th>
+                <th>Telefon rodzica</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-10">
+                                <span>{{ student.user.first_name.0 }}{{ student.user.last_name.0 }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold">{{ student.user.get_full_name }}</div>
+                            <div class="text-sm opacity-50">{{ student.user.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ student.class_name|default:"-" }}</td>
+                <td>{{ student.parent_name|default:"-" }}</td>
+                <td>
+                    {% if student.parent_email %}
+                        <a href="mailto:{{ student.parent_email }}" class="link link-primary">
+                            {{ student.parent_email }}
+                        </a>
+                    {% else %}
+                        <span class="badge badge-warning badge-sm">Brak</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if student.parent_phone %}
+                        <a href="tel:{{ student.parent_phone }}" class="link">
+                            {{ student.parent_phone }}
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'accounts:parent-contact-update' student.user.pk %}"
+                       class="btn btn-ghost btn-xs"
+                       title="Edytuj kontakt rodzica">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="join-item btn"
+               hx-get="?page={{ page_obj.previous_page_number }}"
+               hx-target="#parent-table"
+               hx-swap="innerHTML">
+                &laquo;
+            </a>
+        {% endif %}
+
+        <span class="join-item btn btn-disabled">
+            Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="join-item btn"
+               hx-get="?page={{ page_obj.next_page_number }}"
+               hx-target="#parent-table"
+               hx-swap="innerHTML">
+                &raquo;
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="text-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+    <h3 class="mt-4 text-lg font-semibold">Brak uczniów</h3>
+    <p class="text-base-content/60">Nie ma jeszcze żadnych uczniów w systemie.</p>
+</div>
+{% endif %}

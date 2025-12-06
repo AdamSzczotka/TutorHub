@@ -1,0 +1,266 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'accounts:user-list' %}" class="btn btn-ghost btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Wróć
+            </a>
+            <div>
+                <h1 class="text-3xl font-bold">{{ user_obj.get_full_name }}</h1>
+                <p class="text-base-content/70">{{ user_obj.email }}</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'accounts:user-data-export' user_obj.pk %}" class="btn btn-outline btn-sm">
+                Eksportuj dane (RODO)
+            </a>
+            <form method="post" action="{% url 'accounts:user-reset-password' user_obj.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning btn-sm"
+                        hx-post="{% url 'accounts:user-reset-password' user_obj.pk %}"
+                        hx-confirm="Czy na pewno chcesz zresetować hasło dla tego użytkownika?">
+                    Resetuj hasło
+                </button>
+            </form>
+            <a href="{% url 'accounts:user-update' user_obj.pk %}" class="btn btn-primary btn-sm">
+                Edytuj
+            </a>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Main info -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Basic info card -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Informacje podstawowe</h2>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-base-content/60">Email</span>
+                            <p class="font-medium">{{ user_obj.email }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Telefon</span>
+                            <p class="font-medium">{{ user_obj.phone|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Rola</span>
+                            <p>
+                                {% if user_obj.role == 'admin' %}
+                                    <span class="badge badge-primary">Administrator</span>
+                                {% elif user_obj.role == 'tutor' %}
+                                    <span class="badge badge-secondary">Korepetytor</span>
+                                {% else %}
+                                    <span class="badge badge-accent">Uczeń</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Status</span>
+                            <p>
+                                <span class="badge {% if user_obj.is_active %}badge-success{% else %}badge-error{% endif %}">
+                                    {% if user_obj.is_active %}Aktywny{% else %}Nieaktywny{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Profil</span>
+                            <p>
+                                {% if user_obj.is_profile_completed %}
+                                    <span class="badge badge-success">Uzupełniony</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Niekompletny</span>
+                                    <form method="post" action="{% url 'accounts:mark-profile-complete' user_obj.pk %}" class="inline ml-2">
+                                        {% csrf_token %}
+                                        <button type="submit" class="link link-primary text-sm"
+                                                hx-post="{% url 'accounts:mark-profile-complete' user_obj.pk %}">
+                                            Oznacz jako kompletny
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Data rejestracji</span>
+                            <p class="font-medium">{{ user_obj.date_joined|date:"d.m.Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role-specific profile -->
+            {% if user_obj.is_student and user_obj.student_profile %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Profil ucznia</h2>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-base-content/60">Klasa</span>
+                            <p class="font-medium">{{ user_obj.student_profile.class_name|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Poziom</span>
+                            <p class="font-medium">{{ user_obj.student_profile.current_level|default:"-" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="divider">Dane rodzica</div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-base-content/60">Imię rodzica</span>
+                            <p class="font-medium">{{ user_obj.student_profile.parent_name|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Email rodzica</span>
+                            <p class="font-medium">{{ user_obj.student_profile.parent_email|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Telefon rodzica</span>
+                            <p class="font-medium">{{ user_obj.student_profile.parent_phone|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Kontakt awaryjny</span>
+                            <p class="font-medium">{{ user_obj.student_profile.emergency_contact|default:"-" }}</p>
+                        </div>
+                    </div>
+
+                    {% if user_obj.student_profile.learning_goals %}
+                    <div class="mt-4">
+                        <span class="text-base-content/60">Cele nauki</span>
+                        <p class="font-medium">{{ user_obj.student_profile.learning_goals }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if user_obj.is_tutor and user_obj.tutor_profile %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Profil korepetytora</h2>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-base-content/60">Wykształcenie</span>
+                            <p class="font-medium">{{ user_obj.tutor_profile.education|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Lata doświadczenia</span>
+                            <p class="font-medium">{{ user_obj.tutor_profile.experience_years|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Stawka godzinowa</span>
+                            <p class="font-medium">
+                                {% if user_obj.tutor_profile.hourly_rate %}
+                                    {{ user_obj.tutor_profile.hourly_rate }} zł
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Status weryfikacji</span>
+                            <p>
+                                {% if user_obj.tutor_profile.is_verified %}
+                                    <span class="badge badge-success">Zweryfikowany</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Niezweryfikowany</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if user_obj.tutor_profile.bio %}
+                    <div class="mt-4">
+                        <span class="text-base-content/60">Opis</span>
+                        <p class="font-medium">{{ user_obj.tutor_profile.bio }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Creation log -->
+            {% if creation_log %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Historia utworzenia</h2>
+
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <span class="text-base-content/60">Utworzony przez</span>
+                            <p class="font-medium">{{ creation_log.created_by.get_full_name|default:"System" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Data utworzenia</span>
+                            <p class="font-medium">{{ creation_log.created_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Email wysłany</span>
+                            <p>
+                                {% if creation_log.email_sent %}
+                                    <span class="badge badge-success badge-sm">Tak</span>
+                                    {% if creation_log.email_sent_at %}
+                                        <span class="text-xs">{{ creation_log.email_sent_at|date:"d.m.Y H:i" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge badge-error badge-sm">Nie</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-base-content/60">Pierwsze logowanie</span>
+                            <p>
+                                {% if creation_log.first_login_at %}
+                                    {{ creation_log.first_login_at|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    <span class="badge badge-warning badge-sm">Oczekuje</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Audit logs -->
+            {% if audit_logs %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Ostatnie zmiany</h2>
+
+                    <div class="space-y-2">
+                        {% for log in audit_logs %}
+                        <div class="p-2 bg-base-200 rounded text-sm">
+                            <div class="flex justify-between">
+                                <span class="font-medium">{{ log.action }}</span>
+                                <span class="text-base-content/60">{{ log.created_at|date:"d.m H:i" }}</span>
+                            </div>
+                            <div class="text-base-content/60 text-xs">
+                                przez {{ log.user.get_full_name|default:"System" }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

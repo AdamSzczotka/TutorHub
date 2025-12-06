@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'crispy_forms',
     'crispy_tailwind',
+    'django_filters',
     'django_celery_beat',
     # Local apps
     'apps.core',

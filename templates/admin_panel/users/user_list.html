@@ -1,0 +1,103 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <p class="text-base-content/70">Zarządzaj użytkownikami systemu</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'accounts:user-export' %}" class="btn btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Eksportuj CSV
+            </a>
+            <a href="{% url 'accounts:user-create' %}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Dodaj użytkownika
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats shadow w-full">
+        <div class="stat">
+            <div class="stat-title">Wszyscy użytkownicy</div>
+            <div class="stat-value">{{ total_users }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Aktywni</div>
+            <div class="stat-value text-success">{{ active_users }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Administratorzy</div>
+            <div class="stat-value text-primary">{{ admins_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Korepetytorzy</div>
+            <div class="stat-value text-secondary">{{ tutors_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Uczniowie</div>
+            <div class="stat-value text-accent">{{ students_count }}</div>
+        </div>
+    </div>
+
+    <!-- Search and filters -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form hx-get="{% url 'accounts:user-list' %}"
+                  hx-trigger="input changed delay:300ms from:#search-input, change from:.filter-select"
+                  hx-target="#user-table"
+                  hx-swap="innerHTML"
+                  hx-push-url="true">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="form-control flex-1">
+                        <input type="text"
+                               id="search-input"
+                               name="search"
+                               placeholder="Szukaj po imieniu, nazwisku lub email..."
+                               class="input input-bordered w-full"
+                               value="{{ request.GET.search }}">
+                    </div>
+
+                    <select name="role" class="select select-bordered filter-select">
+                        <option value="">Wszystkie role</option>
+                        <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Administrator</option>
+                        <option value="tutor" {% if request.GET.role == 'tutor' %}selected{% endif %}>Korepetytor</option>
+                        <option value="student" {% if request.GET.role == 'student' %}selected{% endif %}>Uczeń</option>
+                    </select>
+
+                    <select name="is_active" class="select select-bordered filter-select">
+                        <option value="">Wszystkie statusy</option>
+                        <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Aktywni</option>
+                        <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Nieaktywni</option>
+                    </select>
+
+                    <select name="is_profile_completed" class="select select-bordered filter-select">
+                        <option value="">Profile</option>
+                        <option value="true" {% if request.GET.is_profile_completed == 'true' %}selected{% endif %}>Uzupełnione</option>
+                        <option value="false" {% if request.GET.is_profile_completed == 'false' %}selected{% endif %}>Nieuzupełnione</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User table -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div id="user-table">
+                {% include "admin_panel/users/partials/_user_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

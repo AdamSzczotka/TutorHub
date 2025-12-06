@@ -12,6 +12,7 @@ psycopg2-binary>=2.9.9
 # Forms
 django-crispy-forms>=2.3
 crispy-tailwind>=1.0
+django-filter>=24.0
 
 # Auth
 django-allauth>=65.0

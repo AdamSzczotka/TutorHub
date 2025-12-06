@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+<div class="navbar bg-base-100 shadow-lg">
+    <div class="flex-1">
+        <a href="{% url 'accounts:user-list' %}" class="btn btn-ghost text-xl">
+            Na Piątkę
+            <span class="badge badge-primary ml-2">Admin</span>
+        </a>
+    </div>
+    <div class="flex-none gap-2">
+        <ul class="menu menu-horizontal px-1">
+            <li>
+                <a href="{% url 'accounts:user-list' %}" class="{% if request.resolver_match.url_name == 'user-list' %}active{% endif %}">
+                    Użytkownicy
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'accounts:parent-contact-list' %}" class="{% if request.resolver_match.url_name == 'parent-contact-list' %}active{% endif %}">
+                    Kontakty rodziców
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'accounts:user-analytics' %}" class="{% if request.resolver_match.url_name == 'user-analytics' %}active{% endif %}">
+                    Analityka
+                </a>
+            </li>
+        </ul>
+        <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-10">
+                    <span>{{ request.user.first_name.0|default:'?' }}{{ request.user.last_name.0|default:'?' }}</span>
+                </div>
+            </div>
+            <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                <li class="menu-title">
+                    <span>{{ request.user.get_full_name }}</span>
+                </li>
+                <li><a href="{% url 'accounts:logout' %}">Wyloguj</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}Usuń użytkownika - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl text-error">Usuń użytkownika</h2>
+
+            <div class="alert alert-warning my-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                    <h3 class="font-bold">Uwaga!</h3>
+                    <p>Użytkownik zostanie dezaktywowany (usunięcie miękkie). Dane pozostaną w systemie zgodnie z wymaganiami RODO.</p>
+                </div>
+            </div>
+
+            <div class="py-4">
+                <p>Czy na pewno chcesz dezaktywować użytkownika:</p>
+                <p class="text-xl font-bold mt-2">{{ object.get_full_name }} ({{ object.email }})?</p>
+            </div>
+
+            <form method="post"
+                  hx-post="{{ request.path }}"
+                  hx-swap="none">
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-4 mt-6">
+                    <a href="{% url 'accounts:user-list' %}" class="btn btn-ghost">
+                        Anuluj
+                    </a>
+                    <button type="submit" class="btn btn-error">
+                        <span class="loading loading-spinner htmx-indicator"></span>
+                        Dezaktywuj użytkownika
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

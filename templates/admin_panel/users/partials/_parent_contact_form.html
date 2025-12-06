@@ -1,0 +1,79 @@
+<!-- Partial for HTMX parent contact form responses -->
+<form method="post"
+      hx-post="{{ request.path }}"
+      hx-target="#form-container"
+      hx-swap="innerHTML"
+      id="form-container">
+    {% csrf_token %}
+
+    <h3 class="font-semibold mb-4">Dane rodzica/opiekuna</h3>
+
+    <div class="form-control mb-4">
+        <label class="label">
+            <span class="label-text">Imię i nazwisko rodzica</span>
+        </label>
+        {{ form.parent_name }}
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Email rodzica *</span>
+            </label>
+            {{ form.parent_email }}
+            {% if form.parent_email.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.parent_email.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Telefon rodzica</span>
+            </label>
+            {{ form.parent_phone }}
+            {% if form.parent_phone.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.parent_phone.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="divider">Drugi rodzic/opiekun (opcjonalnie)</div>
+
+    <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Imię drugiego rodzica</span>
+            </label>
+            {{ form.secondary_parent_name }}
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Telefon drugiego rodzica</span>
+            </label>
+            {{ form.secondary_parent_phone }}
+        </div>
+    </div>
+
+    <div class="form-control mb-4">
+        <label class="label">
+            <span class="label-text">Kontakt awaryjny</span>
+        </label>
+        {{ form.emergency_contact }}
+    </div>
+
+    <!-- Form actions -->
+    <div class="flex justify-end gap-4 mt-6">
+        <a href="{% url 'accounts:parent-contact-list' %}" class="btn btn-ghost">
+            Anuluj
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <span class="loading loading-spinner htmx-indicator"></span>
+            Zapisz zmiany
+        </button>
+    </div>
+</form>
