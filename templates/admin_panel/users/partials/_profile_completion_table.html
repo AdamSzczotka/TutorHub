@@ -1,0 +1,113 @@
+{% if users %}
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Użytkownik</th>
+                <th>Email</th>
+                <th>Rola</th>
+                <th>Data rejestracji</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-10">
+                                {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}">
+                                {% else %}
+                                    <span>{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold">{{ user.get_full_name }}</div>
+                            <div class="text-sm opacity-50">{{ user.phone|default:"-" }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.role == 'admin' %}
+                        <span class="badge badge-primary">Administrator</span>
+                    {% elif user.role == 'tutor' %}
+                        <span class="badge badge-secondary">Korepetytor</span>
+                    {% else %}
+                        <span class="badge badge-accent">Uczeń</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                <td>
+                    <div class="flex gap-1">
+                        <a href="{% url 'accounts:user-detail' user.pk %}"
+                           class="btn btn-ghost btn-xs"
+                           title="Szczegóły">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </a>
+                        <form method="post" action="{% url 'accounts:mark-profile-complete' user.pk %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-success btn-xs"
+                                    title="Oznacz jako kompletny"
+                                    hx-post="{% url 'accounts:mark-profile-complete' user.pk %}"
+                                    hx-target="closest tr"
+                                    hx-swap="outerHTML">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="join-item btn"
+               hx-get="?page={{ page_obj.previous_page_number }}"
+               hx-target="#profile-table"
+               hx-swap="innerHTML">
+                &laquo;
+            </a>
+        {% endif %}
+
+        <span class="join-item btn btn-disabled">
+            Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="join-item btn"
+               hx-get="?page={{ page_obj.next_page_number }}"
+               hx-target="#profile-table"
+               hx-swap="innerHTML">
+                &raquo;
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="text-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-success opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <h3 class="mt-4 text-lg font-semibold">Wszystkie profile uzupełnione</h3>
+    <p class="text-base-content/60">Wszyscy aktywni użytkownicy mają kompletne profile.</p>
+</div>
+{% endif %}

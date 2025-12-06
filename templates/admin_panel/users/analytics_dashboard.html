@@ -1,0 +1,190 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">{{ title }}</h1>
+        <p class="text-base-content/70">Statystyki i analityka użytkowników</p>
+    </div>
+
+    <!-- Overview stats -->
+    <div class="stats shadow w-full">
+        <div class="stat">
+            <div class="stat-figure text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+            <div class="stat-title">Wszyscy użytkownicy</div>
+            <div class="stat-value text-primary">{{ role_counts.admin|add:role_counts.tutor|add:role_counts.student }}</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-figure text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="stat-title">Aktywni</div>
+            <div class="stat-value text-success">{{ status_counts.active }}</div>
+            <div class="stat-desc">{{ status_counts.inactive }} nieaktywnych</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-figure text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+            <div class="stat-title">Nowi (30 dni)</div>
+            <div class="stat-value text-info">{{ recent_registrations }}</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-figure text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            <div class="stat-title">Wskaźnik logowania</div>
+            <div class="stat-value text-secondary">{{ first_login_rate|floatformat:0 }}%</div>
+            <div class="stat-desc">użytkowników zalogowało się</div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Role distribution -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Podział ról</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span>Administratorzy</span>
+                            <span class="badge badge-primary">{{ role_counts.admin }}</span>
+                        </div>
+                        <progress class="progress progress-primary"
+                                  value="{{ role_counts.admin }}"
+                                  max="{{ role_counts.admin|add:role_counts.tutor|add:role_counts.student }}">
+                        </progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span>Korepetytorzy</span>
+                            <span class="badge badge-secondary">{{ role_counts.tutor }}</span>
+                        </div>
+                        <progress class="progress progress-secondary"
+                                  value="{{ role_counts.tutor }}"
+                                  max="{{ role_counts.admin|add:role_counts.tutor|add:role_counts.student }}">
+                        </progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span>Uczniowie</span>
+                            <span class="badge badge-accent">{{ role_counts.student }}</span>
+                        </div>
+                        <progress class="progress progress-accent"
+                                  value="{{ role_counts.student }}"
+                                  max="{{ role_counts.admin|add:role_counts.tutor|add:role_counts.student }}">
+                        </progress>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile completion -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Uzupełnienie profili</h2>
+
+                <div class="flex items-center justify-center py-8">
+                    <div class="radial-progress text-success"
+                         style="--value:{{ profile_counts.completed|default:0|divisibleby:1 }}; --size:12rem;"
+                         role="progressbar">
+                        {% widthratio profile_counts.completed profile_counts.completed|add:profile_counts.incomplete 100 as completion_rate %}
+                        {{ completion_rate|default:0 }}%
+                    </div>
+                </div>
+
+                <div class="flex justify-around text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-success">{{ profile_counts.completed }}</div>
+                        <div class="text-sm text-base-content/60">Uzupełnionych</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-warning">{{ profile_counts.incomplete }}</div>
+                        <div class="text-sm text-base-content/60">Do uzupełnienia</div>
+                    </div>
+                </div>
+
+                {% if profile_counts.incomplete > 0 %}
+                <div class="card-actions justify-end mt-4">
+                    <a href="{% url 'accounts:profile-completion' %}" class="btn btn-warning btn-sm">
+                        Zobacz niekompletne
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activity status -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Status aktywności</h2>
+
+                <div class="flex items-center justify-center gap-8 py-8">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-success">{{ status_counts.active }}</div>
+                        <div class="text-sm text-base-content/60">Aktywni</div>
+                    </div>
+
+                    <div class="divider divider-horizontal"></div>
+
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-error">{{ status_counts.inactive }}</div>
+                        <div class="text-sm text-base-content/60">Nieaktywni</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly registrations -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Rejestracje miesięczne</h2>
+
+                {% if monthly_registrations %}
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Miesiąc</th>
+                                <th>Nowi użytkownicy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in monthly_registrations %}
+                            <tr>
+                                <td>{{ item.month }}</td>
+                                <td>
+                                    <span class="badge badge-primary">{{ item.count }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-base-content/60 text-center py-8">Brak danych za ostatnie 6 miesięcy</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

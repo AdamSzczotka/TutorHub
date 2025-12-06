@@ -1,0 +1,181 @@
+<!-- Partial for HTMX form responses -->
+<form method="post"
+      enctype="multipart/form-data"
+      hx-post="{{ request.path }}"
+      hx-target="#form-container"
+      hx-swap="innerHTML"
+      id="form-container">
+    {% csrf_token %}
+
+    <!-- Basic Fields -->
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Imię *</span>
+            </label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.first_name.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Nazwisko *</span>
+            </label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.last_name.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Email *</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Telefon</span>
+            </label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.phone.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="form-control"
+             x-data="{ role: '{{ form.role.value|default:'student' }}' }">
+            <label class="label">
+                <span class="label-text">Rola *</span>
+            </label>
+            <select name="role"
+                    class="select select-bordered w-full"
+                    x-model="role"
+                    @change="$dispatch('role-changed', { role: $event.target.value })">
+                <option value="student" {% if form.role.value == 'student' %}selected{% endif %}>Uczeń</option>
+                <option value="tutor" {% if form.role.value == 'tutor' %}selected{% endif %}>Korepetytor</option>
+                <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Administrator</option>
+            </select>
+        </div>
+
+        {% if form.is_active %}
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.is_active }}
+                <span class="label-text">Aktywny</span>
+            </label>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Student-specific fields -->
+    <div x-data="{ showStudent: '{{ form.role.value|default:'student' }}' === 'student' }"
+         @role-changed.window="showStudent = $event.detail.role === 'student'"
+         x-show="showStudent"
+         x-transition
+         class="p-4 bg-info/10 rounded-lg mb-6">
+        <h3 class="font-semibold mb-4">Dane ucznia</h3>
+
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Klasa</span>
+            </label>
+            {{ form.class_name }}
+        </div>
+
+        <h4 class="font-medium mt-4 mb-2">Dane rodzica/opiekuna</h4>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Imię i nazwisko rodzica</span>
+                </label>
+                {{ form.parent_name }}
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Email rodzica *</span>
+                </label>
+                {{ form.parent_email }}
+                {% if form.parent_email.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.parent_email.errors.0 }}</span>
+                    </label>
+                {% endif %}
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Telefon rodzica</span>
+                </label>
+                {{ form.parent_phone }}
+                {% if form.parent_phone.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.parent_phone.errors.0 }}</span>
+                    </label>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutor-specific fields -->
+    <div x-data="{ showTutor: '{{ form.role.value|default:'student' }}' === 'tutor' }"
+         @role-changed.window="showTutor = $event.detail.role === 'tutor'"
+         x-show="showTutor"
+         x-transition
+         class="p-4 bg-success/10 rounded-lg mb-6">
+        <h3 class="font-semibold mb-4">Dane korepetytora</h3>
+
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Wykształcenie</span>
+            </label>
+            {{ form.education }}
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Lata doświadczenia</span>
+                </label>
+                {{ form.experience_years }}
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Stawka godzinowa (zł)</span>
+                </label>
+                {{ form.hourly_rate }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Form actions -->
+    <div class="flex justify-end gap-4 mt-6">
+        <a href="{% url 'accounts:user-list' %}" class="btn btn-ghost">
+            Anuluj
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <span class="loading loading-spinner htmx-indicator"></span>
+            {{ submit_text }}
+        </button>
+    </div>
+</form>

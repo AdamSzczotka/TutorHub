@@ -19,6 +19,10 @@ class AuditLog(models.Model):
         ('create', 'Utworzenie'),
         ('update', 'Aktualizacja'),
         ('delete', 'Usunięcie'),
+        ('export', 'Eksport'),
+        ('bulk_update', 'Aktualizacja zbiorcza'),
+        ('login', 'Logowanie'),
+        ('logout', 'Wylogowanie'),
     ]
 
     user = models.ForeignKey(

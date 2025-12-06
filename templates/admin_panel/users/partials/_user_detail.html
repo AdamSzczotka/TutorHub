@@ -1,0 +1,54 @@
+<!-- Partial for HTMX user detail responses -->
+<div class="space-y-6">
+    <!-- Basic info card -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">Informacje podstawowe</h2>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <span class="text-base-content/60">Email</span>
+                    <p class="font-medium">{{ user_obj.email }}</p>
+                </div>
+                <div>
+                    <span class="text-base-content/60">Telefon</span>
+                    <p class="font-medium">{{ user_obj.phone|default:"-" }}</p>
+                </div>
+                <div>
+                    <span class="text-base-content/60">Rola</span>
+                    <p>
+                        {% if user_obj.role == 'admin' %}
+                            <span class="badge badge-primary">Administrator</span>
+                        {% elif user_obj.role == 'tutor' %}
+                            <span class="badge badge-secondary">Korepetytor</span>
+                        {% else %}
+                            <span class="badge badge-accent">Uczeń</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <span class="text-base-content/60">Status</span>
+                    <p>
+                        <span class="badge {% if user_obj.is_active %}badge-success{% else %}badge-error{% endif %}">
+                            {% if user_obj.is_active %}Aktywny{% else %}Nieaktywny{% endif %}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <span class="text-base-content/60">Profil</span>
+                    <p>
+                        {% if user_obj.is_profile_completed %}
+                            <span class="badge badge-success">Uzupełniony</span>
+                        {% else %}
+                            <span class="badge badge-warning">Niekompletny</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <span class="text-base-content/60">Data rejestracji</span>
+                    <p class="font-medium">{{ user_obj.date_joined|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
