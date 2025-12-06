@@ -1,10 +1,14 @@
 """Celery tasks for accounts app."""
 
+import logging
+
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -70,8 +74,10 @@ Zespół Na Piątkę
 
         return True
     except User.DoesNotExist:
+        logger.warning('Failed to send welcome email: User %s does not exist', user_id)
         return False
     except Exception:
+        logger.exception('Failed to send welcome email to user %s', user_id)
         return False
 
 
@@ -116,6 +122,8 @@ Zespół Na Piątkę
 
         return True
     except User.DoesNotExist:
+        logger.warning('Failed to send password reset email: User %s does not exist', user_id)
         return False
     except Exception:
+        logger.exception('Failed to send password reset email to user %s', user_id)
         return False

@@ -119,9 +119,9 @@
 <div class="flex justify-center mt-4">
     <div class="join">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}"
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}{% if request.GET.is_profile_completed %}&is_profile_completed={{ request.GET.is_profile_completed }}{% endif %}"
                class="join-item btn"
-               hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}"
+               hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}{% if request.GET.is_profile_completed %}&is_profile_completed={{ request.GET.is_profile_completed }}{% endif %}"
                hx-target="#user-table"
                hx-swap="innerHTML">
                 &laquo;
@@ -133,9 +133,9 @@
         </span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}"
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}{% if request.GET.is_profile_completed %}&is_profile_completed={{ request.GET.is_profile_completed }}{% endif %}"
                class="join-item btn"
-               hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}"
+               hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}{% if request.GET.is_profile_completed %}&is_profile_completed={{ request.GET.is_profile_completed }}{% endif %}"
                hx-target="#user-table"
                hx-swap="innerHTML">
                 &raquo;

@@ -6,7 +6,8 @@ from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Q
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -34,7 +35,6 @@ from .forms import (
     StudentProfileForm,
     TutorProfileForm,
     UserEditForm,
-    UserProfileForm,
     generate_temp_password,
 )
 from .models import UserCreationLog
@@ -114,7 +114,7 @@ class UserCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateVi
         messages.success(
             self.request,
             f'Użytkownik {user.get_full_name()} został utworzony. '
-            f'Hasło tymczasowe: {temp_password}'
+            'Hasło tymczasowe zostało wysłane na adres e-mail użytkownika.'
         )
 
         if self.request.htmx:
@@ -345,7 +345,7 @@ class PasswordResetView(LoginRequiredMixin, AdminRequiredMixin, View):
         messages.success(
             request,
             f'Hasło dla {user.get_full_name()} zostało zresetowane. '
-            f'Nowe hasło tymczasowe: {temp_password}'
+            'Nowe hasło tymczasowe zostało wysłane na adres e-mail użytkownika.'
         )
 
         if request.htmx:
@@ -741,7 +741,7 @@ class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMix
         six_months_ago = timezone.now() - timezone.timedelta(days=180)
         context['monthly_registrations'] = (
             User.objects.filter(date_joined__gte=six_months_ago)
-            .extra(select={'month': "strftime('%%Y-%%m', date_joined)"})
+            .annotate(month=TruncMonth('date_joined'))
             .values('month')
             .annotate(count=Count('id'))
             .order_by('month')

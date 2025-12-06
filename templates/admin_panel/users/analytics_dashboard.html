@@ -103,11 +103,11 @@
             <div class="card-body">
                 <h2 class="card-title">Uzupełnienie profili</h2>
 
+                {% widthratio profile_counts.completed profile_counts.completed|add:profile_counts.incomplete 100 as completion_rate %}
                 <div class="flex items-center justify-center py-8">
                     <div class="radial-progress text-success"
-                         style="--value:{{ profile_counts.completed|default:0|divisibleby:1 }}; --size:12rem;"
+                         style="--value:{{ completion_rate|default:0 }}; --size:12rem;"
                          role="progressbar">
-                        {% widthratio profile_counts.completed profile_counts.completed|add:profile_counts.incomplete 100 as completion_rate %}
                         {{ completion_rate|default:0 }}%
                     </div>
                 </div>
