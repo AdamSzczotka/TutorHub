@@ -11,16 +11,26 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def send_welcome_email_task(user_id: int, temp_password: str) -> bool:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=60,
+    retry_backoff_max=600,
+    retry_kwargs={'max_retries': 3},
+)
+def send_welcome_email_task(self, user_id: int, temp_password: str) -> bool:
     """Send welcome email with temporary password.
 
     Args:
+        self: Celery task instance (bound).
         user_id: ID of the user to send email to.
         temp_password: Temporary password to include in email.
 
     Returns:
         True if email was sent successfully, False otherwise.
+
+    Raises:
+        User.DoesNotExist: If user is not found (no retry).
     """
     from apps.accounts.models import User, UserCreationLog
 
@@ -74,23 +84,31 @@ Zespół Na Piątkę
 
         return True
     except User.DoesNotExist:
+        # Don't retry for non-existent users
         logger.warning('Failed to send welcome email: User %s does not exist', user_id)
         return False
-    except Exception:
-        logger.exception('Failed to send welcome email to user %s', user_id)
-        return False
 
 
-@shared_task
-def send_password_reset_email_task(user_id: int, temp_password: str) -> bool:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=60,
+    retry_backoff_max=600,
+    retry_kwargs={'max_retries': 3},
+)
+def send_password_reset_email_task(self, user_id: int, temp_password: str) -> bool:
     """Send password reset email with new temporary password.
 
     Args:
+        self: Celery task instance (bound).
         user_id: ID of the user to send email to.
         temp_password: New temporary password.
 
     Returns:
         True if email was sent successfully, False otherwise.
+
+    Raises:
+        User.DoesNotExist: If user is not found (no retry).
     """
     from apps.accounts.models import User
 
@@ -122,8 +140,6 @@ Zespół Na Piątkę
 
         return True
     except User.DoesNotExist:
+        # Don't retry for non-existent users
         logger.warning('Failed to send password reset email: User %s does not exist', user_id)
-        return False
-    except Exception:
-        logger.exception('Failed to send password reset email to user %s', user_id)
         return False

@@ -6,6 +6,7 @@ import string
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from django.db import transaction
 
 from apps.students.models import StudentProfile
 from apps.tutors.models import TutorProfile
@@ -147,6 +148,7 @@ class AdminUserCreationForm(forms.ModelForm):
             phone_validator(phone)
         return phone
 
+    @transaction.atomic
     def save(self, commit: bool = True, created_by=None) -> tuple:
         """Save the user and create role-specific profile.
 

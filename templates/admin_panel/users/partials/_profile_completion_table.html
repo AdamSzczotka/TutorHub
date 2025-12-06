@@ -18,7 +18,7 @@
                         <div class="avatar placeholder">
                             <div class="bg-neutral text-neutral-content rounded-full w-10">
                                 {% if user.avatar %}
-                                    <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}">
+                                    <img src="{{ user.avatar.url }}" alt="Avatar użytkownika {{ user.get_full_name }}">
                                 {% else %}
                                     <span>{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
                                 {% endif %}
@@ -40,7 +40,7 @@
                         <span class="badge badge-accent">Uczeń</span>
                     {% endif %}
                 </td>
-                <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                <td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
                 <td>
                     <div class="flex gap-1">
                         <a href="{% url 'accounts:user-detail' user.pk %}"

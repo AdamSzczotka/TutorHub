@@ -38,4 +38,7 @@ urlpatterns = [
 
     # Analytics
     path('analytics/', views.UserAnalyticsDashboardView.as_view(), name='user-analytics'),
+
+    # Authentication
+    path('logout/', views.LogoutView.as_view(), name='logout'),
 ]

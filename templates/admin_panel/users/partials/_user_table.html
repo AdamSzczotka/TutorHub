@@ -43,7 +43,7 @@
                             <div class="avatar placeholder">
                                 <div class="bg-neutral text-neutral-content rounded-full w-10">
                                     {% if user.avatar %}
-                                        <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}">
+                                        <img src="{{ user.avatar.url }}" alt="Avatar użytkownika {{ user.get_full_name }}">
                                     {% else %}
                                         <span>{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
                                     {% endif %}
@@ -66,12 +66,14 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span hx-post="{% url 'accounts:user-toggle-status' user.pk %}"
-                              hx-swap="outerHTML"
-                              class="badge {% if user.is_active %}badge-success{% else %}badge-error{% endif %} cursor-pointer hover:opacity-80"
-                              title="Kliknij aby zmienić status">
+                        <button type="button"
+                                hx-post="{% url 'accounts:user-toggle-status' user.pk %}"
+                                hx-swap="outerHTML"
+                                class="badge {% if user.is_active %}badge-success{% else %}badge-error{% endif %} cursor-pointer hover:opacity-80 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-primary"
+                                title="Kliknij aby zmienić status"
+                                aria-pressed="{{ user.is_active|yesno:'true,false' }}">
                             {% if user.is_active %}aktywny{% else %}nieaktywny{% endif %}
-                        </span>
+                        </button>
                     </td>
                     <td>
                         {% if user.is_profile_completed %}

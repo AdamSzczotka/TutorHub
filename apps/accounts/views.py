@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
@@ -298,12 +298,21 @@ class UserStatusToggleView(LoginRequiredMixin, AdminRequiredMixin, View):
             ip_address=request.META.get('REMOTE_ADDR'),
         )
 
-        # Return updated badge
+        # Return updated button
         status = 'aktywny' if user.is_active else 'nieaktywny'
         badge_class = 'badge-success' if user.is_active else 'badge-error'
+        aria_pressed = 'true' if user.is_active else 'false'
+        toggle_url = reverse_lazy('accounts:user-toggle-status', kwargs={'pk': pk})
 
         return HttpResponse(f'''
-            <span class="badge {badge_class}">{status}</span>
+            <button type="button"
+                    hx-post="{toggle_url}"
+                    hx-swap="outerHTML"
+                    class="badge {badge_class} cursor-pointer hover:opacity-80 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-primary"
+                    title="Kliknij aby zmienić status"
+                    aria-pressed="{aria_pressed}">
+                {status}
+            </button>
         ''')
 
 
@@ -506,7 +515,12 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
     def post(self, request):
         """Process bulk action."""
         action = request.POST.get('action')
+        valid_actions = ['activate', 'deactivate', 'delete']
         user_ids = request.POST.getlist('user_ids')
+
+        if not action or action not in valid_actions:
+            messages.error(request, 'Nieprawidłowa akcja.')
+            return redirect('accounts:user-list')
 
         if not user_ids:
             messages.error(request, 'Nie wybrano żadnych użytkowników.')
@@ -532,7 +546,7 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
             user=request.user,
             action='bulk_update',
             model_type='User',
-            model_id=','.join(user_ids),
+            model_id=','.join(str(int(uid)) for uid in user_ids),
             new_values={'action': action, 'count': len(user_ids)},
             ip_address=request.META.get('REMOTE_ADDR'),
         )
@@ -702,6 +716,22 @@ class ParentContactUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin,
 # =============================================================================
 
 
+class LogoutView(View):
+    """Custom logout view."""
+
+    def get(self, request):
+        """Log out the user and redirect to login."""
+        logout(request)
+        messages.success(request, 'Zostałeś wylogowany.')
+        return redirect('admin:login')
+
+    def post(self, request):
+        """Log out the user and redirect to login."""
+        logout(request)
+        messages.success(request, 'Zostałeś wylogowany.')
+        return redirect('admin:login')
+
+
 class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, TemplateView):
     """User analytics dashboard."""
 
@@ -713,11 +743,15 @@ class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMix
         context['title'] = 'Analityka użytkowników'
 
         # User counts by role
-        context['role_counts'] = {
+        role_counts = {
             'admin': User.objects.filter(role='admin').count(),
             'tutor': User.objects.filter(role='tutor').count(),
             'student': User.objects.filter(role='student').count(),
         }
+        context['role_counts'] = role_counts
+        context['total_users'] = (
+            role_counts['admin'] + role_counts['tutor'] + role_counts['student']
+        )
 
         # Active vs inactive
         context['status_counts'] = {
@@ -753,7 +787,7 @@ class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMix
             first_login_at__isnull=False
         ).count()
         context['first_login_rate'] = (
-            (completed_first_login / total_with_logs * 100) if total_with_logs > 0 else 0
+            (completed_first_login / total_with_logs * 100) if total_with_logs else 0
         )
 
         return context
