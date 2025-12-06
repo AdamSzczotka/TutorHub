@@ -1,0 +1,39 @@
+# Django
+Django>=5.1,<5.2
+django-environ>=0.11.2
+django-extensions>=3.2
+
+# HTMX
+django-htmx>=1.19
+
+# Database
+psycopg2-binary>=2.9.9
+
+# Forms
+django-crispy-forms>=2.3
+crispy-tailwind>=1.0
+
+# Auth
+django-allauth>=65.0
+
+# Cache & Sessions
+django-redis>=5.4
+
+# Background Tasks
+celery[redis]>=5.4
+django-celery-beat>=2.6
+django-celery-results>=2.5
+
+# Files & Images
+Pillow>=11.0
+django-imagekit>=5.0
+
+# PDF
+WeasyPrint>=62.0
+
+# Security
+django-cors-headers>=4.4
+django-ratelimit>=4.1
+
+# Utils
+python-dateutil>=2.9

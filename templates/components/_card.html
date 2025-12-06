@@ -1,0 +1,40 @@
+{# Card component #}
+{# Usage: {% include "components/_card.html" with title="Card Title" %} #}
+
+<div class="card bg-base-100 {{ class|default:'card-shadow' }}">
+    {% if image %}
+    <figure{% if image_alt %} alt="{{ image_alt }}"{% endif %}>
+        <img src="{{ image }}" alt="{{ image_alt|default:title }}" />
+    </figure>
+    {% endif %}
+
+    <div class="card-body">
+        {% if badge %}
+        <div class="badge badge-{{ badge_variant|default:'secondary' }}">{{ badge }}</div>
+        {% endif %}
+
+        {% if title %}
+        <h2 class="card-title">
+            {{ title }}
+            {% if title_badge %}
+            <div class="badge badge-{{ title_badge_variant|default:'secondary' }}">{{ title_badge }}</div>
+            {% endif %}
+        </h2>
+        {% endif %}
+
+        {% block card_content %}
+        {% if description %}
+        <p>{{ description }}</p>
+        {% endif %}
+        {{ content }}
+        {% endblock %}
+
+        {% if show_actions %}
+        <div class="card-actions justify-end">
+            {% block card_actions %}
+            {{ actions }}
+            {% endblock %}
+        </div>
+        {% endif %}
+    </div>
+</div>

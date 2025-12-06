@@ -1,0 +1,18 @@
+{# Button component #}
+{# Usage: {% include "components/_button.html" with text="Click me" variant="primary" %} #}
+{# Variants: primary, secondary, accent, ghost, link, info, success, warning, error #}
+
+{% with variant=variant|default:"primary" size=size|default:"md" %}
+<button type="{{ type|default:'button' }}"
+        class="btn btn-{{ variant }} btn-{{ size }} {{ class|default:'' }}"
+        {% if disabled %}disabled{% endif %}
+        {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+        {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
+        {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+        {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}>
+    {% if icon_left %}<span class="mr-2">{{ icon_left }}</span>{% endif %}
+    {{ text }}
+    {% if icon_right %}<span class="ml-2">{{ icon_right }}</span>{% endif %}
+    {% if loading %}<span class="loading loading-spinner loading-sm htmx-indicator"></span>{% endif %}
+</button>
+{% endwith %}
