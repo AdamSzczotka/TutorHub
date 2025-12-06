@@ -1,0 +1,15 @@
+-r base.txt
+
+# Server
+gunicorn>=23.0
+whitenoise>=6.8
+
+# Storage
+django-storages>=1.14
+boto3>=1.35
+
+# Monitoring
+sentry-sdk>=2.0
+
+# Email
+django-anymail>=12.0

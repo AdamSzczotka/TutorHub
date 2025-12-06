@@ -1,0 +1,13 @@
+{
+  "name": "napiatke",
+  "version": "1.0.0",
+  "description": "Na Piątkę - Tutoring School CMS",
+  "scripts": {
+    "tailwind:watch": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
+    "tailwind:build": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "daisyui": "^4.12.0"
+  }
+}

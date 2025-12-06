@@ -1,0 +1,41 @@
+{# Form field component #}
+{# Usage: {% include "components/_form_field.html" with field=form.email %} #}
+
+<div class="form-control w-full {{ class|default:'' }}">
+    {% if field.label %}
+    <label class="label" for="{{ field.id_for_label }}">
+        <span class="label-text">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-error">*</span>{% endif %}
+        </span>
+        {% if hint %}
+        <span class="label-text-alt">{{ hint }}</span>
+        {% endif %}
+    </label>
+    {% endif %}
+
+    {% if field.field.widget.input_type == 'select' %}
+        {{ field }}
+    {% elif field.field.widget.input_type == 'checkbox' %}
+        <label class="label cursor-pointer justify-start gap-4">
+            {{ field }}
+            <span class="label-text">{{ field.label }}</span>
+        </label>
+    {% elif field.field.widget.input_type == 'textarea' %}
+        {{ field }}
+    {% else %}
+        {{ field }}
+    {% endif %}
+
+    {% if field.errors %}
+    <label class="label">
+        <span class="label-text-alt text-error">
+            {% for error in field.errors %}{{ error }}{% endfor %}
+        </span>
+    </label>
+    {% elif field.help_text %}
+    <label class="label">
+        <span class="label-text-alt">{{ field.help_text }}</span>
+    </label>
+    {% endif %}
+</div>

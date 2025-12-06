@@ -1,0 +1,45 @@
+{# Table component #}
+{# Usage: {% include "components/_table.html" with headers=headers rows=rows %} #}
+
+<div class="overflow-x-auto">
+    <table class="table {{ class|default:'table-zebra' }}">
+        {% if headers %}
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        {% endif %}
+
+        <tbody id="{{ id|default:'table-body' }}"
+               {% if hx_get %}hx-get="{{ hx_get }}" hx-trigger="load"{% endif %}>
+            {% block table_body %}
+            {% for row in rows %}
+            <tr>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ headers|length|default:1 }}" class="text-center text-base-content/50">
+                    {{ empty_message|default:"Brak danych" }}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endblock %}
+        </tbody>
+
+        {% if show_footer %}
+        <tfoot>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</div>
