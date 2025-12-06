@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -393,13 +393,12 @@ class FirstLoginPasswordChangeView(LoginRequiredMixin, HTMXMixin, View):
             ).update(first_login_at=timezone.now())
 
             messages.success(request, 'Hasło zostało zmienione. Zaloguj się ponownie.')
-            return redirect('login')
+            return redirect('admin:login')
 
         return self.render_form(request, form)
 
     def render_form(self, request, form):
         """Render the form."""
-        from django.shortcuts import render
         return render(request, self.template_name, {'form': form})
 
 
@@ -546,8 +545,8 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
             user=request.user,
             action='bulk_update',
             model_type='User',
-            model_id=','.join(str(int(uid)) for uid in user_ids),
-            new_values={'action': action, 'count': len(user_ids)},
+            model_id=','.join(str(user.pk) for user in users),
+            new_values={'action': action, 'count': users.count()},
             ip_address=request.META.get('REMOTE_ADDR'),
         )
 
