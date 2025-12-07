@@ -12,6 +12,7 @@ urlpatterns = [
     path('panel/subjects/', include('apps.subjects.urls')),
     path('panel/rooms/', include('apps.rooms.urls')),
     path('panel/lessons/', include('apps.lessons.urls')),
+    path('panel/attendance/', include('apps.attendance.urls')),
     path('panel/', include('apps.core.urls')),
     path('', include('apps.landing.urls')),
 ]
