@@ -56,3 +56,40 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f'{self.action} - {self.model_type} - {self.created_at}'
+
+
+class SystemSetting(models.Model):
+    """Key-value storage for system settings."""
+
+    key = models.CharField('Klucz', max_length=100, unique=True)
+    value = models.JSONField('Wartosc', default=dict)
+    description = models.TextField('Opis', blank=True)
+
+    created_at = models.DateTimeField('Utworzono', auto_now_add=True)
+    updated_at = models.DateTimeField('Zaktualizowano', auto_now=True)
+
+    class Meta:
+        db_table = 'system_settings'
+        verbose_name = 'Ustawienie systemowe'
+        verbose_name_plural = 'Ustawienia systemowe'
+
+    def __str__(self):
+        return self.key
+
+    @classmethod
+    def get(cls, key: str, default=None):
+        """Get a setting value by key."""
+        try:
+            setting = cls.objects.get(key=key)
+            return setting.value
+        except cls.DoesNotExist:
+            return default
+
+    @classmethod
+    def set(cls, key: str, value, description: str = ''):
+        """Set a setting value by key."""
+        setting, _ = cls.objects.update_or_create(
+            key=key,
+            defaults={'value': value, 'description': description}
+        )
+        return setting
