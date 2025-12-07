@@ -1,0 +1,88 @@
+<div class="overflow-x-auto">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Uczen</th>
+                <th>Klasa</th>
+                <th>Zajecia</th>
+                <th>Obecny</th>
+                <th>Nieobecny</th>
+                <th>Spozniony</th>
+                <th>Frekwencja</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in students %}
+            <tr class="hover">
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-10">
+                                <span>{{ item.student.first_name.0|default:"?" }}{{ item.student.last_name.0|default:"?" }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold">{{ item.student.get_full_name }}</div>
+                            <div class="text-sm opacity-50">{{ item.student.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ item.student.student_profile.class_name|default:"-" }}</td>
+                <td>{{ item.stats.total }}</td>
+                <td class="text-success">{{ item.stats.present }}</td>
+                <td class="text-error">{{ item.stats.absent }}</td>
+                <td class="text-warning">{{ item.stats.late }}</td>
+                <td>
+                    {% if item.stats.total > 0 %}
+                    <div class="flex items-center gap-2">
+                        <progress class="progress w-20 {% if item.stats.attendance_rate >= 90 %}progress-success{% elif item.stats.attendance_rate >= 80 %}progress-warning{% else %}progress-error{% endif %}"
+                                  value="{{ item.stats.attendance_rate|floatformat:0 }}"
+                                  max="100"></progress>
+                        <span class="font-semibold {% if item.stats.attendance_rate >= 90 %}text-success{% elif item.stats.attendance_rate >= 80 %}text-warning{% else %}text-error{% endif %}">
+                            {{ item.stats.attendance_rate }}%
+                        </span>
+                    </div>
+                    {% else %}
+                    <span class="text-base-content/50">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="flex gap-1">
+                        <a href="{% url 'attendance:student_statistics' item.student.id %}"
+                           class="btn btn-ghost btn-xs"
+                           title="Szczegoly">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </a>
+                        <a href="{% url 'attendance:history' item.student.id %}"
+                           class="btn btn-ghost btn-xs"
+                           title="Historia">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </a>
+                        <a href="{% url 'attendance:generate_report' item.student.id %}?month={{ selected_month }}"
+                           class="btn btn-ghost btn-xs"
+                           title="Pobierz PDF">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center py-8 text-base-content/50">
+                    Brak uczniow do wyswietlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

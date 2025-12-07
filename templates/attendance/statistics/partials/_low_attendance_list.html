@@ -1,0 +1,69 @@
+{% if students %}
+<div class="overflow-x-auto">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Uczen</th>
+                <th>Klasa</th>
+                <th>Frekwencja</th>
+                <th>Zajecia</th>
+                <th>Obecny</th>
+                <th>Nieobecny</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in students %}
+            <tr>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-10">
+                                <span>{{ item.student.first_name.0|default:"?" }}{{ item.student.last_name.0|default:"?" }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold">{{ item.student.get_full_name }}</div>
+                            <div class="text-sm opacity-50">{{ item.student.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ item.student.student_profile.class_name|default:"N/A" }}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <progress class="progress progress-error w-20"
+                                  value="{{ item.stats.attendance_rate|floatformat:0 }}"
+                                  max="100"></progress>
+                        <span class="text-error font-bold">{{ item.stats.attendance_rate }}%</span>
+                    </div>
+                </td>
+                <td>{{ item.stats.total }}</td>
+                <td class="text-success">{{ item.stats.present }}</td>
+                <td class="text-error">{{ item.stats.absent }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <a href="{% url 'attendance:student_statistics' item.student.id %}"
+                           class="btn btn-sm btn-ghost">
+                            Szczegoly
+                        </a>
+                        <a href="{% url 'attendance:generate_report' item.student.id %}"
+                           class="btn btn-sm btn-outline">
+                            PDF
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="flex flex-col items-center justify-center py-12 text-base-content/50">
+    <svg class="w-16 h-16 mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-lg">Wszyscy uczniowie maja dobra frekwencje!</p>
+    <p class="text-sm">Brak uczniow z frekwencja ponizej {{ threshold }}%</p>
+</div>
+{% endif %}

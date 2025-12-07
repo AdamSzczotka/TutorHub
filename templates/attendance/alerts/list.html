@@ -1,0 +1,41 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Alerty frekwencji</h1>
+            <p class="text-base-content/70">Uczniowie z frekwencja ponizej progu</p>
+        </div>
+
+        <button class="btn btn-primary"
+                hx-post="{% url 'attendance:check_alerts' %}"
+                hx-target="#alert-list"
+                hx-swap="innerHTML">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Sprawdz teraz
+        </button>
+    </div>
+
+    <div id="alert-list"
+         hx-get="{% url 'attendance:alerts' %}"
+         hx-trigger="alertResolved from:body, alertDismissed from:body"
+         hx-swap="innerHTML">
+        {% include "attendance/alerts/partials/_alert_list.html" %}
+    </div>
+</div>
+
+<!-- Resolution Modal -->
+<dialog id="resolve-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Rozwiaz alert frekwencji</h3>
+        <div id="resolve-modal-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}

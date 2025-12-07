@@ -1,0 +1,112 @@
+<!-- Attendance Form Partial -->
+<form hx-post="{% url 'attendance:bulk_mark' lesson.pk %}"
+      hx-swap="none"
+      id="attendance-form">
+    {% csrf_token %}
+
+    <!-- Bulk Actions -->
+    <div class="flex items-center gap-2 p-4 bg-base-200 rounded-lg mb-4">
+        <button type="button"
+                onclick="markAllPresent()"
+                class="btn btn-sm btn-outline btn-success">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Wszyscy obecni
+        </button>
+        <button type="button"
+                onclick="resetAll()"
+                class="btn btn-sm btn-outline">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Resetuj
+        </button>
+    </div>
+
+    <!-- Student List -->
+    <div class="bg-base-100 rounded-lg border divide-y">
+        {% for ls in students %}
+        <div class="p-4" id="student-row-{{ ls.student.id }}" x-data="{ status: '{{ ls.attendance_status }}', showNotes: false }">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">{{ forloop.counter }}. {{ ls.student.get_full_name }}</span>
+                        {% if ls.student.student_profile %}
+                        <span class="badge badge-outline badge-sm">
+                            {{ ls.student.student_profile.class_name|default:"N/A" }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-base-content/60">{{ ls.student.email }}</p>
+                </div>
+
+                <!-- Status Buttons -->
+                <div class="flex gap-2">
+                    {% for value, label in statuses %}
+                    {% if value != 'PENDING' %}
+                    <button type="button"
+                            class="btn btn-sm"
+                            :class="status === '{{ value }}' ? '{% if value == 'PRESENT' %}btn-success{% elif value == 'ABSENT' %}btn-error{% elif value == 'LATE' %}btn-warning{% else %}btn-info{% endif %}' : 'btn-outline'"
+                            @click="status = '{{ value }}'; showNotes = true; updateHiddenInput('{{ ls.student.id }}', '{{ value }}')">
+                        {% if value == 'PRESENT' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        {% elif value == 'ABSENT' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        {% elif value == 'LATE' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        {% else %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        {% endif %}
+                        <span class="hidden sm:inline">{{ label }}</span>
+                    </button>
+                    {% endif %}
+                    {% endfor %}
+
+                    <input type="hidden"
+                           name="status_{{ ls.student.id }}"
+                           id="status-{{ ls.student.id }}"
+                           value="{{ ls.attendance_status }}">
+                </div>
+            </div>
+
+            <!-- Notes (expanded when status is set) -->
+            <div class="mt-4 ml-6"
+                 x-show="showNotes || (status && status !== 'PENDING')"
+                 x-cloak>
+                <label class="label">
+                    <span class="label-text text-sm">Notatki (opcjonalne)</span>
+                </label>
+                <textarea name="notes_{{ ls.student.id }}"
+                          class="textarea textarea-bordered textarea-sm w-full"
+                          rows="2"
+                          placeholder="Dodatkowe informacje...">{{ ls.attendance_notes }}</textarea>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center text-base-content/60">
+            Brak uczniów przypisanych do tej lekcji.
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Save Button -->
+    {% if students %}
+    <div class="flex justify-end mt-4">
+        <button type="submit" class="btn btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Zapisz obecność
+        </button>
+    </div>
+    {% endif %}
+</form>

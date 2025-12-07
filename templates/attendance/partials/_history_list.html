@@ -1,0 +1,56 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Lekcja</th>
+                <th>Przedmiot</th>
+                <th>Korepetytor</th>
+                <th>Status</th>
+                <th>Czas wejścia</th>
+                <th>Czas wyjścia</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ls in history %}
+            <tr>
+                <td>
+                    <div class="font-medium">{{ ls.lesson.start_time|date:"d.m.Y" }}</div>
+                    <div class="text-sm text-base-content/60">{{ ls.lesson.start_time|time:"H:i" }} - {{ ls.lesson.end_time|time:"H:i" }}</div>
+                </td>
+                <td>{{ ls.lesson.title }}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <span>{{ ls.lesson.subject.name }}</span>
+                        <span class="badge badge-outline badge-sm">{{ ls.lesson.level.name }}</span>
+                    </div>
+                </td>
+                <td>{{ ls.lesson.tutor.get_full_name }}</td>
+                <td>
+                    {% include "attendance/partials/_status_badge.html" with status=ls.attendance_status student_id=ls.student.id %}
+                </td>
+                <td>
+                    {% if ls.check_in_time %}
+                        <span class="badge badge-ghost">{{ ls.check_in_time|time:"H:i:s" }}</span>
+                    {% else %}
+                        <span class="text-base-content/40">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ls.check_out_time %}
+                        <span class="badge badge-ghost">{{ ls.check_out_time|time:"H:i:s" }}</span>
+                    {% else %}
+                        <span class="text-base-content/40">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-8 text-base-content/60">
+                    Brak historii obecności dla wybranego okresu.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

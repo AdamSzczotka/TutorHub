@@ -1,0 +1,87 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'attendance:overview' %}" class="btn btn-ghost btn-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Powrot
+            </a>
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Historia obecnosci
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Łącznie lekcji</div>
+            <div class="stat-value text-2xl">{{ statistics.total }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Obecny</div>
+            <div class="stat-value text-2xl text-success">{{ statistics.present }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Nieobecny</div>
+            <div class="stat-value text-2xl text-error">{{ statistics.absent }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Spóźniony</div>
+            <div class="stat-value text-2xl text-warning">{{ statistics.late }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Frekwencja</div>
+            <div class="stat-value text-2xl text-primary">{{ statistics.attendance_rate }}%</div>
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <form method="get" class="flex flex-wrap gap-4 items-end"
+                  x-data="{
+                      startDate: '{{ start_date|date:'Y-m-d' }}',
+                      endDate: '{{ end_date|date:'Y-m-d' }}'
+                  }">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Od</span>
+                    </label>
+                    <input type="date"
+                           name="start_date"
+                           x-model="startDate"
+                           :max="endDate"
+                           class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Do</span>
+                    </label>
+                    <input type="date"
+                           name="end_date"
+                           x-model="endDate"
+                           :min="startDate"
+                           class="input input-bordered">
+                </div>
+                <button type="submit" class="btn btn-primary">Filtruj</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- History List -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            {% include "attendance/partials/_history_list.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}
