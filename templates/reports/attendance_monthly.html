@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Raport frekwencji - {{ month_name }}</title>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="title">Raport frekwencji</div>
+        <div class="subtitle">
+            Okres: {{ month_name }} | Wygenerowano: {{ generated_at|date:"d.m.Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Student Info -->
+    <div style="margin-bottom: 20px; padding: 15px; background-color: #F3F4F6; border-radius: 5px;">
+        <div style="margin-bottom: 5px;">
+            <strong>Uczen:</strong> {{ student.get_full_name }}
+        </div>
+        <div style="margin-bottom: 5px;">
+            <strong>Klasa:</strong> {{ student.student_profile.class_name|default:"N/A" }}
+        </div>
+        <div>
+            <strong>Email:</strong> {{ student.email }}
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-value" style="color: #3B82F6;">{{ statistics.total }}</div>
+            <div class="stat-label">Zajecia</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" style="color: {% if statistics.attendance_rate >= 90 %}#10B981{% elif statistics.attendance_rate >= 80 %}#F59E0B{% else %}#EF4444{% endif %};">
+                {{ statistics.attendance_rate }}%
+            </div>
+            <div class="stat-label">Frekwencja</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" style="color: #10B981;">{{ statistics.present }}</div>
+            <div class="stat-label">Obecnosci</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" style="color: #EF4444;">{{ statistics.absent }}</div>
+            <div class="stat-label">Nieobecnosci</div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">Data</th>
+                <th style="width: 10%;">Godzina</th>
+                <th style="width: 25%;">Przedmiot</th>
+                <th style="width: 20%;">Korepetytor</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 15%;">Notatki</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.lesson.start_time|date:"d.m.Y" }}</td>
+                <td>{{ record.lesson.start_time|time:"H:i" }}</td>
+                <td>{{ record.lesson.subject.name }}</td>
+                <td>{{ record.lesson.tutor.get_full_name }}</td>
+                <td class="status-{{ record.attendance_status|lower }}">
+                    {% if record.attendance_status == 'PRESENT' %}Obecny
+                    {% elif record.attendance_status == 'LATE' %}Spozniony
+                    {% elif record.attendance_status == 'ABSENT' %}Nieobecny
+                    {% elif record.attendance_status == 'EXCUSED' %}Usprawiedliwiony
+                    {% else %}Oczekujace{% endif %}
+                </td>
+                <td>{{ record.attendance_notes|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #6B7280;">
+                    Brak zapisow obecnosci w tym miesiacu
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+        System zarzadzania szkola korepetycji "Na Piatke" | Raport wygenerowany automatycznie
+    </div>
+</body>
+</html>
