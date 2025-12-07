@@ -1,0 +1,23 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Sale</h1>
+        <button class="btn btn-primary"
+                hx-get="{% url 'rooms:create' %}"
+                hx-target="#modal-content"
+                hx-swap="innerHTML"
+                onclick="document.getElementById('modal').showModal()">
+            + Dodaj sale
+        </button>
+    </div>
+
+    <div id="room-list"
+         hx-get="{% url 'rooms:list' %}"
+         hx-trigger="roomCreated from:body, roomUpdated from:body, roomDeleted from:body"
+         hx-swap="innerHTML">
+        {% include "admin_panel/rooms/partials/_room_list.html" %}
+    </div>
+</div>
+{% endblock %}
