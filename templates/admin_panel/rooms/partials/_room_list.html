@@ -1,0 +1,59 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Pojemnosc</th>
+                <th>Lokalizacja</th>
+                <th>Typ</th>
+                <th>Lekcje</th>
+                <th>Status</th>
+                <th class="text-right">Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in rooms %}
+            <tr>
+                <td class="font-medium">{{ room.name }}</td>
+                <td>{{ room.capacity }} os.</td>
+                <td>{{ room.location|default:"-" }}</td>
+                <td>
+                    {% if room.is_virtual %}
+                    <span class="badge badge-info">Online</span>
+                    {% else %}
+                    <span class="badge badge-ghost">Stacjonarna</span>
+                    {% endif %}
+                </td>
+                <td>{{ room.lesson_count }}</td>
+                <td>
+                    {% if room.is_active %}
+                    <span class="badge badge-success">Aktywna</span>
+                    {% else %}
+                    <span class="badge badge-ghost">Nieaktywna</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    <button class="btn btn-ghost btn-sm"
+                            hx-get="{% url 'rooms:update' room.pk %}"
+                            hx-target="#modal-content"
+                            hx-swap="innerHTML"
+                            onclick="document.getElementById('modal').showModal()">
+                        Edytuj
+                    </button>
+                    <button class="btn btn-ghost btn-sm text-error"
+                            hx-delete="{% url 'rooms:delete' room.pk %}"
+                            hx-confirm="Czy na pewno chcesz usunąć sale {{ room.name }}?">
+                        Usun
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-8 text-base-content/60">
+                    Brak sal. Dodaj pierwsza sale.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

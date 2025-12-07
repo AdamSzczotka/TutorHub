@@ -1,0 +1,76 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Uzytkownik</th>
+                <th>Akcja</th>
+                <th>Model</th>
+                <th>ID rekordu</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="whitespace-nowrap">
+                    {{ log.created_at|date:"d.m.Y H:i" }}
+                </td>
+                <td>
+                    {% if log.user %}
+                    {{ log.user.email }}
+                    {% else %}
+                    <span class="opacity-50">System</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if log.action == 'create' %}
+                    <span class="badge badge-success">{{ log.get_action_display }}</span>
+                    {% elif log.action == 'update' %}
+                    <span class="badge badge-info">{{ log.get_action_display }}</span>
+                    {% elif log.action == 'delete' %}
+                    <span class="badge badge-error">{{ log.get_action_display }}</span>
+                    {% elif log.action == 'login' %}
+                    <span class="badge badge-primary">{{ log.get_action_display }}</span>
+                    {% elif log.action == 'logout' %}
+                    <span class="badge badge-ghost">{{ log.get_action_display }}</span>
+                    {% else %}
+                    <span class="badge">{{ log.get_action_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ log.model_type }}</td>
+                <td>{{ log.model_id|default:"-" }}</td>
+                <td class="text-sm opacity-70">{{ log.ip_address|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-8 text-base-content/60">
+                    Brak logow audytu.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-6">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?{% if request.GET.action %}action={{ request.GET.action }}&{% endif %}{% if request.GET.model_type %}model_type={{ request.GET.model_type }}&{% endif %}{% if request.GET.user %}user={{ request.GET.user }}&{% endif %}{% if request.GET.date_from %}date_from={{ request.GET.date_from }}&{% endif %}{% if request.GET.date_to %}date_to={{ request.GET.date_to }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           class="join-item btn">
+            Poprzednia
+        </a>
+        {% endif %}
+        <button class="join-item btn btn-disabled">
+            Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+        </button>
+        {% if page_obj.has_next %}
+        <a href="?{% if request.GET.action %}action={{ request.GET.action }}&{% endif %}{% if request.GET.model_type %}model_type={{ request.GET.model_type }}&{% endif %}{% if request.GET.user %}user={{ request.GET.user }}&{% endif %}{% if request.GET.date_from %}date_from={{ request.GET.date_from }}&{% endif %}{% if request.GET.date_to %}date_to={{ request.GET.date_to }}&{% endif %}page={{ page_obj.next_page_number }}"
+           class="join-item btn">
+            Nastepna
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

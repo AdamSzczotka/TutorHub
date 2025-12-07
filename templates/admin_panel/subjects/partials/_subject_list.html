@@ -1,0 +1,62 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Opis</th>
+                <th>Kolor</th>
+                <th>Lekcje</th>
+                <th>Status</th>
+                <th class="text-right">Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+            <tr>
+                <td class="font-medium">
+                    {% if subject.icon %}
+                    <span class="mr-2">{{ subject.icon }}</span>
+                    {% endif %}
+                    {{ subject.name }}
+                </td>
+                <td class="max-w-xs truncate">{{ subject.description|default:"-"|truncatewords:10 }}</td>
+                <td>
+                    {% if subject.color %}
+                    <div class="w-6 h-6 rounded" style="background-color: {{ subject.color }};"></div>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ subject.lesson_count }}</td>
+                <td>
+                    {% if subject.is_active %}
+                    <span class="badge badge-success">Aktywny</span>
+                    {% else %}
+                    <span class="badge badge-ghost">Nieaktywny</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    <button class="btn btn-ghost btn-sm"
+                            hx-get="{% url 'subjects:update' subject.pk %}"
+                            hx-target="#modal-content"
+                            hx-swap="innerHTML"
+                            onclick="document.getElementById('modal').showModal()">
+                        Edytuj
+                    </button>
+                    <button class="btn btn-ghost btn-sm text-error"
+                            hx-delete="{% url 'subjects:delete' subject.pk %}"
+                            hx-confirm="Czy na pewno chcesz usunąć przedmiot {{ subject.name }}?">
+                        Usun
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-8 text-base-content/60">
+                    Brak przedmiotow. Dodaj pierwszy przedmiot.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

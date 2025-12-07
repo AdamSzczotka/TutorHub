@@ -1,0 +1,81 @@
+<form hx-post="{{ request.path }}"
+      hx-swap="none">
+    {% csrf_token %}
+
+    <h3 class="font-bold text-lg mb-4">{{ form_title }}</h3>
+
+    <div class="space-y-4">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Nazwa sali *</span>
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+            </label>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Pojemnosc *</span>
+                </label>
+                {{ form.capacity }}
+                {% if form.capacity.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.capacity.errors.0 }}</span>
+                </label>
+                {% endif %}
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Lokalizacja</span>
+                </label>
+                {{ form.location }}
+            </div>
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Opis</span>
+            </label>
+            {{ form.description }}
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Wyposazenie (jedno na linie)</span>
+            </label>
+            {{ form.equipment_text }}
+        </div>
+        {{ form.equipment }}
+
+        <div class="flex gap-6">
+            <div class="form-control">
+                <label class="label cursor-pointer justify-start gap-4">
+                    {{ form.is_active }}
+                    <span class="label-text">Sala aktywna</span>
+                </label>
+            </div>
+
+            <div class="form-control">
+                <label class="label cursor-pointer justify-start gap-4">
+                    {{ form.is_virtual }}
+                    <span class="label-text">Sala online</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-action">
+        <button type="button" class="btn" onclick="document.getElementById('modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Zapisz
+        </button>
+    </div>
+</form>

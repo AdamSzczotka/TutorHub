@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'apps.messages',
     'apps.notifications',
     'apps.landing',
+    'apps.admin_panel',
 ]
 
 MIDDLEWARE = [
