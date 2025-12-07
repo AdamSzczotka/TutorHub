@@ -1,292 +1,1016 @@
 {% extends "landing/base.html" %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero min-h-screen bg-gradient-to-br from-primary to-secondary text-primary-content">
-    <div class="hero-content text-center">
-        <div class="max-w-3xl">
-            <h1 class="text-5xl font-bold">{{ hero.title|default:"Korepetycje, które prowadzą do sukcesu" }}</h1>
-            <p class="py-6 text-xl">{{ hero.subtitle|default:"Profesjonalni korepetytorzy, indywidualne podejście, gwarancja postępów" }}</p>
-            <div class="flex gap-4 justify-center flex-wrap">
-                <a href="#kontakt" class="btn btn-accent btn-lg">Zapytaj o termin</a>
-                <a href="#zespol" class="btn btn-outline btn-lg border-white text-white hover:bg-white hover:text-primary">Poznaj naszych korepetytorów</a>
+<!-- HERO -->
+<section id="hero" class="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 text-white">
+    <!-- Decorative SVG pattern -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none" aria-hidden="true">
+        <svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+                </pattern>
+            </defs>
+            <rect width="1200" height="600" fill="url(#grid)" />
+        </svg>
+    </div>
+    <div class="container mx-auto px-4 py-16 md:py-24">
+        <div class="max-w-prose">
+            <h1 class="text-3xl leading-tight font-semibold md:text-5xl md:leading-tight">
+                {{ hero.title|default:"Matematyka, angielski i niemiecki – od podstawówki do matury." }}
+            </h1>
+            <p class="mt-4 text-white/90 text-base md:text-lg max-w-prose">
+                {{ hero.subtitle|default:"Zajęcia stacjonarne. Indywidualnie lub w małych grupach do 4 osób, 60 minut." }}
+            </p>
+            <div class="mt-6 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
+                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-white text-brand px-5 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 w-full sm:w-auto">
+                    Umów lekcję próbną
+                </a>
+                {% if school_info.phone %}
+                <a href="tel:{{ school_info.phone }}" class="inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 font-medium hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 w-full sm:w-auto">
+                    Zadzwoń: {{ school_info.phone }}
+                </a>
+                {% endif %}
+                {% if school_info.email %}
+                <a href="mailto:{{ school_info.email }}" class="inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 font-medium hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 w-full sm:w-auto">
+                    Napisz e-mail
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </section>
 
-<!-- About Section -->
-<section id="o-nas" class="py-20">
-    <div class="container mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+<!-- O NAS -->
+<section id="o-nas" class="scroll-mt-24 py-16 md:py-24 bg-white relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-50/30 via-white to-brandBg/20"></div>
+    <div class="absolute top-10 right-10 w-32 h-32 bg-gradient-to-br from-brand/5 to-brand/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 left-10 w-24 h-24 bg-gradient-to-br from-blue-500/5 to-emerald-500/5 rounded-full blur-2xl"></div>
+
+    <div class="container mx-auto px-4 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
             <div>
-                <h2 class="text-4xl font-bold mb-6">{{ about.title|default:"O szkole Na Piątkę" }}</h2>
-                <div class="prose prose-lg">
+                <div class="inline-flex items-center gap-2 bg-brand/10 text-brand px-3 py-1 rounded-full text-sm font-medium mb-6">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Centrum korepetycji
+                </div>
+
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                    Skuteczna nauka z <span class="text-brand">indywidualnym podejściem</span>
+                </h2>
+
+                <div class="space-y-4 text-slate-600 leading-relaxed">
                     {% if about.content %}
                         {{ about.content|linebreaks }}
                     {% else %}
-                        <p>Szkoła korepetycyjska "Na Piątkę" to miejsce, gdzie każdy uczeń może odkryć swój potencjał i osiągnąć sukces w nauce.</p>
-                        <p>Nasi doświadczeni korepetytorzy stosują indywidualne podejście do każdego ucznia, dostosowując metody nauczania do jego potrzeb i możliwości.</p>
-                        <p>Oferujemy korepetycje z matematyki, fizyki, chemii, języków obcych i wielu innych przedmiotów dla uczniów szkół podstawowych, liceum oraz studentów.</p>
+                    <p class="text-lg">
+                        Jesteśmy zespołem doświadczonych korepetytorów, którzy łączą <strong class="text-slate-700">pasję do nauczania</strong> z nowoczesnym podejściem do edukacji.
+                    </p>
+                    <p>
+                        Nasza filozofia opiera się na <em>indywidualnym podejściu do każdego ucznia</em>. Wierzymy, że każdy ma swój unikalny sposób uczenia się i nasze zadanie to odkryć go oraz dostosować metody nauczania.
+                    </p>
+                    <p>
+                        Dążymy do <strong class="text-brand">realnych postępów</strong>: nadrabiania braków, poprawy ocen, przygotowania do egzaminów, ale przede wszystkim – budowania pewności siebie i miłości do nauki.
+                    </p>
                     {% endif %}
                 </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-4 mt-8 p-6 bg-gradient-to-r from-brandBg/50 to-blue-50/50 rounded-2xl border border-brand/10">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-brand mb-1">5+</div>
+                        <div class="text-xs text-slate-600">lat doświadczenia</div>
+                    </div>
+                    <div class="text-center border-x border-slate-200">
+                        <div class="text-2xl font-bold text-brand mb-1">3</div>
+                        <div class="text-xs text-slate-600">nowoczesne sale</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-brand mb-1">100+</div>
+                        <div class="text-xs text-slate-600">zadowolonych uczniów</div>
+                    </div>
+                </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="stat bg-primary text-primary-content rounded-lg">
-                    <div class="stat-title text-primary-content/60">Uczniów</div>
-                    <div class="stat-value">500+</div>
-                </div>
-                <div class="stat bg-secondary text-secondary-content rounded-lg">
-                    <div class="stat-title text-secondary-content/60">Korepetytorów</div>
-                    <div class="stat-value">20+</div>
-                </div>
-                <div class="stat bg-accent text-accent-content rounded-lg">
-                    <div class="stat-title text-accent-content/60">Lat doświadczenia</div>
-                    <div class="stat-value">10+</div>
-                </div>
-                <div class="stat bg-neutral text-neutral-content rounded-lg">
-                    <div class="stat-title text-neutral-content/60">Zadowolenia</div>
-                    <div class="stat-value">98%</div>
+
+            <!-- Visual element - Subject icons -->
+            <div class="relative">
+                <div class="relative bg-gradient-to-br from-brand/5 via-brand/10 to-brand/5 rounded-3xl p-8 border border-brand/20">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Math icon -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M12 3v18"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Matematyka</span>
+                        </div>
+
+                        <!-- English icon -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Angielski</span>
+                        </div>
+
+                        <!-- German icon -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h12v16H6z"/><path d="M10 8h4"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Niemiecki</span>
+                        </div>
+
+                        <!-- Polish icon -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Polski</span>
+                        </div>
+
+                        <!-- Individual approach -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Indywidualne</span>
+                        </div>
+
+                        <!-- Small groups -->
+                        <div class="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <span class="text-xs font-medium text-slate-700">Małe grupy</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Team Section -->
-<section id="zespol" class="py-20 bg-base-200">
+<!-- DLACZEGO MY -->
+<section aria-labelledby="why-heading" class="py-16 md:py-24 bg-gradient-to-br from-brandBg via-brandBg to-blue-50">
     <div class="container mx-auto px-4">
-        <h2 class="text-4xl font-bold text-center mb-4">Nasi Korepetytorzy</h2>
-        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
-            Poznaj nasz zespół doświadczonych korepetytorów, którzy pomogą Ci osiągnąć sukces w nauce
-        </p>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for member in team %}
-            <div class="card bg-base-100 shadow-xl">
-                <figure class="px-10 pt-10">
-                    {% if member.image %}
-                        <img src="{{ member.image.url }}" alt="{{ member.name }} {{ member.surname }}" class="rounded-xl w-32 h-32 object-cover">
-                    {% else %}
-                        <div class="avatar placeholder">
-                            <div class="bg-neutral text-neutral-content rounded-full w-32">
-                                <span class="text-3xl">{{ member.name.0 }}{{ member.surname.0 }}</span>
-                            </div>
+        <div class="text-center mb-12">
+            <h2 id="why-heading" class="text-2xl md:text-3xl font-semibold text-brand mb-3">Dlaczego my</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto">Łączymy doświadczenie z nowoczesnym podejściem do nauki</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <!-- Card 1 -->
+            <a href="#pakiety" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand/5 to-brand/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand/80 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Małe grupy do 4 osób</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Pełna uwaga dla każdego ucznia. Indywidualne podejście w kameralnej atmosferze.</p>
+                </div>
+            </a>
+
+            <!-- Card 2 -->
+            <div class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Lekcje 60 minut</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Konkret i systematyczność. Optymalna długość dla koncentracji i postępów.</p>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <a href="#pakiety" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/5 to-blue-500/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Pakiety miesięczne</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Elastyczne planowanie nauki dostosowane do Twoich potrzeb i terminarza.</p>
+                </div>
+            </a>
+
+            <!-- Card 4 -->
+            <a href="#zespol" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/5 to-purple-500/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M12 11l2 2 4-4"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Doświadczeni korepetytorzy</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Indywidualne podejście oparte na latach praktyki i pasji do nauczania.</p>
+                </div>
+            </a>
+
+            <!-- Card 5 -->
+            <div class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-500/5 to-orange-500/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Jasne zasady odwołań</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">≥24h przed zajęciami i możliwość odrobienia w ciągu 30 dni. Transparentnie.</p>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <a href="#kontakt" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-500/5 to-teal-500/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-2">Dogodna lokalizacja</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Nowoczesne sale w świetnej lokalizacji. Wygodny dojazd i parking.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- PRZEDMIOTY I POZIOMY -->
+<section id="przedmioty" class="scroll-mt-24 py-16 md:py-24 bg-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-white"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl md:text-3xl font-semibold text-brand mb-3">Przedmioty i poziomy</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto">Kompleksowe wsparcie edukacyjne dostosowane do Twoich potrzeb</p>
+        </div>
+
+        <!-- Przedmioty -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- Matematyka -->
+            <button data-modal-target="#modal-matematyka" class="group relative w-full text-left rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 p-8 border border-blue-100 hover:border-blue-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50">
+                <div class="absolute top-6 right-6 w-12 h-12 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-2xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="2"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Matematyka</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">Od podstaw arytmetyki po zaawansowane zagadnienia maturalne. Algebra, geometria, funkcje i statystyka.</p>
+                    <div class="flex items-center text-xs text-blue-600 font-medium">
+                        <span>Wszystkie poziomy</span>
+                        <svg class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Język angielski -->
+            <button data-modal-target="#modal-angielski" class="group relative w-full text-left rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 p-8 border border-emerald-100 hover:border-emerald-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50">
+                <div class="absolute top-6 right-6 w-12 h-12 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 7h16M4 12h10M4 17h16"/><circle cx="20" cy="12" r="2"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Język angielski</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">Konwersacje, gramatyka, słownictwo. Przygotowanie do egzaminów i certyfikatów językowych.</p>
+                    <div class="flex items-center text-xs text-emerald-600 font-medium">
+                        <span>A1 - C2</span>
+                        <svg class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Język niemiecki -->
+            <button data-modal-target="#modal-niemiecki" class="group relative w-full text-left rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-8 border border-amber-100 hover:border-amber-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50">
+                <div class="absolute top-6 right-6 w-12 h-12 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-white mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h12v16H6z"/><path d="M10 8h4"/><path d="M8 12h8"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Język niemiecki</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">Podstawy komunikacji, gramatyka, kultura niemieckojęzyczna. Przygotowanie do matury i certyfikatów.</p>
+                    <div class="flex items-center text-xs text-amber-600 font-medium">
+                        <span>A1 - B2</span>
+                        <svg class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Język polski -->
+            <button data-modal-target="#modal-polski" class="group relative w-full text-left rounded-3xl bg-gradient-to-br from-red-50 to-pink-50 p-8 border border-red-100 hover:border-red-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 md:col-span-2 lg:col-span-3">
+                <div class="absolute top-6 right-6 w-12 h-12 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-red-500 to-pink-600 text-white mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Język polski</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">Gramatyka, ortografia, składnia, analiza tekstów. Przygotowanie do sprawdzianów i egzaminów.</p>
+                    <div class="flex items-center text-xs text-red-600 font-medium">
+                        <span>Wszystkie poziomy</span>
+                        <svg class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Poziomy -->
+        <div class="text-center">
+            <h3 class="text-lg font-semibold text-slate-900 mb-6">Dostępne poziomy edukacyjne</h3>
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-brand to-brand/80 text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6m0 0l3 3m-3-3l-3 3"/></svg>
+                    Nauczanie wczesnoszkolne
+                </span>
+                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6m0 0l3 3m-3-3l-3 3"/></svg>
+                    Szkoła podstawowa
+                </span>
+                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6m0 0l3 3m-3-3l-3 3"/></svg>
+                    Liceum/Technikum
+                </span>
+                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>
+                    Matura
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FORMY ZAJĘĆ I PAKIETY -->
+<section id="pakiety" class="scroll-mt-24 py-16 md:py-24 bg-gradient-to-br from-brandBg via-brandBg to-blue-50">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-brand mb-4">Formy zajęć i pakiety</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Wybierz formę nauki idealną dla siebie. Dopasujemy ceny i terminy do Twoich potrzeb.</p>
+        </div>
+
+        <!-- Formy zajęć -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <!-- Indywidualne -->
+            <div class="group relative rounded-3xl bg-white p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand/10 to-blue-100 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-blue-800 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-brand mb-2">Zajęcia indywidualne</h3>
+                    <p class="text-slate-600 mb-4">Pełna koncentracja na Twoich potrzebach. Tempo i program dostosowane wyłącznie do Ciebie.</p>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-brand rounded-full"></div>
+                            Indywidualny program nauki
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-brand rounded-full"></div>
+                            Elastyczne tempo zajęć
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-brand rounded-full"></div>
+                            100% uwagi korepetytora
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Grupowe -->
+            <div class="group relative rounded-3xl bg-white p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-100 to-green-100 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-green-700 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-brand mb-2">Zajęcia grupowe <span class="text-sm font-normal text-slate-500">(do 4 osób)</span></h3>
+                    <p class="text-slate-600 mb-4">Nauka w małej grupie. Motywacja przez współpracę i korzystne ceny.</p>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></div>
+                            Motywacja przez rywalizację
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></div>
+                            Niższe koszty zajęć
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></div>
+                            Podobny poziom uczestników
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pakiety cenowe -->
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+            <h3 class="text-2xl font-bold text-brand mb-6 text-center">Pakiety miesięczne</h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Mini -->
+                <div class="relative rounded-2xl border-2 border-slate-200 p-6 hover:border-brand/30 transition-colors">
+                    <div class="text-center">
+                        <h4 class="text-lg font-bold text-brand mb-2">Mini</h4>
+                        <div class="text-3xl font-bold text-slate-800 mb-1">4</div>
+                        <div class="text-sm text-slate-500 mb-4">spotkania/miesiąc</div>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div>Indywidualne: <strong>od 240 zł</strong></div>
+                            <div>Grupowe: <strong>od 160 zł</strong></div>
                         </div>
-                    {% endif %}
-                </figure>
-                <div class="card-body items-center text-center">
-                    <h3 class="card-title">{{ member.name }} {{ member.surname }}</h3>
-                    {% if member.position %}
-                        <p class="text-sm text-base-content/60">{{ member.position }}</p>
-                    {% endif %}
-                    {% if member.bio %}
-                        <p class="text-sm mt-2">{{ member.bio|truncatewords:30 }}</p>
-                    {% endif %}
-                    <div class="flex flex-wrap gap-2 mt-2 justify-center">
-                        {% for subject in member.expertise %}
-                            <span class="badge badge-outline badge-primary">{{ subject }}</span>
-                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Standard -->
+                <div class="relative rounded-2xl border-2 border-brand p-6 bg-gradient-to-br from-brand/5 to-blue-50">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-brand text-white px-3 py-1 rounded-full text-xs font-medium">Najpopularniejszy</span>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="text-lg font-bold text-brand mb-2">Standard</h4>
+                        <div class="text-3xl font-bold text-slate-800 mb-1">8</div>
+                        <div class="text-sm text-slate-500 mb-4">spotkania/miesiąc</div>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div>Indywidualne: <strong>od 460 zł</strong></div>
+                            <div>Grupowe: <strong>od 300 zł</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intensywny -->
+                <div class="relative rounded-2xl border-2 border-slate-200 p-6 hover:border-brand/30 transition-colors">
+                    <div class="text-center">
+                        <h4 class="text-lg font-bold text-brand mb-2">Intensywny</h4>
+                        <div class="text-3xl font-bold text-slate-800 mb-1">12</div>
+                        <div class="text-sm text-slate-500 mb-4">spotkania/miesiąc</div>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div>Indywidualne: <strong>od 660 zł</strong></div>
+                            <div>Grupowe: <strong>od 420 zł</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium -->
+                <div class="relative rounded-2xl border-2 border-slate-200 p-6 hover:border-brand/30 transition-colors">
+                    <div class="text-center">
+                        <h4 class="text-lg font-bold text-brand mb-2">Premium</h4>
+                        <div class="text-3xl font-bold text-slate-800 mb-1">16</div>
+                        <div class="text-sm text-slate-500 mb-4">spotkania/miesiąc</div>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div>Indywidualne: <strong>od 840 zł</strong></div>
+                            <div>Grupowe: <strong>od 560 zł</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informacje dodatkowe -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div class="text-sm">
+                        <div class="font-semibold text-blue-800 mb-1">Każde spotkanie trwa 60 minut</div>
+                        <div class="text-blue-700">Pełna godzina efektywnej nauki</div>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100">
+                    <div class="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <div class="text-sm">
+                        <div class="font-semibold text-emerald-800 mb-1">Ceny mogą się różnić</div>
+                        <div class="text-emerald-700">W zależności od przedmiotu i poziomu</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to action -->
+            <div class="mt-8 text-center">
+                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all">
+                    <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    Skontaktuj się z nami
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- OPINIE -->
+<section id="opinie" class="scroll-mt-24 py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl md:text-3xl font-semibold text-brand mb-3">Opinie</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto">Co mówią o nas nasi uczniowie i ich rodzice</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for testimonial in testimonials %}
+            <article class="rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-lg transition-shadow">
+                <div class="text-amber-500 mb-3" aria-label="Ocena {{ testimonial.rating }} na 5">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= testimonial.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </div>
+                <p class="text-slate-700 leading-relaxed">"{{ testimonial.content }}"</p>
+                <div class="mt-4 text-sm text-slate-500">
+                    {{ testimonial.student_name }}{% if testimonial.subject %}, {{ testimonial.subject }}{% endif %}
+                </div>
+            </article>
+            {% empty %}
+            <article class="rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <div class="text-amber-500" aria-label="Ocena 5 na 5">★★★★★</div>
+                <p class="mt-3 text-slate-700">Świetne podejście i jasne tłumaczenie zagadnień. Córka zyskała pewność siebie i poprawiła oceny już po kilku spotkaniach. Polecamy!</p>
+                <div class="mt-4 text-sm text-slate-500">Anna K., matura</div>
+            </article>
+            <article class="rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <div class="text-amber-500" aria-label="Ocena 5 na 5">★★★★★</div>
+                <p class="mt-3 text-slate-700">Bardzo dobra organizacja i przejrzyste zasady. Syn polubił matematykę, a wyniki testów wyraźnie wzrosły. Dziękujemy!</p>
+                <div class="mt-4 text-sm text-slate-500">Marek P., szkoła podstawowa</div>
+            </article>
+            <article class="rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <div class="text-amber-500" aria-label="Ocena 4.8 na 5">★★★★☆</div>
+                <p class="mt-3 text-slate-700">Angielski prowadzony ciekawie, dużo mówienia i praktyki. Doceniam elastyczne terminy i szybki kontakt.</p>
+                <div class="mt-4 text-sm text-slate-500">Kasia L., liceum</div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ZESPÓŁ -->
+<section id="zespol" class="scroll-mt-24 py-16 md:py-24 bg-gradient-to-br from-brandBg via-brandBg to-blue-50 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-50/30 via-white to-brandBg/20"></div>
+    <div class="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-brand/5 to-brand/10 rounded-full blur-3xl"></div>
+
+    <div class="container mx-auto px-4 relative">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 bg-brand/10 text-brand px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                Nasz zespół
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold text-brand mb-4">Poznaj nasz zespół</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Doświadczeni korepetytorzy, którzy łączą pasję do nauczania z indywidualnym podejściem do każdego ucznia.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for member in team %}
+            <div class="group relative rounded-3xl bg-white p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-2">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand/5 to-brand/10 rounded-bl-3xl"></div>
+                <div class="relative">
+                    <div class="relative h-48 w-full rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 mb-6 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                        {% if member.image %}
+                            <img src="{{ member.image.url }}" alt="{{ member.name }} {{ member.surname }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-brand to-blue-600 rounded-2xl flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white">{{ member.name.0 }}{{ member.surname.0 }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">{{ member.name }} {{ member.surname }}</h3>
+                        {% if member.position %}
+                            <div class="text-sm text-brand font-medium mb-3">{{ member.position }}</div>
+                        {% endif %}
+                        {% if member.bio %}
+                            <p class="text-slate-600 text-sm leading-relaxed mb-4">{{ member.bio|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            {% for subject in member.expertise %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-brand/10 text-brand border border-brand/20">{{ subject }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
             {% empty %}
             <div class="col-span-full text-center py-8">
-                <p class="text-base-content/60">Wkrótce przedstawimy nasz zespół korepetytorów.</p>
+                <p class="text-slate-600">Wkrótce przedstawimy nasz zespół korepetytorów.</p>
             </div>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Testimonials Carousel -->
-<section id="opinie" class="py-20">
-    <div class="container mx-auto px-4">
-        <h2 class="text-4xl font-bold text-center mb-4">Opinie rodziców i uczniów</h2>
-        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
-            Zobacz, co mówią o nas nasi uczniowie i ich rodzice
-        </p>
-        {% if testimonials %}
-        <div x-data="{ current: 0, total: {{ testimonials|length }} }" class="max-w-2xl mx-auto">
-            <div class="relative overflow-hidden">
-                {% for testimonial in testimonials %}
-                <div class="transition-opacity duration-300"
-                     :class="current === {{ forloop.counter0 }} ? 'block' : 'hidden'">
-                    <div class="card bg-base-100 shadow-xl">
-                        <div class="card-body">
-                            <div class="rating mb-4 justify-center">
-                                {% for i in "12345" %}
-                                    <input type="radio"
-                                           class="mask mask-star-2 bg-warning"
-                                           {% if forloop.counter <= testimonial.rating %}checked{% endif %}
-                                           disabled>
-                                {% endfor %}
+<!-- FAQ -->
+<section id="faq" class="scroll-mt-24 py-16 md:py-24 bg-gradient-to-br from-slate-50 via-white to-brandBg/30 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-white"></div>
+    <div class="absolute top-10 right-10 w-32 h-32 bg-gradient-to-br from-brand/5 to-brand/10 rounded-full blur-3xl"></div>
+
+    <div class="container mx-auto px-4 relative">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 bg-brand/10 text-brand px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Często zadawane pytania
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold text-brand mb-4">FAQ</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Znajdź odpowiedzi na najczęściej zadawane pytania.</p>
+        </div>
+
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 gap-4">
+                {% for faq in faqs %}
+                <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20">
+                    <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-brand/10 to-brand/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <svg class="w-5 h-5 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                             </div>
-                            <blockquote class="text-lg italic text-center">"{{ testimonial.content }}"</blockquote>
-                            <div class="text-center mt-4">
-                                <p class="font-semibold">{{ testimonial.student_name }}</p>
-                                {% if testimonial.subject %}
-                                    <p class="text-sm text-base-content/60">{{ testimonial.subject }}{% if testimonial.level %} - {{ testimonial.level }}{% endif %}</p>
-                                {% endif %}
+                            <span class="font-semibold text-slate-900">{{ faq.question }}</span>
+                        </div>
+                        <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-open:bg-brand group-open:text-white transition-all duration-300">
+                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </summary>
+                    <div class="px-6 pb-6">
+                        <div class="pl-14 text-slate-600 leading-relaxed">{{ faq.answer }}</div>
+                    </div>
+                </details>
+                {% empty %}
+                <!-- Default FAQs -->
+                <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-brand/10 to-brand/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
                             </div>
+                            <span class="font-semibold text-slate-900">Jak wyglądają pakiety?</span>
+                        </div>
+                        <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-open:bg-brand group-open:text-white transition-all duration-300">
+                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </summary>
+                    <div class="px-6 pb-6">
+                        <div class="pl-14 text-slate-600 leading-relaxed">Pakiety to z góry określona liczba 60‑minutowych spotkań w miesiącu. Dobieramy je do celu i dyspozycyjności.</div>
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20">
+                    <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500/10 to-emerald-500/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                            </div>
+                            <span class="font-semibold text-slate-900">Jak działa odrabianie (30 dni)?</span>
+                        </div>
+                        <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-open:bg-brand group-open:text-white transition-all duration-300">
+                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </summary>
+                    <div class="px-6 pb-6">
+                        <div class="pl-14 text-slate-600 leading-relaxed">Odwołane ≥24h zajęcia można odrobić w ciągu 30 dni od daty pierwotnej, w uzgodnionym terminie.</div>
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20">
+                    <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500/10 to-purple-500/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                            </div>
+                            <span class="font-semibold text-slate-900">Ile osób w grupie?</span>
+                        </div>
+                        <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-open:bg-brand group-open:text-white transition-all duration-300">
+                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </summary>
+                    <div class="px-6 pb-6">
+                        <div class="pl-14 text-slate-600 leading-relaxed">Maksymalnie 4 osoby – to gwarantuje uwagę i komfort pracy.</div>
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20">
+                    <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500/10 to-orange-500/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                            </div>
+                            <span class="font-semibold text-slate-900">Jak długo trwa lekcja?</span>
+                        </div>
+                        <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-open:bg-brand group-open:text-white transition-all duration-300">
+                            <svg class="w-4 h-4 group-open:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </summary>
+                    <div class="px-6 pb-6">
+                        <div class="pl-14 text-slate-600 leading-relaxed">Standardowo 60 minut – sprawdzony format dla koncentracji i postępów.</div>
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="mt-12 text-center">
+                <div class="bg-gradient-to-r from-brand/5 via-blue-50 to-brandBg rounded-3xl p-8 border border-brand/10">
+                    <div class="flex items-center justify-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-brand to-brand/80 rounded-2xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900">Nie znalazłeś odpowiedzi?</h3>
+                            <p class="text-slate-600">Skontaktuj się z nami – chętnie odpowiemy na wszystkie pytania</p>
                         </div>
                     </div>
+                    <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all">
+                        Skontaktuj się z nami
+                    </a>
                 </div>
-                {% endfor %}
-            </div>
-            <div class="flex justify-center gap-2 mt-6">
-                <button class="btn btn-circle btn-sm"
-                        @click="current = current === 0 ? total - 1 : current - 1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                {% for testimonial in testimonials %}
-                    <button class="btn btn-xs"
-                            :class="current === {{ forloop.counter0 }} ? 'btn-primary' : 'btn-ghost'"
-                            @click="current = {{ forloop.counter0 }}">
-                        {{ forloop.counter }}
-                    </button>
-                {% endfor %}
-                <button class="btn btn-circle btn-sm"
-                        @click="current = current === total - 1 ? 0 : current + 1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
             </div>
         </div>
-        {% else %}
-        <div class="text-center py-8">
-            <p class="text-base-content/60">Wkrótce pojawią się opinie naszych uczniów i rodziców.</p>
-        </div>
-        {% endif %}
     </div>
 </section>
 
-<!-- FAQ Section -->
-<section id="faq" class="py-20 bg-base-200">
-    <div class="container mx-auto px-4 max-w-3xl">
-        <h2 class="text-4xl font-bold text-center mb-4">Często zadawane pytania</h2>
-        <p class="text-center text-base-content/60 mb-12">
-            Znajdź odpowiedzi na najczęściej zadawane pytania
-        </p>
-        {% if faq_items %}
-        <div class="space-y-4">
-            {% for item in faq_items %}
-            <div class="collapse collapse-arrow bg-base-100 shadow">
-                <input type="radio" name="faq-accordion" {% if forloop.first %}checked{% endif %}>
-                <div class="collapse-title text-xl font-medium">{{ item.question }}</div>
-                <div class="collapse-content">
-                    <p>{{ item.answer }}</p>
-                </div>
+<!-- KONTAKT -->
+<section id="kontakt" class="scroll-mt-24 py-16 md:py-24 bg-gradient-to-br from-brandBg via-blue-50 to-slate-50 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-brand/5 to-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-emerald-500/5 to-brand/5 rounded-full blur-3xl"></div>
+
+    <div class="container mx-auto px-4 relative">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 bg-brand/10 text-brand px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Skontaktuj się z nami
             </div>
-            {% endfor %}
+            <h2 class="text-3xl md:text-4xl font-bold text-brand mb-4">Kontakt i zapisy</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Gotowi na rozpoczęcie nauki? Skontaktuj się z nami już dziś!</p>
         </div>
-        {% else %}
-        <div class="text-center py-8">
-            <p class="text-base-content/60">Wkrótce pojawią się odpowiedzi na najczęściej zadawane pytania.</p>
-        </div>
-        {% endif %}
-    </div>
-</section>
 
-<!-- Contact Section -->
-<section id="kontakt" class="py-20">
-    <div class="container mx-auto px-4">
-        <h2 class="text-4xl font-bold text-center mb-4">Skontaktuj się z nami</h2>
-        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
-            Masz pytania? Chcesz umówić się na lekcję próbną? Napisz do nas!
-        </p>
-        <div class="grid lg:grid-cols-2 gap-12">
-            <!-- Contact Form -->
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <h3 class="card-title text-2xl mb-4">Wyślij wiadomość</h3>
-                    <div id="contact-form-container">
-                        {% include "landing/partials/_contact_form.html" %}
-                    </div>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+            <!-- Left Column - Contact Info -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6">Informacje kontaktowe</h3>
+                    <div class="space-y-4">
+                        {% if school_info.address %}
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-brand/10 to-brand/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-900 mb-1">Adres</h4>
+                                <p class="text-slate-600">{{ school_info.address }}{% if school_info.city %}, {{ school_info.city }}{% endif %}</p>
+                            </div>
+                        </div>
+                        {% endif %}
 
-            <!-- Map & Contact Info -->
-            <div class="space-y-6">
-                {% if school_info %}
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h4 class="font-semibold flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Adres
-                        </h4>
-                        <p>{{ school_info.address|default:"ul. Przykładowa 1" }}, {{ school_info.postal_code }} {{ school_info.city|default:"Miasto" }}</p>
-                    </div>
-                </div>
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h4 class="font-semibold flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            Telefon
-                        </h4>
-                        <p>{{ school_info.phone|default:"+48 123 456 789" }}</p>
-                    </div>
-                </div>
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h4 class="font-semibold flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            Email
-                        </h4>
-                        <p>{{ school_info.email|default:"kontakt@napiatke.pl" }}</p>
-                    </div>
-                </div>
-                {% endif %}
+                        {% if school_info.phone %}
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500/10 to-emerald-500/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-900 mb-1">Telefon</h4>
+                                <a href="tel:{{ school_info.phone }}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">{{ school_info.phone }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
 
-                <!-- Google Map -->
+                        {% if school_info.email %}
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500/10 to-blue-500/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-900 mb-1">E-mail</h4>
+                                <a href="mailto:{{ school_info.email }}" class="text-blue-600 hover:text-blue-700 font-medium transition-colors">{{ school_info.email }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Map -->
                 {% if school_info.latitude and school_info.longitude %}
-                <div class="card bg-base-100 shadow-xl overflow-hidden">
-                    <div id="map"
-                         class="w-full h-64"
-                         data-lat="{{ school_info.latitude }}"
-                         data-lng="{{ school_info.longitude }}">
-                    </div>
+                <div class="mt-8">
+                    <h4 class="font-semibold text-slate-900 mb-4">Znajdź nas na mapie</h4>
+                    <div id="map" class="w-full h-64 rounded-2xl border border-slate-200 shadow-sm"></div>
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- Right Column - Contact Form -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">Umów bezpłatną konsultację</h3>
+                    <p class="text-slate-600">Wypełnij formularz, a skontaktujemy się z Tobą w ciągu 24 godzin.</p>
+                </div>
+
+                <div id="contact-form-container">
+                    {% include "landing/partials/_contact_form.html" %}
+                </div>
             </div>
         </div>
     </div>
 </section>
 {% endblock %}
 
+{% block modals %}
+<!-- Modal Matematyka -->
+<div id="modal-matematyka" role="dialog" aria-modal="true" aria-labelledby="modal-matematyka-title" class="modal-panel fixed inset-0 z-[70] flex items-center justify-center p-4 hidden">
+    <div class="modal-content w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+            <h3 id="modal-matematyka-title" class="text-xl font-semibold text-blue-600">Matematyka</h3>
+            <button class="modal-close rounded-full p-2 hover:bg-slate-100" aria-label="Zamknij">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </button>
+        </div>
+        <div class="mt-4 space-y-4 text-slate-700">
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                <div class="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3v18"/></svg>
+                </div>
+                <div>
+                    <div class="font-medium text-blue-900">Wszystkie poziomy</div>
+                    <div class="text-sm text-blue-700">Od podstawówki do matury</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-semibold mb-2">Zakres tematyczny:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Arytmetyka i podstawy algebry</li>
+                        <li>Równania i nierówności</li>
+                        <li>Funkcje i ich właściwości</li>
+                        <li>Geometria płaska i przestrzenna</li>
+                        <li>Trygonometria</li>
+                        <li>Statystyka i prawdopodobieństwo</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">Nasze podejście:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Wyjaśnianie od podstaw</li>
+                        <li>Praktyczne zastosowania</li>
+                        <li>Systematyczne ćwiczenia</li>
+                        <li>Przygotowanie do sprawdzianów</li>
+                        <li>Wsparcie przy zadaniach domowych</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Angielski -->
+<div id="modal-angielski" role="dialog" aria-modal="true" aria-labelledby="modal-angielski-title" class="modal-panel fixed inset-0 z-[70] flex items-center justify-center p-4 hidden">
+    <div class="modal-content w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+            <h3 id="modal-angielski-title" class="text-xl font-semibold text-emerald-600">Język angielski</h3>
+            <button class="modal-close rounded-full p-2 hover:bg-slate-100" aria-label="Zamknij">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </button>
+        </div>
+        <div class="mt-4 space-y-4 text-slate-700">
+            <div class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl">
+                <div class="h-10 w-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+                </div>
+                <div>
+                    <div class="font-medium text-emerald-900">Poziomy A1-C2</div>
+                    <div class="text-sm text-emerald-700">Konwersacje, gramatyka, egzaminy</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-semibold mb-2">Zakres:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Konwersacje i mówienie</li>
+                        <li>Gramatyka i słownictwo</li>
+                        <li>Pisanie i czytanie</li>
+                        <li>Przygotowanie do FCE/CAE</li>
+                        <li>Business English</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">Dla kogo:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Uczniowie szkół podstawowych</li>
+                        <li>Licealiści</li>
+                        <li>Przygotowanie do matury</li>
+                        <li>Certyfikaty językowe</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Niemiecki -->
+<div id="modal-niemiecki" role="dialog" aria-modal="true" aria-labelledby="modal-niemiecki-title" class="modal-panel fixed inset-0 z-[70] flex items-center justify-center p-4 hidden">
+    <div class="modal-content w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+            <h3 id="modal-niemiecki-title" class="text-xl font-semibold text-amber-600">Język niemiecki</h3>
+            <button class="modal-close rounded-full p-2 hover:bg-slate-100" aria-label="Zamknij">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </button>
+        </div>
+        <div class="mt-4 space-y-4 text-slate-700">
+            <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
+                <div class="h-10 w-10 bg-amber-500 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h12v16H6z"/><path d="M10 8h4"/></svg>
+                </div>
+                <div>
+                    <div class="font-medium text-amber-900">Poziomy A1-B2</div>
+                    <div class="text-sm text-amber-700">Gramatyka, konwersacje, kultura</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-semibold mb-2">Zakres:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Podstawy komunikacji</li>
+                        <li>Gramatyka niemiecka</li>
+                        <li>Słownictwo tematyczne</li>
+                        <li>Kultura niemieckojęzyczna</li>
+                        <li>Przygotowanie do Goethe</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">Dla kogo:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Początkujący</li>
+                        <li>Uczniowie szkół</li>
+                        <li>Przygotowanie do matury</li>
+                        <li>Certyfikaty Goethe</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Polski -->
+<div id="modal-polski" role="dialog" aria-modal="true" aria-labelledby="modal-polski-title" class="modal-panel fixed inset-0 z-[70] flex items-center justify-center p-4 hidden">
+    <div class="modal-content w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+            <h3 id="modal-polski-title" class="text-xl font-semibold text-red-600">Język polski</h3>
+            <button class="modal-close rounded-full p-2 hover:bg-slate-100" aria-label="Zamknij">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </button>
+        </div>
+        <div class="mt-4 space-y-4 text-slate-700">
+            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl">
+                <div class="h-10 w-10 bg-red-500 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                </div>
+                <div>
+                    <div class="font-medium text-red-900">Wszystkie poziomy</div>
+                    <div class="text-sm text-red-700">Gramatyka, ortografia, literatura</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-semibold mb-2">Zakres:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Gramatyka i składnia</li>
+                        <li>Ortografia i interpunkcja</li>
+                        <li>Analiza tekstów literackich</li>
+                        <li>Pisanie rozprawek</li>
+                        <li>Przygotowanie do egzaminów</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">Dla kogo:</h4>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Szkoła podstawowa</li>
+                        <li>Liceum/Technikum</li>
+                        <li>Egzamin ósmoklasisty</li>
+                        <li>Matura</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block extra_js %}
-{% if school_info.latitude and school_info.longitude %}
 <script>
-    function initMap() {
-        const mapElement = document.getElementById('map');
-        if (!mapElement) return;
-
-        const lat = parseFloat(mapElement.dataset.lat);
-        const lng = parseFloat(mapElement.dataset.lng);
-
-        const map = new google.maps.Map(mapElement, {
-            center: { lat: lat, lng: lng },
-            zoom: 15
-        });
-
-        new google.maps.Marker({
-            position: { lat: lat, lng: lng },
-            map: map,
-            title: 'Na Piątkę'
-        });
-    }
+    // Initialize map if coordinates available
+    {% if school_info.latitude and school_info.longitude %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const map = L.map('map').setView([{{ school_info.latitude }}, {{ school_info.longitude }}], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        L.marker([{{ school_info.latitude }}, {{ school_info.longitude }}]).addTo(map)
+            .bindPopup('<strong>Na Piątkę</strong><br>{{ school_info.address|escapejs }}')
+            .openPopup();
+    });
+    {% endif %}
 </script>
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">
-</script>
-{% endif %}
 {% endblock %}

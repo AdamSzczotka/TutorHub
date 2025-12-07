@@ -10,6 +10,7 @@ urlpatterns = [
     # Public pages
     path('', views.LandingPageView.as_view(), name='home'),
     path('kontakt/', views.ContactFormView.as_view(), name='contact'),
+    path('polityka-prywatnosci/', views.PrivacyPolicyView.as_view(), name='privacy_policy'),
 
     # ==========================================================================
     # CMS Admin Panel

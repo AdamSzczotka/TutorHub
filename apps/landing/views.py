@@ -56,6 +56,12 @@ class LandingPageView(TemplateView):
         return context
 
 
+class PrivacyPolicyView(TemplateView):
+    """Privacy policy page."""
+
+    template_name = 'landing/privacy_policy.html'
+
+
 class ContactFormView(CreateView):
     """Handle contact form submission with HTMX."""
 

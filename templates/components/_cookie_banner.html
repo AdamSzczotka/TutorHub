@@ -1,0 +1,268 @@
+<!-- Cookie Banner Component -->
+<div
+    x-data="cookieBanner()"
+    x-show="showBanner"
+    x-init="init()"
+    x-cloak
+    class="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 bg-white border-t-4 border-brand shadow-2xl"
+    x-transition:enter="transition ease-out duration-500"
+    x-transition:enter-start="translate-y-full"
+    x-transition:enter-end="translate-y-0"
+    x-transition:leave="transition ease-in duration-300"
+    x-transition:leave-start="translate-y-0"
+    x-transition:leave-end="translate-y-full">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="lg:flex lg:items-start lg:gap-8">
+            <!-- Main Content -->
+            <div class="flex-1">
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900">Ustawienia plikow cookies</h3>
+                </div>
+
+                <!-- Description -->
+                <p class="text-sm text-slate-700 mb-4">
+                    Uzywamy plikow cookies, aby zapewnic najlepsza jakosc uslug oraz w celach statystycznych.
+                    Mozesz zdecydowac, ktore kategorie cookies chcesz zaakceptowac.
+                </p>
+
+                <!-- Cookie Categories (for detailed view) -->
+                <div x-show="showDetails" class="space-y-3 mb-4"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2">
+                    <!-- Necessary Cookies -->
+                    <div class="bg-slate-50 rounded-lg p-3">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked
+                                disabled
+                                class="mt-1 h-5 w-5 rounded border-slate-300 text-brand opacity-75 cursor-not-allowed">
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Niezbedne</div>
+                                <p class="text-xs text-slate-600 mt-1">
+                                    Cookies niezbedne do prawidlowego dzialania strony. Nie mozna ich wylaczyc.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Analytics Cookies -->
+                    <div class="bg-slate-50 rounded-lg p-3">
+                        <label class="flex items-start gap-3 cursor-pointer hover:bg-white transition-colors">
+                            <input
+                                type="checkbox"
+                                x-model="preferences.analytics"
+                                class="mt-1 h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand cursor-pointer">
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Analityczne</div>
+                                <p class="text-xs text-slate-600 mt-1">
+                                    Pomagaja nam zrozumiec, jak uzytkownicy korzystaja ze strony (Google Analytics, statystyki wewnetrzne).
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Marketing Cookies -->
+                    <div class="bg-slate-50 rounded-lg p-3">
+                        <label class="flex items-start gap-3 cursor-pointer hover:bg-white transition-colors">
+                            <input
+                                type="checkbox"
+                                x-model="preferences.marketing"
+                                class="mt-1 h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand cursor-pointer">
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Marketingowe</div>
+                                <p class="text-xs text-slate-600 mt-1">
+                                    Pozwalaja na wyswietlanie spersonalizowanych reklam i sledzenie skutecznosci kampanii.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Toggle Details Link -->
+                <button
+                    @click="showDetails = !showDetails"
+                    class="text-sm text-brand hover:text-brand/80 underline underline-offset-2 mb-4">
+                    <span x-show="!showDetails">Pokaz szczegoly</span>
+                    <span x-show="showDetails">Ukryj szczegoly</span>
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-8">
+                <!-- Accept All -->
+                <button
+                    @click="acceptAll()"
+                    class="px-6 py-3 bg-brand text-white font-medium rounded-xl hover:bg-brand/90 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/50">
+                    Akceptuj wszystkie
+                </button>
+
+                <!-- Accept Selected -->
+                <button
+                    @click="acceptSelected()"
+                    x-show="showDetails"
+                    class="px-6 py-3 bg-white text-brand font-medium rounded-xl border-2 border-brand hover:bg-brand/5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/50">
+                    Zapisz wybrane
+                </button>
+
+                <!-- Reject All -->
+                <button
+                    @click="rejectAll()"
+                    class="px-6 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    Tylko niezbedne
+                </button>
+            </div>
+        </div>
+
+        <!-- Privacy Policy Link -->
+        <div class="mt-4 pt-4 border-t border-slate-200">
+            <p class="text-xs text-slate-600">
+                Wiecej informacji znajdziesz w naszej
+                <a href="{% url 'landing:privacy_policy' %}#cookies" class="text-brand underline">Polityce Prywatnosci</a>.
+                Mozesz zmienic swoje preferencje w dowolnym momencie.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function cookieBanner() {
+    return {
+        showBanner: false,
+        showDetails: false,
+        preferences: {
+            necessary: true,
+            analytics: false,
+            marketing: false
+        },
+
+        init() {
+            const consent = this.getConsent();
+            if (!consent) {
+                setTimeout(() => {
+                    this.showBanner = true;
+                }, 1000);
+            } else {
+                this.applyConsent(consent);
+            }
+        },
+
+        acceptAll() {
+            this.preferences.analytics = true;
+            this.preferences.marketing = true;
+            this.saveAndApply();
+        },
+
+        acceptSelected() {
+            this.saveAndApply();
+        },
+
+        rejectAll() {
+            this.preferences.analytics = false;
+            this.preferences.marketing = false;
+            this.saveAndApply();
+        },
+
+        saveAndApply() {
+            const consent = {
+                timestamp: new Date().toISOString(),
+                version: '1.0',
+                preferences: this.preferences
+            };
+            localStorage.setItem('cookieConsent', JSON.stringify(consent));
+
+            this.applyConsent(consent);
+            this.showBanner = false;
+
+            window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+                detail: consent
+            }));
+        },
+
+        getConsent() {
+            const stored = localStorage.getItem('cookieConsent');
+            if (!stored) return null;
+
+            try {
+                const consent = JSON.parse(stored);
+                const consentDate = new Date(consent.timestamp);
+                const daysSince = (new Date() - consentDate) / (1000 * 60 * 60 * 24);
+
+                if (daysSince > 365) {
+                    localStorage.removeItem('cookieConsent');
+                    return null;
+                }
+
+                return consent;
+            } catch (e) {
+                console.error('Error parsing cookie consent:', e);
+                return null;
+            }
+        },
+
+        applyConsent(consent) {
+            this.preferences = consent.preferences;
+
+            if (consent.preferences.analytics) {
+                this.loadAnalytics();
+            }
+
+            if (consent.preferences.marketing) {
+                this.loadMarketing();
+            }
+        },
+
+        loadAnalytics() {
+            // Google Analytics 4 - uncomment and add your GA ID
+            // const gaId = 'G-XXXXXXXXXX';
+            // if (gaId && !window.gtag) {
+            //     const script = document.createElement('script');
+            //     script.async = true;
+            //     script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+            //     document.head.appendChild(script);
+            //
+            //     window.dataLayer = window.dataLayer || [];
+            //     window.gtag = function() { dataLayer.push(arguments); }
+            //     window.gtag('js', new Date());
+            //     window.gtag('config', gaId, {
+            //         anonymize_ip: true,
+            //         cookie_flags: 'SameSite=None;Secure'
+            //     });
+            // }
+            console.log('Analytics cookies enabled');
+        },
+
+        loadMarketing() {
+            console.log('Marketing cookies enabled');
+        },
+
+        resetConsent() {
+            localStorage.removeItem('cookieConsent');
+            this.showBanner = true;
+            this.preferences = {
+                necessary: true,
+                analytics: false,
+                marketing: false
+            };
+        }
+    }
+}
+
+window.manageCookieConsent = function() {
+    const banner = document.querySelector('[x-data*="cookieBanner"]');
+    if (banner && banner.__x) {
+        banner.__x.$data.resetConsent();
+    }
+};
+</script>
