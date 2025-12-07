@@ -9,7 +9,14 @@ app_name = 'accounts'
 
 urlpatterns = [
     # Authentication
-    path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path(
+        'login/',
+        auth_views.LoginView.as_view(
+            template_name='accounts/login.html',
+            next_page='/panel/',
+        ),
+        name='login',
+    ),
 
     # Password Reset
     path(
