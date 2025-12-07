@@ -1,0 +1,20 @@
+<div class="stat bg-base-100 rounded-lg shadow">
+    <div class="stat-title">Uzytkownicy</div>
+    <div class="stat-value text-primary">{{ stats.total_users }}</div>
+    <div class="stat-desc">{{ stats.total_tutors }} korepetytorów, {{ stats.total_students }} uczniów</div>
+</div>
+
+<div class="stat bg-base-100 rounded-lg shadow">
+    <div class="stat-title">Zajecia w tym tygodniu</div>
+    <div class="stat-value text-secondary">{{ stats.lessons_this_week }}</div>
+</div>
+
+<div class="stat bg-base-100 rounded-lg shadow">
+    <div class="stat-title">Faktury do zaplaty</div>
+    <div class="stat-value text-warning">{{ stats.pending_invoices }}</div>
+</div>
+
+<div class="stat bg-base-100 rounded-lg shadow">
+    <div class="stat-title">Przychód (miesiac)</div>
+    <div class="stat-value text-success">{{ stats.monthly_revenue|floatformat:0 }} zl</div>
+</div>
