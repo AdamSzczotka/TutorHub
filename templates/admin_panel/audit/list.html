@@ -1,0 +1,84 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Logi audytu</h1>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <form method="get" hx-get="{% url 'core:audit-list' %}" hx-target="#audit-list" hx-swap="innerHTML">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Akcja</span>
+                        </label>
+                        <select name="action" class="select select-bordered w-full">
+                            <option value="">Wszystkie akcje</option>
+                            {% for value, label in filter.form.action.field.choices %}
+                                {% if value %}
+                                <option value="{{ value }}" {% if request.GET.action == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Typ modelu</span>
+                        </label>
+                        <input type="text"
+                               name="model_type"
+                               value="{{ request.GET.model_type }}"
+                               class="input input-bordered w-full"
+                               placeholder="np. User, Lesson">
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Uzytkownik</span>
+                        </label>
+                        <input type="text"
+                               name="user"
+                               value="{{ request.GET.user }}"
+                               class="input input-bordered w-full"
+                               placeholder="Email uzytkownika">
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Data od</span>
+                        </label>
+                        <input type="date"
+                               name="date_from"
+                               value="{{ request.GET.date_from }}"
+                               class="input input-bordered w-full">
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Data do</span>
+                        </label>
+                        <input type="date"
+                               name="date_to"
+                               value="{{ request.GET.date_to }}"
+                               class="input input-bordered w-full">
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Filtruj
+                    </button>
+                    <a href="{% url 'core:audit-list' %}" class="btn btn-ghost btn-sm">
+                        Wyczysc
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="audit-list">
+        {% include "admin_panel/audit/partials/_audit_list.html" %}
+    </div>
+</div>
+{% endblock %}
