@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -114,17 +114,18 @@ class CalendarEventsAPIView(LoginRequiredMixin, View):
 
 
 def parse_datetime_from_fullcalendar(dt_string: str) -> datetime:
-    """Parse datetime from FullCalendar and interpret as local timezone."""
-    # FullCalendar sends ISO format without timezone info (local time)
-    # or with Z suffix (UTC) or with offset
+    """Parse datetime from FullCalendar.
+
+    With timeZone: 'local', FullCalendar sends datetimes with the browser's
+    timezone offset. We parse and return as-is - Django handles storage.
+    """
+    # Handle Z suffix (UTC)
     if dt_string.endswith('Z'):
         dt_string = dt_string.replace('Z', '+00:00')
-        dt = datetime.fromisoformat(dt_string)
-        return timezone.localtime(dt)
 
     dt = datetime.fromisoformat(dt_string)
 
-    # If naive datetime (no timezone info), assume it's local time
+    # If naive datetime, assume it's in Django's TIME_ZONE
     if dt.tzinfo is None:
         dt = timezone.make_aware(dt)
 
@@ -160,9 +161,8 @@ class EventMoveAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
                     status=400,
                 )
 
-            # Adjust for timezone offset issue (FullCalendar sends +1h)
-            lesson.start_time = start_time - timedelta(hours=1)
-            lesson.end_time = end_time - timedelta(hours=1)
+            lesson.start_time = start_time
+            lesson.end_time = end_time
             lesson.save()
 
             return JsonResponse({'success': True})
@@ -199,8 +199,7 @@ class EventResizeAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
                     {'error': 'Konflikt z innymi zajęciami'}, status=400
                 )
 
-            # Adjust for timezone offset issue (FullCalendar sends +1h)
-            lesson.end_time = end_time - timedelta(hours=1)
+            lesson.end_time = end_time
             lesson.save()
 
             return JsonResponse({'success': True})

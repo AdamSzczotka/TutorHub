@@ -18,7 +18,7 @@ function calendarApp() {
             this.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: this.currentView,
                 locale: 'pl',
-                timeZone: 'Europe/Warsaw',
+                timeZone: 'local',
                 firstDay: 1,
                 slotMinTime: '08:00:00',
                 slotMaxTime: '20:00:00',
@@ -117,8 +117,9 @@ function calendarApp() {
             document.getElementById('event-modal').showModal();
         },
 
-        formatLocalDateTime(date) {
-            // Format date as ISO string in local timezone WITH timezone offset
+        formatDateTimeForBackend(date) {
+            // Format as local datetime WITHOUT timezone offset
+            // Django will interpret this as TIME_ZONE (Europe/Warsaw)
             const pad = (n) => n.toString().padStart(2, '0');
             const year = date.getFullYear();
             const month = pad(date.getMonth() + 1);
@@ -126,14 +127,7 @@ function calendarApp() {
             const hours = pad(date.getHours());
             const minutes = pad(date.getMinutes());
             const seconds = pad(date.getSeconds());
-
-            // Add timezone offset to prevent double conversion
-            const tzOffset = -date.getTimezoneOffset();
-            const tzSign = tzOffset >= 0 ? '+' : '-';
-            const tzHours = pad(Math.floor(Math.abs(tzOffset) / 60));
-            const tzMinutes = pad(Math.abs(tzOffset) % 60);
-
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${tzSign}${tzHours}:${tzMinutes}`;
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
         },
 
         async handleEventDrop(info) {
@@ -151,8 +145,8 @@ function calendarApp() {
                         'X-CSRFToken': this.getCSRFToken(),
                     },
                     body: JSON.stringify({
-                        start_time: this.formatLocalDateTime(event.start),
-                        end_time: this.formatLocalDateTime(event.end),
+                        start_time: this.formatDateTimeForBackend(event.start),
+                        end_time: this.formatDateTimeForBackend(event.end),
                     }),
                 });
 
@@ -185,7 +179,7 @@ function calendarApp() {
                         'X-CSRFToken': this.getCSRFToken(),
                     },
                     body: JSON.stringify({
-                        end_time: this.formatLocalDateTime(event.end),
+                        end_time: this.formatDateTimeForBackend(event.end),
                     }),
                 });
 
