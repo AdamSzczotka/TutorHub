@@ -32,7 +32,7 @@
                     </button>
                     <button class="btn btn-ghost btn-sm text-error"
                             hx-delete="{% url 'subjects:level-delete' level.pk %}"
-                            hx-confirm="Czy na pewno chcesz usunac poziom {{ level.name }}?">
+                            hx-confirm="Czy na pewno chcesz usunąć poziom {{ level.name }}?">
                         Usun
                     </button>
                 </td>
@@ -40,7 +40,7 @@
             {% empty %}
             <tr>
                 <td colspan="5" class="text-center py-8 text-base-content/60">
-                    Brak poziomow. Dodaj pierwszy poziom edukacyjny.
+                    Brak poziomów. Dodaj pierwszy poziom edukacyjny.
                 </td>
             </tr>
             {% endfor %}

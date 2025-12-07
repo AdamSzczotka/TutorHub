@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import connection
-from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -27,7 +26,6 @@ class DashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         now = timezone.now()
         week_ago = now - timedelta(days=7)
-        month_ago = now - timedelta(days=30)
 
         # Quick stats
         context['stats'] = {

@@ -17,7 +17,7 @@ class AuditLogFilter(django_filters.FilterSet):
     user = django_filters.CharFilter(
         field_name='user__email',
         lookup_expr='icontains',
-        label='Email uzytkownika',
+        label='Email użytkownika',
     )
     date_from = django_filters.DateFilter(
         field_name='created_at',

@@ -103,7 +103,7 @@ class SubjectDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
         if self.object.lessons.exists():
             return HttpResponse(
                 '<div class="alert alert-error">'
-                'Nie mozna usunac - przedmiot ma przypisane lekcje.</div>',
+                'Nie można usunąć - przedmiot ma przypisane lekcje.</div>',
                 status=400
             )
 

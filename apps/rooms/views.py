@@ -103,7 +103,7 @@ class RoomDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
         if self.object.lessons.exists():
             return HttpResponse(
                 '<div class="alert alert-error">'
-                'Nie mozna usunac - sala ma przypisane lekcje.</div>',
+                'Nie można usunąć - sala ma przypisane lekcje.</div>',
                 status=400
             )
 
