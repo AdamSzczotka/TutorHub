@@ -1,0 +1,93 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Monitoring Aktywnosci</h1>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Logowania dzis</div>
+            <div class="stat-value text-primary">{{ activity_stats.today_logins }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Aktywnosci (tydzien)</div>
+            <div class="stat-value text-secondary">{{ activity_stats.weekly_activities }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow">
+            <div class="stat-title">Aktywni uzytkownicy dzis</div>
+            <div class="stat-value text-accent">{{ activity_stats.active_users_today }}</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-base">Filtry</h2>
+            <form method="get" class="flex flex-wrap gap-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Typ aktywnosci</span>
+                    </label>
+                    <select name="type" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        {% for value, label in activity_types %}
+                        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Od daty</span>
+                    </label>
+                    <input type="date" name="date_from" value="{{ request.GET.date_from }}" class="input input-bordered input-sm">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Do daty</span>
+                    </label>
+                    <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="input input-bordered input-sm">
+                </div>
+                <div class="form-control justify-end">
+                    <button type="submit" class="btn btn-primary btn-sm">Filtruj</button>
+                </div>
+                <div class="form-control justify-end">
+                    <a href="{% url 'admin_panel:activity' %}" class="btn btn-ghost btn-sm">Wyczysc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Activity Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div class="overflow-x-auto"
+                 hx-get="{% url 'admin_panel:activity' %}?{{ request.GET.urlencode }}"
+                 hx-trigger="every 30s"
+                 hx-swap="innerHTML"
+                 hx-select="#activity-table-content">
+                <div id="activity-table-content">
+                    {% include "admin_panel/partials/_activity_table.html" %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj %}
+            <div class="flex justify-center mt-4">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="join-item btn btn-sm">Poprzednia</a>
+                    {% endif %}
+                    <button class="join-item btn btn-sm btn-disabled">Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</button>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="join-item btn btn-sm">Nastepna</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
