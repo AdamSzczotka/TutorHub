@@ -111,7 +111,7 @@ class SettingsView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
                 try:
                     value = int(value)
                 except ValueError:
-                    pass
+                    pass  # Keep value as string if conversion fails
 
                 SystemSetting.set(setting_key, value)
 
