@@ -1,0 +1,56 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+        <a href="{% url 'accounts:relationship-create' %}" class="btn btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Dodaj relacje
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body py-4">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Typ relacji</span></label>
+                    <select name="type" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        {% for value, label in relationship_types %}
+                        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Status</span></label>
+                    <select name="is_active" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Aktywne</option>
+                        <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Nieaktywne</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Filtruj</button>
+                <a href="{% url 'accounts:relationship-list' %}" class="btn btn-sm btn-ghost">Wyczysc</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <div id="relationship-table">
+                {% include "admin_panel/users/relationships/partials/_relationship_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

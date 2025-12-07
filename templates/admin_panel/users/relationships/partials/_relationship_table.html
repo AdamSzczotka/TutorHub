@@ -1,0 +1,93 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Typ</th>
+                <th>Od</th>
+                <th>Do</th>
+                <th>Status</th>
+                <th>Data rozpoczecia</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rel in relationships %}
+            <tr>
+                <td>
+                    <span class="badge {% if rel.relationship_type == 'tutor_student' %}badge-primary{% else %}badge-secondary{% endif %}">
+                        {{ rel.get_relationship_type_display }}
+                    </span>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                <span class="text-xs">{{ rel.from_user.first_name|slice:":1"|default:"?" }}{{ rel.from_user.last_name|slice:":1"|default:"?" }}</span>
+                            </div>
+                        </div>
+                        <span>{{ rel.from_user.get_full_name }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                <span class="text-xs">{{ rel.to_user.first_name|slice:":1"|default:"?" }}{{ rel.to_user.last_name|slice:":1"|default:"?" }}</span>
+                            </div>
+                        </div>
+                        <span>{{ rel.to_user.get_full_name }}</span>
+                    </div>
+                </td>
+                <td>
+                    {% if rel.is_active %}
+                    <span class="badge badge-success badge-sm">Aktywna</span>
+                    {% else %}
+                    <span class="badge badge-error badge-sm">Nieaktywna</span>
+                    {% endif %}
+                </td>
+                <td>{{ rel.started_at|date:"Y-m-d"|default:"-" }}</td>
+                <td>
+                    <div class="flex gap-1">
+                        <a href="{% url 'accounts:relationship-update' rel.pk %}"
+                           class="btn btn-ghost btn-xs">
+                            Edytuj
+                        </a>
+                        {% if rel.is_active %}
+                        <form method="post" action="{% url 'accounts:relationship-delete' rel.pk %}"
+                              hx-post="{% url 'accounts:relationship-delete' rel.pk %}"
+                              hx-confirm="Czy na pewno chcesz zakonczyc te relacje?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-xs text-error">
+                                Zakoncz
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-8 text-base-content/60">
+                    Brak relacji do wyswietlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center py-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-sm">Poprzednia</a>
+        {% endif %}
+        <span class="join-item btn btn-sm btn-disabled">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-sm">Nastepna</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

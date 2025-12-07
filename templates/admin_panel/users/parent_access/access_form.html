@@ -1,0 +1,23 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-2xl mb-6">{{ title }}</h2>
+
+                <form method="post"
+                      hx-post="{{ request.path }}"
+                      hx-target="body">
+                    {% csrf_token %}
+                    {% include "admin_panel/users/parent_access/partials/_access_form.html" %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

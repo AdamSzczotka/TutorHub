@@ -1,17 +1,45 @@
 {% if users %}
-<form id="bulk-form" method="post" action="{% url 'accounts:user-bulk-action' %}">
-    {% csrf_token %}
-    <div class="flex items-center gap-4 mb-4">
-        <select name="action" class="select select-bordered select-sm">
-            <option value="">Akcja zbiorcza...</option>
-            <option value="activate">Aktywuj wybranych</option>
-            <option value="deactivate">Dezaktywuj wybranych</option>
-        </select>
-        <button type="submit" class="btn btn-sm btn-outline"
-                hx-post="{% url 'accounts:user-bulk-action' %}"
-                hx-include="[name='user_ids']:checked, [name='action']">
-            Wykonaj
-        </button>
+<div x-data="{ selectedUsers: [], selectAll: false }"
+     x-init="$watch('selectAll', value => {
+         selectedUsers = value ? [...document.querySelectorAll('[name=user_ids]')].map(el => el.value) : []
+     })">
+
+    <!-- Bulk Action Bar -->
+    <div class="bg-base-200 p-4 rounded-lg mb-4"
+         x-show="selectedUsers.length > 0"
+         x-transition>
+        <form method="post" action="{% url 'accounts:user-bulk-action' %}">
+            {% csrf_token %}
+
+            <template x-for="id in selectedUsers" :key="id">
+                <input type="hidden" name="user_ids" :value="id">
+            </template>
+
+            <div class="flex items-center gap-4">
+                <span class="font-medium">
+                    Wybrano: <span x-text="selectedUsers.length"></span> użytkowników
+                </span>
+
+                <select name="action" class="select select-bordered select-sm">
+                    <option value="">Wybierz akcję...</option>
+                    <option value="activate">Aktywuj</option>
+                    <option value="deactivate">Dezaktywuj</option>
+                    <option value="send_password_reset">Wyślij reset hasła</option>
+                    <option value="export">Eksportuj do CSV</option>
+                    <option value="delete">Usuń</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Wykonaj
+                </button>
+
+                <button type="button"
+                        class="btn btn-ghost btn-sm"
+                        @click="selectedUsers = []; selectAll = false">
+                    Anuluj
+                </button>
+            </div>
+        </form>
     </div>
 
     <div class="overflow-x-auto">
@@ -20,8 +48,7 @@
                 <tr>
                     <th>
                         <input type="checkbox" class="checkbox checkbox-sm"
-                               x-data
-                               @click="document.querySelectorAll('[name=user_ids]').forEach(cb => cb.checked = $el.checked)">
+                               x-model="selectAll">
                     </th>
                     <th>Użytkownik</th>
                     <th>Email</th>
@@ -36,7 +63,12 @@
                 {% for user in users %}
                 <tr>
                     <td>
-                        <input type="checkbox" name="user_ids" value="{{ user.pk }}" class="checkbox checkbox-sm">
+                        <input type="checkbox"
+                               name="user_ids"
+                               value="{{ user.pk }}"
+                               class="checkbox checkbox-sm"
+                               @click="selectedUsers.includes('{{ user.pk }}') ? selectedUsers = selectedUsers.filter(id => id !== '{{ user.pk }}') : selectedUsers.push('{{ user.pk }}')"
+                               :checked="selectedUsers.includes('{{ user.pk }}')">
                     </td>
                     <td>
                         <div class="flex items-center gap-3">
@@ -114,7 +146,6 @@
             </tbody>
         </table>
     </div>
-</form>
 
 <!-- Pagination -->
 {% if page_obj.has_other_pages %}
@@ -146,6 +177,7 @@
     </div>
 </div>
 {% endif %}
+</div>
 {% else %}
 {% include "partials/_empty.html" with message="Brak użytkowników" description="Dodaj pierwszego użytkownika do systemu." action_url="accounts:user-create" action_text="Dodaj użytkownika" %}
 {% endif %}

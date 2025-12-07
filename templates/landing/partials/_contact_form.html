@@ -1,0 +1,142 @@
+<form hx-post="{% url 'landing:contact' %}"
+      hx-target="#contact-form-container"
+      hx-swap="innerHTML"
+      class="space-y-5">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Name -->
+        <div>
+            <label for="id_name" class="block text-sm font-medium text-slate-700 mb-2">
+                Imie i nazwisko <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="name"
+                   id="id_name"
+                   value="{{ form.name.value|default:'' }}"
+                   class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-200 {% if form.name.errors %}border-red-500 bg-red-50{% endif %}"
+                   placeholder="Jan Kowalski"
+                   required>
+            {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.name.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label for="id_email" class="block text-sm font-medium text-slate-700 mb-2">
+                Adres e-mail <span class="text-red-500">*</span>
+            </label>
+            <input type="email"
+                   name="email"
+                   id="id_email"
+                   value="{{ form.email.value|default:'' }}"
+                   class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-200 {% if form.email.errors %}border-red-500 bg-red-50{% endif %}"
+                   placeholder="jan@example.com"
+                   required>
+            {% if form.email.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Phone -->
+        <div>
+            <label for="id_phone" class="block text-sm font-medium text-slate-700 mb-2">
+                Telefon
+            </label>
+            <input type="tel"
+                   name="phone"
+                   id="id_phone"
+                   value="{{ form.phone.value|default:'' }}"
+                   class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-200 {% if form.phone.errors %}border-red-500 bg-red-50{% endif %}"
+                   placeholder="+48 123 456 789">
+            {% if form.phone.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.phone.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Subject -->
+        <div>
+            <label for="id_subject" class="block text-sm font-medium text-slate-700 mb-2">
+                Temat <span class="text-red-500">*</span>
+            </label>
+            <select name="subject"
+                    id="id_subject"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-200 {% if form.subject.errors %}border-red-500 bg-red-50{% endif %}"
+                    required>
+                <option value="">Wybierz temat...</option>
+                <option value="lekcja_probna" {% if form.subject.value == 'lekcja_probna' %}selected{% endif %}>Lekcja probna</option>
+                <option value="matematyka" {% if form.subject.value == 'matematyka' %}selected{% endif %}>Matematyka</option>
+                <option value="angielski" {% if form.subject.value == 'angielski' %}selected{% endif %}>Jezyk angielski</option>
+                <option value="niemiecki" {% if form.subject.value == 'niemiecki' %}selected{% endif %}>Jezyk niemiecki</option>
+                <option value="polski" {% if form.subject.value == 'polski' %}selected{% endif %}>Jezyk polski</option>
+                <option value="inne" {% if form.subject.value == 'inne' %}selected{% endif %}>Inne pytanie</option>
+            </select>
+            {% if form.subject.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.subject.errors.0 }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Message -->
+    <div>
+        <label for="id_message" class="block text-sm font-medium text-slate-700 mb-2">
+            Wiadomosc <span class="text-red-500">*</span>
+        </label>
+        <textarea name="message"
+                  id="id_message"
+                  rows="4"
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-200 resize-none {% if form.message.errors %}border-red-500 bg-red-50{% endif %}"
+                  placeholder="Opisz swoje potrzeby..."
+                  required>{{ form.message.value|default:'' }}</textarea>
+        {% if form.message.errors %}
+            <p class="mt-1 text-sm text-red-500">{{ form.message.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Consents -->
+    <div class="space-y-3">
+        <label class="flex items-start gap-3 cursor-pointer group">
+            <input type="checkbox"
+                   name="gdpr_consent"
+                   id="id_gdpr_consent"
+                   class="mt-1 w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand/20 transition-colors"
+                   {% if form.gdpr_consent.value %}checked{% endif %}
+                   required>
+            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                Wyrazam zgode na przetwarzanie danych osobowych w celu realizacji zapytania <span class="text-red-500">*</span>
+            </span>
+        </label>
+        {% if form.gdpr_consent.errors %}
+            <p class="text-sm text-red-500 ml-8">{{ form.gdpr_consent.errors.0 }}</p>
+        {% endif %}
+
+        <label class="flex items-start gap-3 cursor-pointer group">
+            <input type="checkbox"
+                   name="marketing_consent"
+                   id="id_marketing_consent"
+                   class="mt-1 w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand/20 transition-colors"
+                   {% if form.marketing_consent.value %}checked{% endif %}>
+            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                Wyrazam zgode na otrzymywanie informacji marketingowych
+            </span>
+        </label>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit"
+            class="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand/90 text-white px-6 py-4 font-semibold shadow-lg hover:shadow-xl hover:from-brand/95 hover:to-brand/85 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all duration-300 group">
+        <span class="htmx-indicator mr-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </span>
+        <svg class="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+        </svg>
+        Wyslij wiadomosc
+    </button>
+</form>

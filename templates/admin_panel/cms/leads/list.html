@@ -1,0 +1,70 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <p class="text-base-content/70">Wiadomości z formularza kontaktowego</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats shadow">
+        <div class="stat">
+            <div class="stat-figure text-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="stat-title">Nowe wiadomości</div>
+            <div class="stat-value text-warning">{{ new_count }}</div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body py-4">
+            <div class="flex items-center gap-4">
+                <span class="font-medium">Filtruj:</span>
+                <div class="tabs tabs-boxed">
+                    <a href="{% url 'landing:cms-lead-list' %}"
+                       class="tab {% if not current_status %}tab-active{% endif %}"
+                       hx-get="{% url 'landing:cms-lead-list' %}"
+                       hx-target="#leads-list"
+                       hx-push-url="true">
+                        Wszystkie
+                    </a>
+                    {% for value, label in status_choices %}
+                    <a href="{% url 'landing:cms-lead-list' %}?status={{ value }}"
+                       class="tab {% if current_status == value %}tab-active{% endif %}"
+                       hx-get="{% url 'landing:cms-lead-list' %}?status={{ value }}"
+                       hx-target="#leads-list"
+                       hx-push-url="true">
+                        {{ label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leads List -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div id="leads-list">
+                {% include "admin_panel/cms/leads/partials/_list.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

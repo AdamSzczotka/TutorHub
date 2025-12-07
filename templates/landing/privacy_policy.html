@@ -1,0 +1,272 @@
+{% extends "landing/base.html" %}
+
+{% block title %}Polityka Prywatnosci - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-white to-slate-50 py-12 pt-28">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4">Polityka Prywatnosci</h1>
+            <p class="text-lg text-slate-600">Obowiazuje od: 1 stycznia 2024</p>
+        </div>
+
+        <!-- Back to homepage link -->
+        <div class="mb-8">
+            <a href="{% url 'landing:home' %}" class="inline-flex items-center text-brand hover:text-brand/80 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Powrot do strony glownej
+            </a>
+        </div>
+
+        <!-- Content -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 space-y-8">
+            <!-- Administrator danych -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">1. Administrator danych osobowych</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Administratorem Twoich danych osobowych jest <strong>Na Piatke - Centrum Korepetycji</strong>,
+                    z siedziba w Zorach przy ul. Centralnej 23C/1, 44-240 Zory.<br>
+                    Kontakt: <a href="tel:+48513673222" class="text-brand underline">+48 513 673 222</a>,
+                    e-mail: <a href="mailto:napiatke@gmail.com" class="text-brand underline">napiatke@gmail.com</a>
+                </p>
+            </section>
+
+            <!-- Cele przetwarzania -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">2. Cele i podstawy przetwarzania danych</h2>
+                <p class="text-slate-700 mb-4">Przetwarzamy Twoje dane osobowe w nastepujacych celach:</p>
+                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                    <li><strong>Realizacja zgloszenia kontaktowego</strong> - na podstawie Twojej zgody (art. 6 ust. 1 lit. a RODO)</li>
+                    <li><strong>Swiadczenie uslug korepetycji</strong> - na podstawie umowy (art. 6 ust. 1 lit. b RODO)</li>
+                    <li><strong>Kontakt w sprawach organizacyjnych</strong> - na podstawie prawnie uzasadnionego interesu (art. 6 ust. 1 lit. f RODO)</li>
+                    <li><strong>Marketing bezposredni</strong> - za Twoja zgoda (art. 6 ust. 1 lit. a RODO)</li>
+                    <li><strong>Wypelnienie obowiazkow prawnych</strong> - wynikajacych z przepisow podatkowych i rachunkowych (art. 6 ust. 1 lit. c RODO)</li>
+                </ul>
+            </section>
+
+            <!-- Zakres danych -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">3. Zakres przetwarzanych danych</h2>
+                <p class="text-slate-700 mb-4">W ramach formularza kontaktowego zbieramy:</p>
+                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                    <li>Imie i nazwisko</li>
+                    <li>Numer telefonu</li>
+                    <li>Adres e-mail</li>
+                    <li>Przedmiot zainteresowania</li>
+                    <li>Poziom nauczania</li>
+                    <li>Preferowany termin kontaktu</li>
+                    <li>Tresc wiadomosci (opcjonalnie)</li>
+                    <li>Adres IP (w celach bezpieczenstwa)</li>
+                </ul>
+            </section>
+
+            <!-- Okres przechowywania -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">4. Okres przechowywania danych</h2>
+                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                    <li>Dane z formularza kontaktowego - <strong>12 miesiecy</strong> od ostatniego kontaktu</li>
+                    <li>Dane uczniow korzystajacych z korepetycji - przez okres swiadczenia uslug oraz <strong>5 lat</strong> po ich zakonczeniu (obowiazki podatkowe)</li>
+                    <li>Dane marketingowe - do momentu wycofania zgody</li>
+                    <li>Logi systemowe i dane bezpieczenstwa - <strong>90 dni</strong></li>
+                </ul>
+            </section>
+
+            <!-- Odbiorcy danych -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">5. Odbiorcy danych</h2>
+                <p class="text-slate-700 mb-4">Twoje dane moga byc przekazywane:</p>
+                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                    <li>Korepetytorowi wspolpracujacym z centrum (tylko niezbedne dane kontaktowe)</li>
+                    <li>Dostawcom uslug IT (hosting, e-mail)</li>
+                    <li>Ksiegowosci (w zakresie danych na fakturach)</li>
+                    <li>Organom panstwowym na podstawie przepisow prawa</li>
+                </ul>
+            </section>
+
+            <!-- Prawa osoby -->
+            <section id="rodo">
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">6. Twoje prawa (Klauzula RODO)</h2>
+                <p class="text-slate-700 mb-4">Na podstawie RODO przysluguja Ci nastepujace prawa:</p>
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 space-y-3">
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li><strong>Prawo dostepu</strong> do swoich danych (art. 15 RODO)</li>
+                        <li><strong>Prawo do sprostowania</strong> nieprawidlowych danych (art. 16 RODO)</li>
+                        <li><strong>Prawo do usuniecia</strong> danych ("prawo do bycia zapomnianym") (art. 17 RODO)</li>
+                        <li><strong>Prawo do ograniczenia</strong> przetwarzania (art. 18 RODO)</li>
+                        <li><strong>Prawo do przenoszenia</strong> danych (art. 20 RODO)</li>
+                        <li><strong>Prawo do sprzeciwu</strong> wobec przetwarzania (art. 21 RODO)</li>
+                        <li><strong>Prawo do cofniecia zgody</strong> w dowolnym momencie (art. 7 ust. 3 RODO)</li>
+                        <li><strong>Prawo do wniesienia skargi</strong> do Prezesa Urzedu Ochrony Danych Osobowych</li>
+                    </ul>
+                    <p class="text-sm text-slate-600 mt-4">
+                        Aby skorzystac ze swoich praw, skontaktuj sie z nami poprzez e-mail:
+                        <a href="mailto:napiatke@gmail.com" class="text-brand underline">napiatke@gmail.com</a>
+                        lub telefonicznie: <a href="tel:+48513673222" class="text-brand underline">+48 513 673 222</a>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Bezpieczenstwo -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">7. Bezpieczenstwo danych</h2>
+                <p class="text-slate-700">
+                    Stosujemy odpowiednie srodki techniczne i organizacyjne w celu ochrony Twoich danych osobowych, w tym:
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-slate-700 mt-4">
+                    <li>Szyfrowanie polaczen SSL/TLS</li>
+                    <li>Regularne kopie zapasowe</li>
+                    <li>Ograniczony dostep do danych (tylko upowazhnione osoby)</li>
+                    <li>Polityka hasel i uwierzytelniania</li>
+                    <li>Monitoring systemow informatycznych</li>
+                </ul>
+            </section>
+
+            <!-- Cookies -->
+            <section id="cookies">
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">8. Pliki cookies</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Czym sa pliki cookies?</h3>
+                        <p class="text-slate-700">
+                            Cookies to male pliki tekstowe zapisywane na Twoim urzadzeniu podczas korzystania z naszej strony.
+                            Pozwalaja nam rozpoznac Twoje urzadzenie i dostosowac strone do Twoich potrzeb.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Kategorie cookies</h3>
+                        <div class="space-y-4">
+                            <!-- Necessary Cookies -->
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-slate-900 mb-2">Niezbedne (zawsze aktywne)</h4>
+                                <p class="text-sm text-slate-700 mb-2">
+                                    Cookies niezbedne do prawidlowego funkcjonowania strony. Nie mozna ich wylaczyc.
+                                </p>
+                                <ul class="text-sm text-slate-600 space-y-1">
+                                    <li>- <strong>sessionid</strong> - identyfikator sesji (wygasa po zamknieciu przegladarki)</li>
+                                    <li>- <strong>csrftoken</strong> - ochrona przed atakami CSRF (1 rok)</li>
+                                    <li>- <strong>cookieConsent</strong> - zapamietuje Twoje preferencje dotyczace cookies (365 dni)</li>
+                                </ul>
+                            </div>
+
+                            <!-- Analytics Cookies -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-slate-900 mb-2">Analityczne (opcjonalne)</h4>
+                                <p class="text-sm text-slate-700 mb-2">
+                                    Pomagaja nam zrozumiec, jak uzytkownicy korzystaja ze strony i ulepszac nasze uslugi.
+                                </p>
+                                <ul class="text-sm text-slate-600 space-y-1">
+                                    <li>- <strong>_ga</strong> - Google Analytics, rozroznia uzytkownikow (2 lata)</li>
+                                    <li>- <strong>_gid</strong> - Google Analytics, rozroznia uzytkownikow (24 godziny)</li>
+                                    <li>- <strong>_gat</strong> - Google Analytics, ogranicza czestotliwosc zadan (1 minuta)</li>
+                                </ul>
+                            </div>
+
+                            <!-- Marketing Cookies -->
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-slate-900 mb-2">Marketingowe (opcjonalne)</h4>
+                                <p class="text-sm text-slate-700 mb-2">
+                                    Uzywane do wyswietlania spersonalizowanych reklam i mierzenia skutecznosci kampanii.
+                                </p>
+                                <ul class="text-sm text-slate-600 space-y-1">
+                                    <li>- <strong>Facebook Pixel</strong> - sledzenie konwersji z reklam Facebook</li>
+                                    <li>- <strong>Google Ads</strong> - remarketing i sledzenie konwersji</li>
+                                </ul>
+                                <p class="text-xs text-slate-500 mt-2">
+                                    Obecnie nie uzywamy cookies marketingowych, ale mozemy je wprowadzic w przyszlosci.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Zarzadzanie cookies</h3>
+                        <div class="bg-slate-50 rounded-lg p-4">
+                            <p class="text-slate-700 mb-3">Masz pelna kontrole nad plikami cookies:</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Nasz panel ustawien</strong> - kliknij przycisk "Ustawienia cookies" w stopce strony</li>
+                                <li><strong>Pierwsza wizyta</strong> - przy pierwszej wizycie zobaczysz banner z mozliwoscia wyboru</li>
+                                <li><strong>Przegladarka</strong> - mozesz zarzadzac cookies w ustawieniach swojej przegladarki</li>
+                                <li><strong>Wycofanie zgody</strong> - w kazdej chwili mozesz zmienic swoje preferencje</li>
+                            </ul>
+
+                            <div class="mt-4 p-3 bg-white rounded border border-slate-200">
+                                <button onclick="manageCookieConsent()" class="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                                    </svg>
+                                    Zarzadzaj ustawieniami cookies
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Wplyw na funkcjonalnosc</h3>
+                        <p class="text-slate-700">
+                            <strong>Wylaczenie cookies niezbednych</strong> moze spowodowac nieprawidlowe dzialanie strony
+                            (np. problemy z formularzem kontaktowym). <br>
+                            <strong>Wylaczenie cookies analitycznych</strong> nie wplywa na funkcjonalnosc, ale uniemozliwia
+                            nam zbieranie statystyk pomocnych w ulepszaniu strony. <br>
+                            <strong>Wylaczenie cookies marketingowych</strong> nie wplywa na dzialanie strony, ale zobaczyc
+                            mozesz mniej trafione reklamy.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Zmiany polityki -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">9. Zmiany w polityce prywatnosci</h2>
+                <p class="text-slate-700">
+                    Zastrzegamy sobie prawo do wprowadzania zmian w niniejszej Polityce Prywatnosci.
+                    O wszelkich zmianach bedziemy informowac poprzez umieszczenie nowej tresci na tej stronie.
+                </p>
+            </section>
+
+            <!-- Kontakt -->
+            <section>
+                <h2 class="text-2xl font-semibold text-slate-900 mb-4">10. Kontakt w sprawach ochrony danych</h2>
+                <div class="bg-slate-50 rounded-xl p-6">
+                    <p class="text-slate-700 mb-4">
+                        W sprawach zwiazanych z ochrona danych osobowych mozesz skontaktowac sie z nami:
+                    </p>
+                    <ul class="space-y-2 text-slate-700">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            E-mail: <a href="mailto:napiatke@gmail.com" class="text-brand underline">napiatke@gmail.com</a>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            Telefon: <a href="tel:+48513673222" class="text-brand underline">+48 513 673 222</a>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Adres: ul. Centralna 23C/1, 44-240 Zory
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-sm text-slate-600">
+            <p>Ostatnia aktualizacja: {% now "d.m.Y" %}</p>
+            <p class="mt-2">
+                <a href="{% url 'landing:home' %}" class="text-brand hover:underline">Powrot do strony glownej</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

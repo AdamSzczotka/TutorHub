@@ -1,0 +1,63 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body py-4">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Uzytkownik</span></label>
+                    <select name="user_id" class="select select-bordered select-sm">
+                        <option value="">Wszyscy</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {% if request.GET.user_id == user.id|stringformat:"s" %}selected{% endif %}>
+                            {{ user.get_full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Typ aktywnosci</span></label>
+                    <select name="type" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        {% for value, label in activity_types %}
+                        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Od</span></label>
+                    <input type="date" name="date_from" value="{{ request.GET.date_from }}"
+                           class="input input-bordered input-sm">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Do</span></label>
+                    <input type="date" name="date_to" value="{{ request.GET.date_to }}"
+                           class="input input-bordered input-sm">
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Filtruj</button>
+                <a href="{% url 'accounts:activity-list' %}" class="btn btn-sm btn-ghost">Wyczysc</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <div id="activity-table">
+                {% include "admin_panel/users/activity/partials/_activity_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

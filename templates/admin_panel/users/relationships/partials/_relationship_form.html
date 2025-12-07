@@ -1,0 +1,79 @@
+<div class="space-y-4">
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">
+        {% for error in form.non_field_errors %}
+        <span>{{ error }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Od uzytkownika (korepetytor/rodzic)</span>
+        </label>
+        {{ form.from_user }}
+        {% if form.from_user.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.from_user.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Do uzytkownika (uczen)</span>
+        </label>
+        {{ form.to_user }}
+        {% if form.to_user.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.to_user.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Typ relacji</span>
+        </label>
+        {{ form.relationship_type }}
+        {% if form.relationship_type.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.relationship_type.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Data rozpoczecia</span>
+            </label>
+            {{ form.started_at }}
+        </div>
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Data zakonczenia</span>
+            </label>
+            {{ form.ended_at }}
+        </div>
+    </div>
+
+    <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-4">
+            {{ form.is_active }}
+            <span class="label-text">Aktywna relacja</span>
+        </label>
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Notatki</span>
+        </label>
+        {{ form.notes }}
+    </div>
+
+    <div class="card-actions justify-end mt-6">
+        <a href="{% url 'accounts:relationship-list' %}" class="btn btn-ghost">Anuluj</a>
+        <button type="submit" class="btn btn-primary">{{ submit_text|default:"Zapisz" }}</button>
+    </div>
+</div>

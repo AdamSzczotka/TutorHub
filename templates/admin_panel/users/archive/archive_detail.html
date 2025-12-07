@@ -1,0 +1,101 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="card-title text-2xl">{{ title }}</h2>
+                    <a href="{% url 'accounts:archive-list' %}" class="btn btn-ghost btn-sm">
+                        Powrot do listy
+                    </a>
+                </div>
+
+                <!-- Archive Info -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">ID archiwum</div>
+                        <div class="stat-value text-lg">{{ archive.id }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">Oryginalne ID uzytkownika</div>
+                        <div class="stat-value text-lg">{{ archive.original_user_id }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">Powod archiwizacji</div>
+                        <div class="stat-value text-lg">{{ archive.get_reason_display }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">Data archiwizacji</div>
+                        <div class="stat-value text-lg">{{ archive.created_at|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">Przechowywac do</div>
+                        <div class="stat-value text-lg">{{ archive.retention_until|date:"Y-m-d" }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-lg">
+                        <div class="stat-title">Status</div>
+                        <div class="stat-value text-lg">
+                            {% if archive.is_anonymized %}
+                            <span class="badge badge-success">Zanonimizowane</span>
+                            {% else %}
+                            <span class="badge badge-warning">Dane dostepne</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if archive.archived_by %}
+                <div class="alert mb-6">
+                    <span>Zarchiwizowane przez: <strong>{{ archive.archived_by.get_full_name }}</strong></span>
+                </div>
+                {% endif %}
+
+                {% if archive.notes %}
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2">Notatki</h3>
+                    <p class="text-base-content/80">{{ archive.notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Archived Data -->
+                {% if not archive.is_anonymized %}
+                <div class="divider">Zarchiwizowane dane</div>
+
+                <div class="bg-base-200 p-4 rounded-lg overflow-x-auto">
+                    <pre class="text-sm">{{ archive.archived_data|pprint }}</pre>
+                </div>
+
+                <div class="card-actions justify-end mt-6">
+                    <form method="post" action="{% url 'accounts:archive-anonymize' archive.pk %}"
+                          hx-post="{% url 'accounts:archive-anonymize' archive.pk %}"
+                          hx-confirm="Czy na pewno chcesz zanonimizowac dane? Ta operacja jest NIEODWRACALNA!">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            Anonimizuj dane (RODO)
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="alert alert-success">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <div>
+                        <span>Dane zostaly zanonimizowane {{ archive.anonymized_at|date:"Y-m-d H:i" }}.</span>
+                        <p class="text-sm">Zgodnie z wymogami RODO, dane osobowe zostaly trwale usuniete.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

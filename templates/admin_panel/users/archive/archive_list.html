@@ -1,0 +1,48 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body py-4">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Powod</span></label>
+                    <select name="reason" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        {% for value, label in archive_reasons %}
+                        <option value="{{ value }}" {% if request.GET.reason == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Anonimizacja</span></label>
+                    <select name="is_anonymized" class="select select-bordered select-sm">
+                        <option value="">Wszystkie</option>
+                        <option value="true" {% if request.GET.is_anonymized == 'true' %}selected{% endif %}>Zanonimizowane</option>
+                        <option value="false" {% if request.GET.is_anonymized == 'false' %}selected{% endif %}>Niezanonimizowane</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Filtruj</button>
+                <a href="{% url 'accounts:archive-list' %}" class="btn btn-sm btn-ghost">Wyczysc</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            {% include "admin_panel/users/archive/partials/_archive_table.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

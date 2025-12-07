@@ -1,0 +1,32 @@
+{% extends "layouts/admin.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Panel Admina{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">{{ title }}</h1>
+            {% if pending_count %}
+            <p class="text-sm text-warning">{{ pending_count }} oczekujacych zaproszen</p>
+            {% endif %}
+        </div>
+        <a href="{% url 'accounts:parent-access-create' %}" class="btn btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Zapros rodzica
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <div id="access-table">
+                {% include "admin_panel/users/parent_access/partials/_access_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

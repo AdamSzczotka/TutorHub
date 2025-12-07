@@ -1,0 +1,192 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <p class="text-base-content/70">Zarządzaj treścią strony publicznej</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats shadow w-full">
+        <div class="stat">
+            <div class="stat-figure text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <div class="stat-title">Sekcje strony</div>
+            <div class="stat-value text-primary">{{ page_contents_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-figure text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+            <div class="stat-title">Zespół</div>
+            <div class="stat-value text-secondary">{{ team_members_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-figure text-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+            </div>
+            <div class="stat-title">Opinie</div>
+            <div class="stat-value text-accent">{{ testimonials_count }}</div>
+            {% if testimonials_pending > 0 %}
+            <div class="stat-desc text-warning">{{ testimonials_pending }} oczekujących</div>
+            {% endif %}
+        </div>
+        <div class="stat">
+            <div class="stat-figure text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="stat-title">FAQ</div>
+            <div class="stat-value text-info">{{ faq_items_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-figure text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div class="stat-title">Wiadomości</div>
+            <div class="stat-value text-success">{{ leads_count }}</div>
+            {% if leads_new > 0 %}
+            <div class="stat-desc text-warning">{{ leads_new }} nowych</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Page Content -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Treści strony
+                </h2>
+                <p class="text-base-content/70">Zarządzaj sekcjami landing page: Hero, O nas, itd.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-content-list' %}" class="btn btn-primary">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Zespół
+                </h2>
+                <p class="text-base-content/70">Dodawaj i edytuj profile korepetytorów.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-team-list' %}" class="btn btn-secondary">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Opinie
+                    {% if testimonials_pending > 0 %}
+                    <span class="badge badge-warning">{{ testimonials_pending }}</span>
+                    {% endif %}
+                </h2>
+                <p class="text-base-content/70">Moderuj opinie uczniów i rodziców.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-testimonial-list' %}" class="btn btn-accent">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    FAQ
+                </h2>
+                <p class="text-base-content/70">Często zadawane pytania i odpowiedzi.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-faq-list' %}" class="btn btn-info">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Wiadomości
+                    {% if leads_new > 0 %}
+                    <span class="badge badge-warning">{{ leads_new }}</span>
+                    {% endif %}
+                </h2>
+                <p class="text-base-content/70">Wiadomości z formularza kontaktowego.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-lead-list' %}" class="btn btn-success">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Ustawienia szkoły
+                </h2>
+                <p class="text-base-content/70">Dane kontaktowe, adres, mapa.</p>
+                <div class="card-actions justify-end">
+                    <a href="{% url 'landing:cms-school-settings' %}" class="btn btn-warning">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Link -->
+    <div class="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Zmiany są widoczne na stronie publicznej po zapisaniu.</span>
+        <div>
+            <a href="{% url 'landing:home' %}" target="_blank" class="btn btn-sm btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Podgląd strony
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

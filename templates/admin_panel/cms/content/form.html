@@ -1,0 +1,106 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-content-list' %}">Treści strony</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_page_key">
+                            <span class="label-text">Klucz strony <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.page_key }}
+                        {% if form.page_key.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.page_key.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                        <label class="label">
+                            <span class="label-text-alt">Użyj: hero, about, features, cta</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_is_active">
+                            <span class="label-text">Status</span>
+                        </label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_active }}
+                            <span class="label-text">Aktywna (widoczna na stronie)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_title">
+                        <span class="label-text">Tytuł <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_subtitle">
+                        <span class="label-text">Podtytuł</span>
+                    </label>
+                    {{ form.subtitle }}
+                    {% if form.subtitle.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.subtitle.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_content">
+                        <span class="label-text">Treść</span>
+                    </label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.content.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                    <label class="label">
+                        <span class="label-text-alt">Możesz użyć HTML do formatowania</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-content-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Zapisz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

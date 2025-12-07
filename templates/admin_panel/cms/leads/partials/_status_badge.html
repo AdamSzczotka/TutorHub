@@ -1,0 +1,11 @@
+{% if lead.status == 'new' %}
+<span class="badge badge-warning">Nowy</span>
+{% elif lead.status == 'contacted' %}
+<span class="badge badge-info">Skontaktowany</span>
+{% elif lead.status == 'converted' %}
+<span class="badge badge-success">Skonwertowany</span>
+{% elif lead.status == 'lost' %}
+<span class="badge badge-ghost">Utracony</span>
+{% else %}
+<span class="badge">{{ lead.get_status_display }}</span>
+{% endif %}

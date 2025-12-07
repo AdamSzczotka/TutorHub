@@ -1,11 +1,13 @@
 """Views for accounts app."""
 
 import csv
+import io
 from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.files.base import ContentFile
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse, JsonResponse
@@ -17,11 +19,13 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
+    FormView,
     ListView,
     TemplateView,
     UpdateView,
 )
 from django_filters.views import FilterView
+from PIL import Image
 
 from apps.core.mixins import AdminRequiredMixin, HTMXMixin
 from apps.core.models import AuditLog
@@ -31,14 +35,34 @@ from apps.tutors.models import TutorProfile
 from .filters import UserFilter
 from .forms import (
     AdminUserCreationForm,
+    AvatarUploadForm,
+    NotificationPreferenceForm,
+    ParentAccessForm,
+    ParentInvitationForm,
     PasswordChangeForm,
     StudentProfileForm,
     TutorProfileForm,
     UserEditForm,
+    UserProfileForm,
+    UserRelationshipForm,
     generate_temp_password,
 )
-from .models import UserCreationLog
-from .tasks import send_password_reset_email_task, send_welcome_email_task
+from .models import (
+    NotificationPreference,
+    ParentAccess,
+    UserActivity,
+    UserArchive,
+    UserCreationLog,
+    UserRelationship,
+    UserVerification,
+)
+from .services import ProfileCompletionService, UserArchiveService, UserImportService
+from .tasks import (
+    send_parent_invitation_email_task,
+    send_password_reset_email_task,
+    send_verification_email_task,
+    send_welcome_email_task,
+)
 
 User = get_user_model()
 
@@ -514,7 +538,13 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
     def post(self, request):
         """Process bulk action."""
         action = request.POST.get('action')
-        valid_actions = ['activate', 'deactivate', 'delete']
+        valid_actions = [
+            'activate',
+            'deactivate',
+            'delete',
+            'send_password_reset',
+            'export',
+        ]
         user_ids = request.POST.getlist('user_ids')
 
         if not action or action not in valid_actions:
@@ -526,27 +556,39 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
             return redirect('accounts:user-list')
 
         users = User.objects.filter(pk__in=user_ids)
+        count = users.count()
 
         if action == 'activate':
             users.update(is_active=True)
-            messages.success(request, f'Aktywowano {users.count()} użytkowników.')
+            messages.success(request, f'Aktywowano {count} użytkowników.')
 
         elif action == 'deactivate':
             users.update(is_active=False)
-            messages.success(request, f'Dezaktywowano {users.count()} użytkowników.')
+            messages.success(request, f'Dezaktywowano {count} użytkowników.')
 
         elif action == 'delete':
-            count = users.count()
             users.update(is_active=False)  # Soft delete
             messages.success(request, f'Usunięto {count} użytkowników.')
+
+        elif action == 'send_password_reset':
+            for user in users:
+                temp_password = generate_temp_password()
+                user.set_password(temp_password)
+                user.first_login = True
+                user.save(update_fields=['password', 'first_login'])
+                send_password_reset_email_task.delay(user.id, temp_password)
+            messages.success(request, f'Wysłano reset hasła do {count} użytkowników.')
+
+        elif action == 'export':
+            return self._export_users(users)
 
         # Log bulk action
         AuditLog.objects.create(
             user=request.user,
             action='bulk_update',
             model_type='User',
-            model_id=','.join(str(user.pk) for user in users),
-            new_values={'action': action, 'count': users.count()},
+            model_id=','.join(str(u.pk) for u in users),
+            new_values={'action': action, 'count': count},
             ip_address=request.META.get('REMOTE_ADDR'),
         )
 
@@ -556,6 +598,37 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
             return response
 
         return redirect('accounts:user-list')
+
+    def _export_users(self, users):
+        """Export selected users to CSV."""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = (
+            f'attachment; filename="users_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        )
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Email',
+            'Imię',
+            'Nazwisko',
+            'Rola',
+            'Telefon',
+            'Status',
+            'Data rejestracji',
+        ])
+
+        for user in users:
+            writer.writerow([
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.get_role_display(),
+                user.phone,
+                'Aktywny' if user.is_active else 'Nieaktywny',
+                user.date_joined.strftime('%Y-%m-%d'),
+            ])
+
+        return response
 
 
 # =============================================================================
@@ -788,5 +861,1007 @@ class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMix
         context['first_login_rate'] = (
             (completed_first_login / total_with_logs * 100) if total_with_logs else 0
         )
+
+        return context
+
+
+# =============================================================================
+# Profile Wizard Views
+# =============================================================================
+
+
+class ProfileWizardView(LoginRequiredMixin, TemplateView):
+    """Profile completion wizard view."""
+
+    template_name = 'accounts/profile_wizard.html'
+
+    def get_context_data(self, **kwargs):
+        """Add profile completion context."""
+        context = super().get_context_data(**kwargs)
+        completion = ProfileCompletionService(self.request.user)
+
+        context.update({
+            'completion': completion,
+            'steps': completion.steps,
+            'percentage': completion.percentage,
+            'next_step': completion.next_step,
+        })
+        return context
+
+
+class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
+    """Handle individual profile step completion."""
+
+    template_name = 'accounts/profile_step.html'
+    partial_template_name = 'accounts/partials/_profile_step_form.html'
+
+    def get_form_class(self):
+        """Get form class based on step ID."""
+        step_id = self.kwargs.get('step_id')
+        user = self.request.user
+
+        if step_id == 'basic-info':
+            return UserProfileForm
+        elif step_id == 'parent-info' and user.is_student:
+            return StudentProfileForm
+        elif step_id == 'academic-info' and user.is_student:
+            return StudentProfileForm
+        elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
+            return TutorProfileForm
+
+        return UserProfileForm
+
+    def get_template_names(self):
+        """Return template based on request type."""
+        if self.request.htmx:
+            return [self.partial_template_name]
+        return [self.template_name]
+
+    def get_form_kwargs(self):
+        """Get form kwargs with proper instance."""
+        kwargs = super().get_form_kwargs()
+        step_id = self.kwargs.get('step_id')
+        user = self.request.user
+
+        if step_id == 'basic-info':
+            kwargs['instance'] = user
+        elif step_id in ('parent-info', 'academic-info') and user.is_student:
+            profile, _ = StudentProfile.objects.get_or_create(user=user)
+            kwargs['instance'] = profile
+        elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
+            profile, _ = TutorProfile.objects.get_or_create(user=user)
+            kwargs['instance'] = profile
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """Add step context."""
+        context = super().get_context_data(**kwargs)
+        step_id = self.kwargs.get('step_id')
+        completion = ProfileCompletionService(self.request.user)
+        step = completion.get_step_by_id(step_id)
+
+        context['step'] = step
+        context['step_id'] = step_id
+        context['completion'] = completion
+        return context
+
+    def form_valid(self, form):
+        """Handle form submission."""
+        form.save()
+
+        # Check if profile is now complete
+        completion = ProfileCompletionService(self.request.user)
+        if completion.percentage == 100:
+            self.request.user.is_profile_completed = True
+            self.request.user.save(update_fields=['is_profile_completed'])
+
+            # Update creation log
+            UserCreationLog.objects.filter(
+                created_user=self.request.user
+            ).update(profile_completed_at=timezone.now())
+
+            messages.success(self.request, 'Profil został uzupełniony!')
+
+        if self.request.htmx:
+            return render(
+                self.request,
+                'accounts/partials/_wizard_progress.html',
+                {'completion': completion, 'steps': completion.steps},
+            )
+
+        return redirect('accounts:profile-wizard')
+
+
+# =============================================================================
+# Avatar Upload Views
+# =============================================================================
+
+
+class AvatarUploadView(LoginRequiredMixin, HTMXMixin, FormView):
+    """Handle avatar upload with image processing."""
+
+    form_class = AvatarUploadForm
+    template_name = 'accounts/partials/_avatar_upload.html'
+
+    def form_valid(self, form):
+        """Process and save avatar."""
+        avatar = form.cleaned_data['avatar']
+        user = self.request.user
+
+        # Process image with Pillow
+        img = Image.open(avatar)
+
+        # Convert to RGB if necessary
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+
+        # Resize to 200x200 with center crop
+        img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+
+        # Save to buffer
+        buffer = io.BytesIO()
+        img.save(buffer, format='JPEG', quality=90)
+        buffer.seek(0)
+
+        # Generate filename
+        filename = f'avatar_{user.id}.jpg'
+
+        # Delete old avatar if exists
+        if user.avatar:
+            user.avatar.delete(save=False)
+
+        # Save new avatar
+        user.avatar.save(filename, ContentFile(buffer.read()), save=True)
+
+        messages.success(self.request, 'Avatar został zaktualizowany.')
+
+        if self.request.htmx:
+            return render(
+                self.request, 'accounts/partials/_avatar_preview.html', {'user': user}
+            )
+
+        return redirect('accounts:profile-wizard')
+
+    def form_invalid(self, form):
+        """Handle invalid form."""
+        if self.request.htmx:
+            return render(
+                self.request,
+                'accounts/partials/_avatar_upload.html',
+                {'form': form, 'user': self.request.user},
+            )
+        return super().form_invalid(form)
+
+
+class AvatarDeleteView(LoginRequiredMixin, View):
+    """Delete user avatar."""
+
+    def post(self, request):
+        """Delete avatar."""
+        user = request.user
+
+        if user.avatar:
+            user.avatar.delete(save=True)
+            messages.success(request, 'Avatar został usunięty.')
+
+        if request.htmx:
+            return render(
+                request, 'accounts/partials/_avatar_preview.html', {'user': user}
+            )
+
+        return redirect('accounts:profile-wizard')
+
+
+# =============================================================================
+# User Import Views
+# =============================================================================
+
+
+class UserImportView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    """View for importing users from CSV."""
+
+    template_name = 'admin_panel/users/import.html'
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Import użytkowników'
+        context['required_columns'] = UserImportService.REQUIRED_COLUMNS
+        context['optional_columns'] = UserImportService.OPTIONAL_COLUMNS
+        return context
+
+    def post(self, request):
+        """Handle CSV upload."""
+        csv_file = request.FILES.get('csv_file')
+
+        if not csv_file:
+            messages.error(request, 'Wybierz plik CSV.')
+            return redirect('accounts:user-import')
+
+        # Read CSV content
+        try:
+            csv_content = csv_file.read().decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                csv_file.seek(0)
+                csv_content = csv_file.read().decode('cp1250')  # Polish Windows encoding
+            except Exception:
+                messages.error(request, 'Nie można odczytać pliku. Sprawdź kodowanie.')
+                return redirect('accounts:user-import')
+
+        # Validate
+        service = UserImportService(csv_content, request.user)
+        total, valid, errors = service.validate()
+
+        if 'validate_only' in request.POST:
+            return render(
+                request,
+                'admin_panel/users/partials/_import_preview.html',
+                {
+                    'total': total,
+                    'valid': valid,
+                    'errors': errors,
+                    'preview': service.valid_rows[:5],
+                },
+            )
+
+        # Execute import
+        send_emails = 'send_emails' in request.POST
+        results, import_errors = service.execute(send_emails)
+
+        if results:
+            messages.success(
+                request,
+                f'Zaimportowano {len(results)} użytkowników. Błędy: {len(import_errors)}.',
+            )
+        else:
+            messages.error(
+                request, f'Nie zaimportowano żadnych użytkowników. Błędy: {len(import_errors)}.'
+            )
+
+        return redirect('accounts:user-list')
+
+
+# =============================================================================
+# Notification Preferences Views (Task 036)
+# =============================================================================
+
+
+class NotificationPreferencesView(LoginRequiredMixin, HTMXMixin, UpdateView):
+    """View for managing user notification preferences."""
+
+    model = NotificationPreference
+    form_class = NotificationPreferenceForm
+    template_name = 'accounts/notification_preferences.html'
+    partial_template_name = 'accounts/partials/_notification_preferences_form.html'
+
+    def get_object(self, queryset=None):
+        """Get or create notification preferences for current user."""
+        prefs, _ = NotificationPreference.objects.get_or_create(user=self.request.user)
+        return prefs
+
+    def form_valid(self, form):
+        """Handle valid form submission."""
+        form.save()
+
+        # Log activity
+        UserActivity.log(
+            user=self.request.user,
+            activity_type=UserActivity.ActivityType.SETTINGS_CHANGE,
+            description='Zmiana preferencji powiadomień',
+            request=self.request,
+        )
+
+        messages.success(self.request, 'Preferencje powiadomień zostały zapisane.')
+
+        if self.request.htmx:
+            return render(
+                self.request,
+                self.partial_template_name,
+                {'form': form, 'saved': True},
+            )
+
+        return redirect('accounts:notification-preferences')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Preferencje powiadomień'
+        return context
+
+
+# =============================================================================
+# User Relationship Views (Task 038)
+# =============================================================================
+
+
+class UserRelationshipListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all user relationships."""
+
+    model = UserRelationship
+    template_name = 'admin_panel/users/relationships/relationship_list.html'
+    partial_template_name = 'admin_panel/users/relationships/partials/_relationship_table.html'
+    context_object_name = 'relationships'
+    paginate_by = 20
+
+    def get_queryset(self):
+        """Get relationships with related users."""
+        qs = UserRelationship.objects.select_related(
+            'from_user', 'to_user'
+        ).order_by('-created_at')
+
+        # Filter by relationship type
+        rel_type = self.request.GET.get('type')
+        if rel_type:
+            qs = qs.filter(relationship_type=rel_type)
+
+        # Filter by active status
+        is_active = self.request.GET.get('is_active')
+        if is_active == 'true':
+            qs = qs.filter(is_active=True)
+        elif is_active == 'false':
+            qs = qs.filter(is_active=False)
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Relacje użytkowników'
+        context['relationship_types'] = UserRelationship.RelationshipType.choices
+        return context
+
+
+class UserRelationshipCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView):
+    """Create a new user relationship."""
+
+    model = UserRelationship
+    form_class = UserRelationshipForm
+    template_name = 'admin_panel/users/relationships/relationship_form.html'
+    partial_template_name = 'admin_panel/users/relationships/partials/_relationship_form.html'
+    success_url = reverse_lazy('accounts:relationship-list')
+
+    def form_valid(self, form):
+        """Handle valid form."""
+        response = super().form_valid(form)
+        messages.success(self.request, 'Relacja została utworzona.')
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response['HX-Redirect'] = str(self.success_url)
+            return response
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Nowa relacja'
+        context['submit_text'] = 'Utwórz relację'
+        return context
+
+
+class UserRelationshipUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView):
+    """Update an existing relationship."""
+
+    model = UserRelationship
+    form_class = UserRelationshipForm
+    template_name = 'admin_panel/users/relationships/relationship_form.html'
+    partial_template_name = 'admin_panel/users/relationships/partials/_relationship_form.html'
+    success_url = reverse_lazy('accounts:relationship-list')
+
+    def form_valid(self, form):
+        """Handle valid form."""
+        response = super().form_valid(form)
+        messages.success(self.request, 'Relacja została zaktualizowana.')
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response['HX-Redirect'] = str(self.success_url)
+            return response
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edytuj relację'
+        context['submit_text'] = 'Zapisz zmiany'
+        return context
+
+
+class UserRelationshipDeleteView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Delete (deactivate) a relationship."""
+
+    def post(self, request, pk):
+        """Deactivate relationship."""
+        relationship = get_object_or_404(UserRelationship, pk=pk)
+        relationship.is_active = False
+        relationship.ended_at = timezone.now().date()
+        relationship.save(update_fields=['is_active', 'ended_at'])
+
+        messages.success(request, 'Relacja została zakończona.')
+
+        if request.htmx:
+            return HttpResponse(status=200)
+
+        return redirect('accounts:relationship-list')
+
+
+class TutorStudentsView(LoginRequiredMixin, HTMXMixin, ListView):
+    """View for tutor to see their students."""
+
+    template_name = 'tutor/my_students.html'
+    partial_template_name = 'tutor/partials/_my_students_list.html'
+    context_object_name = 'relationships'
+
+    def get_queryset(self):
+        """Get students for current tutor."""
+        return UserRelationship.get_students_for_tutor(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Moi uczniowie'
+        return context
+
+
+# =============================================================================
+# User Activity Views (Task 039)
+# =============================================================================
+
+
+class UserActivityListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """View user activity logs."""
+
+    model = UserActivity
+    template_name = 'admin_panel/users/activity/activity_list.html'
+    partial_template_name = 'admin_panel/users/activity/partials/_activity_table.html'
+    context_object_name = 'activities'
+    paginate_by = 50
+
+    def get_queryset(self):
+        """Get activities with filtering."""
+        qs = UserActivity.objects.select_related('user').order_by('-created_at')
+
+        # Filter by user
+        user_id = self.request.GET.get('user_id')
+        if user_id:
+            qs = qs.filter(user_id=user_id)
+
+        # Filter by activity type
+        activity_type = self.request.GET.get('type')
+        if activity_type:
+            qs = qs.filter(activity_type=activity_type)
+
+        # Filter by date range
+        date_from = self.request.GET.get('date_from')
+        date_to = self.request.GET.get('date_to')
+        if date_from:
+            qs = qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(created_at__date__lte=date_to)
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Aktywność użytkowników'
+        context['activity_types'] = UserActivity.ActivityType.choices
+        context['users'] = User.objects.filter(is_active=True).order_by('last_name')
+        return context
+
+
+class UserActivityDetailView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """View activity for a specific user."""
+
+    model = UserActivity
+    template_name = 'admin_panel/users/activity/user_activity.html'
+    partial_template_name = 'admin_panel/users/activity/partials/_user_activity_table.html'
+    context_object_name = 'activities'
+    paginate_by = 30
+
+    def get_queryset(self):
+        """Get activities for specific user."""
+        return UserActivity.objects.filter(
+            user_id=self.kwargs['pk']
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['user_obj'] = get_object_or_404(User, pk=self.kwargs['pk'])
+        context['title'] = f'Aktywność: {context["user_obj"].get_full_name()}'
+        return context
+
+
+class MyActivityView(LoginRequiredMixin, HTMXMixin, ListView):
+    """View for users to see their own activity."""
+
+    model = UserActivity
+    template_name = 'accounts/my_activity.html'
+    partial_template_name = 'accounts/partials/_my_activity_table.html'
+    context_object_name = 'activities'
+    paginate_by = 20
+
+    def get_queryset(self):
+        """Get current user's activities."""
+        return UserActivity.objects.filter(
+            user=self.request.user
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Moja aktywność'
+        return context
+
+
+# =============================================================================
+# User Archive Views (Task 041)
+# =============================================================================
+
+
+class UserArchiveListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List archived users."""
+
+    model = UserArchive
+    template_name = 'admin_panel/users/archive/archive_list.html'
+    partial_template_name = 'admin_panel/users/archive/partials/_archive_table.html'
+    context_object_name = 'archives'
+    paginate_by = 20
+
+    def get_queryset(self):
+        """Get archives with filtering."""
+        qs = UserArchive.objects.select_related('archived_by').order_by('-created_at')
+
+        # Filter by reason
+        reason = self.request.GET.get('reason')
+        if reason:
+            qs = qs.filter(reason=reason)
+
+        # Filter by anonymized status
+        is_anonymized = self.request.GET.get('is_anonymized')
+        if is_anonymized == 'true':
+            qs = qs.filter(is_anonymized=True)
+        elif is_anonymized == 'false':
+            qs = qs.filter(is_anonymized=False)
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Archiwum użytkowników'
+        context['archive_reasons'] = UserArchive.ArchiveReason.choices
+        return context
+
+
+class UserArchiveCreateView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Archive a user."""
+
+    def post(self, request, pk):
+        """Archive user data."""
+        user = get_object_or_404(User, pk=pk)
+
+        reason = request.POST.get('reason', UserArchive.ArchiveReason.ADMIN_ACTION)
+        notes = request.POST.get('notes', '')
+
+        # Use archive service
+        service = UserArchiveService()
+        archive = service.archive_user(
+            user=user,
+            reason=reason,
+            archived_by=request.user,
+            notes=notes,
+        )
+
+        if archive:
+            messages.success(request, f'Użytkownik {user.get_full_name()} został zarchiwizowany.')
+        else:
+            messages.error(request, 'Nie udało się zarchiwizować użytkownika.')
+
+        if request.htmx:
+            response = HttpResponse()
+            response['HX-Redirect'] = reverse_lazy('accounts:user-list')
+            return response
+
+        return redirect('accounts:user-list')
+
+
+class UserArchiveDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
+    """View archived user details."""
+
+    model = UserArchive
+    template_name = 'admin_panel/users/archive/archive_detail.html'
+    context_object_name = 'archive'
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Archiwum #{self.object.original_user_id}'
+        return context
+
+
+class UserArchiveAnonymizeView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Anonymize archived user data (GDPR compliance)."""
+
+    def post(self, request, pk):
+        """Anonymize archive."""
+        archive = get_object_or_404(UserArchive, pk=pk)
+
+        if archive.is_anonymized:
+            messages.warning(request, 'To archiwum jest już zanonimizowane.')
+        else:
+            service = UserArchiveService()
+            service.anonymize_archive(archive)
+            messages.success(request, 'Dane zostały zanonimizowane.')
+
+        if request.htmx:
+            return HttpResponse(status=200)
+
+        return redirect('accounts:archive-detail', pk=pk)
+
+
+# =============================================================================
+# User Verification Views (Task 042)
+# =============================================================================
+
+
+class SendVerificationView(LoginRequiredMixin, View):
+    """Send verification email/SMS to user."""
+
+    def post(self, request):
+        """Send verification."""
+        verification_type = request.POST.get('type', 'email')
+
+        if verification_type == 'email':
+            value = request.user.email
+        else:
+            value = request.user.phone
+
+        if not value:
+            messages.error(request, 'Brak danych do weryfikacji.')
+            return redirect('accounts:profile-wizard')
+
+        # Create verification
+        verification = UserVerification.create_for_user(
+            user=request.user,
+            verification_type=verification_type,
+            value=value,
+        )
+
+        # Send verification email/SMS
+        if verification_type == 'email':
+            send_verification_email_task.delay(verification.id)
+            messages.success(request, 'Link weryfikacyjny został wysłany na Twój adres email.')
+        else:
+            # TODO: Implement SMS sending
+            messages.info(request, 'Weryfikacja SMS zostanie dodana wkrótce.')
+
+        if request.htmx:
+            return HttpResponse('<span class="badge badge-warning">Oczekuje na weryfikację</span>')
+
+        return redirect('accounts:profile-wizard')
+
+
+class VerifyTokenView(View):
+    """Verify token from email/SMS."""
+
+    def get(self, request, token):
+        """Verify the token."""
+        verification = get_object_or_404(
+            UserVerification,
+            token=token,
+            status=UserVerification.VerificationStatus.PENDING,
+        )
+
+        if verification.is_expired:
+            messages.error(request, 'Link weryfikacyjny wygasł. Poproś o nowy.')
+            return redirect('admin:login')
+
+        if verification.verify(token):
+            messages.success(request, 'Weryfikacja zakończona pomyślnie!')
+
+            # Update user verification status if email verified
+            if verification.verification_type == UserVerification.VerificationType.EMAIL:
+                # Could add email_verified field to User model
+                pass
+
+            # Log activity
+            UserActivity.log(
+                user=verification.user,
+                activity_type=UserActivity.ActivityType.SETTINGS_CHANGE,
+                description=f'Weryfikacja {verification.get_verification_type_display()}',
+                request=request,
+            )
+        else:
+            messages.error(request, 'Nieprawidłowy link weryfikacyjny.')
+
+        return redirect('admin:login')
+
+
+class VerificationStatusView(LoginRequiredMixin, HTMXMixin, TemplateView):
+    """View verification status for current user."""
+
+    template_name = 'accounts/verification_status.html'
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+
+        # Get latest verifications
+        context['email_verification'] = UserVerification.objects.filter(
+            user=self.request.user,
+            verification_type=UserVerification.VerificationType.EMAIL,
+        ).order_by('-created_at').first()
+
+        context['phone_verification'] = UserVerification.objects.filter(
+            user=self.request.user,
+            verification_type=UserVerification.VerificationType.PHONE,
+        ).order_by('-created_at').first()
+
+        return context
+
+
+# =============================================================================
+# Parent Portal Access Views (Task 043)
+# =============================================================================
+
+
+class ParentAccessListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all parent access configurations."""
+
+    model = ParentAccess
+    template_name = 'admin_panel/users/parent_access/access_list.html'
+    partial_template_name = 'admin_panel/users/parent_access/partials/_access_table.html'
+    context_object_name = 'accesses'
+    paginate_by = 20
+
+    def get_queryset(self):
+        """Get parent accesses with related users."""
+        return ParentAccess.objects.select_related(
+            'parent', 'student'
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dostępy rodziców'
+        context['pending_count'] = ParentAccess.objects.filter(
+            invitation_accepted_at__isnull=True,
+            is_active=False,
+        ).count()
+        return context
+
+
+class ParentAccessCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, FormView):
+    """Create parent access invitation."""
+
+    form_class = ParentInvitationForm
+    template_name = 'admin_panel/users/parent_access/access_form.html'
+    partial_template_name = 'admin_panel/users/parent_access/partials/_access_form.html'
+
+    def get_form_kwargs(self):
+        """Add student to form."""
+        kwargs = super().get_form_kwargs()
+        student_id = self.kwargs.get('student_id') or self.request.GET.get('student_id')
+        if student_id:
+            kwargs['student'] = get_object_or_404(User, pk=student_id, role='student')
+        return kwargs
+
+    def form_valid(self, form):
+        """Handle valid form."""
+        student_id = self.kwargs.get('student_id') or self.request.POST.get('student_id')
+        student = get_object_or_404(User, pk=student_id, role='student')
+
+        access = ParentAccess.create_invitation(
+            student=student,
+            parent_email=form.cleaned_data['parent_email'],
+            access_level=form.cleaned_data['access_level'],
+            created_by=self.request.user,
+        )
+
+        # Send invitation email
+        if not access.invitation_accepted_at:
+            send_parent_invitation_email_task.delay(access.id)
+            messages.success(
+                self.request,
+                f'Zaproszenie zostało wysłane na adres {form.cleaned_data["parent_email"]}.'
+            )
+        else:
+            messages.success(
+                self.request,
+                'Dostęp został przyznany (rodzic ma już konto w systemie).'
+            )
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response['HX-Redirect'] = reverse_lazy('accounts:parent-access-list')
+            return response
+
+        return redirect('accounts:parent-access-list')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Zaproś rodzica'
+        context['students'] = User.objects.filter(role='student', is_active=True)
+
+        student_id = self.kwargs.get('student_id') or self.request.GET.get('student_id')
+        if student_id:
+            context['selected_student'] = get_object_or_404(User, pk=student_id)
+
+        return context
+
+
+class ParentAccessUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView):
+    """Update parent access configuration."""
+
+    model = ParentAccess
+    form_class = ParentAccessForm
+    template_name = 'admin_panel/users/parent_access/access_edit.html'
+    partial_template_name = 'admin_panel/users/parent_access/partials/_access_edit_form.html'
+    success_url = reverse_lazy('accounts:parent-access-list')
+
+    def form_valid(self, form):
+        """Handle valid form."""
+        response = super().form_valid(form)
+        messages.success(self.request, 'Dostęp został zaktualizowany.')
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response['HX-Redirect'] = str(self.success_url)
+            return response
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj dostęp: {self.object.student.get_full_name()}'
+        return context
+
+
+class ParentAccessRevokeView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Revoke parent access."""
+
+    def post(self, request, pk):
+        """Revoke access."""
+        access = get_object_or_404(ParentAccess, pk=pk)
+        access.is_active = False
+        access.save(update_fields=['is_active'])
+
+        messages.success(request, 'Dostęp rodzica został cofnięty.')
+
+        if request.htmx:
+            return HttpResponse(status=200)
+
+        return redirect('accounts:parent-access-list')
+
+
+class ParentAccessResendInvitationView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Resend parent invitation email."""
+
+    def post(self, request, pk):
+        """Resend invitation."""
+        access = get_object_or_404(ParentAccess, pk=pk)
+
+        if access.invitation_accepted_at:
+            messages.warning(request, 'To zaproszenie zostało już zaakceptowane.')
+        else:
+            # Generate new token
+            import secrets
+            access.invitation_token = secrets.token_urlsafe(32)
+            access.invitation_sent_at = timezone.now()
+            access.save(update_fields=['invitation_token', 'invitation_sent_at'])
+
+            send_parent_invitation_email_task.delay(access.id)
+            messages.success(request, 'Zaproszenie zostało wysłane ponownie.')
+
+        if request.htmx:
+            return HttpResponse(status=200)
+
+        return redirect('accounts:parent-access-list')
+
+
+class AcceptParentInvitationView(View):
+    """Accept parent invitation and create/login account."""
+
+    def get(self, request, token):
+        """Show invitation acceptance page."""
+        access = get_object_or_404(
+            ParentAccess,
+            invitation_token=token,
+            invitation_accepted_at__isnull=True,
+        )
+
+        return render(request, 'accounts/accept_parent_invitation.html', {
+            'access': access,
+            'student': access.student,
+        })
+
+    def post(self, request, token):
+        """Accept invitation."""
+        access = get_object_or_404(
+            ParentAccess,
+            invitation_token=token,
+            invitation_accepted_at__isnull=True,
+        )
+
+        # Check if user is logged in or needs to create account
+        if request.user.is_authenticated:
+            parent = request.user
+        else:
+            # Check if account exists
+            parent = User.objects.filter(email=access.invited_email).first()
+            if not parent:
+                # Redirect to registration
+                messages.info(request, 'Utwórz konto, aby zaakceptować zaproszenie.')
+                return redirect('admin:login')
+
+        # Accept invitation
+        access.accept_invitation(parent)
+        messages.success(
+            request,
+            f'Dostęp do danych ucznia {access.student.get_full_name()} został przyznany.'
+        )
+
+        return redirect('accounts:my-children')
+
+
+class MyChildrenView(LoginRequiredMixin, HTMXMixin, ListView):
+    """View for parents to see their children."""
+
+    template_name = 'parent/my_children.html'
+    partial_template_name = 'parent/partials/_my_children_list.html'
+    context_object_name = 'accesses'
+
+    def get_queryset(self):
+        """Get children for current parent."""
+        return ParentAccess.objects.filter(
+            parent=self.request.user,
+            is_active=True,
+        ).select_related('student', 'student__student_profile')
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Moje dzieci'
+        return context
+
+
+class ChildDetailView(LoginRequiredMixin, HTMXMixin, DetailView):
+    """View child details for parent."""
+
+    template_name = 'parent/child_detail.html'
+    context_object_name = 'access'
+
+    def get_object(self, queryset=None):
+        """Get parent access for this child."""
+        return get_object_or_404(
+            ParentAccess,
+            parent=self.request.user,
+            student_id=self.kwargs['pk'],
+            is_active=True,
+        )
+
+    def get_context_data(self, **kwargs):
+        """Add context."""
+        context = super().get_context_data(**kwargs)
+        access = self.object
+        context['student'] = access.student
+        context['title'] = access.student.get_full_name()
+
+        # Add data based on permissions
+        if access.can_view_lessons:
+            # TODO: Add lessons
+            context['upcoming_lessons'] = []
+
+        if access.can_view_attendance:
+            # TODO: Add attendance
+            context['attendance_summary'] = {}
 
         return context

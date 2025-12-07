@@ -210,3 +210,6 @@ __marimo__/
 # Claude
 .Claude/
 CLAUDE.md
+
+# Node
+node_modules/
