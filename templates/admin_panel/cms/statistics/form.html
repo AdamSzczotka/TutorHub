@@ -1,0 +1,108 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ title }} - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-statistic-list' %}">Statystyki</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_value">
+                            <span class="label-text">Wartosc <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.value }}
+                        {% if form.value.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.value.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                        <label class="label">
+                            <span class="label-text-alt">np. 5+, 100+, 3</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_label">
+                            <span class="label-text">Etykieta <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.label }}
+                        {% if form.label.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.label.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                        <label class="label">
+                            <span class="label-text-alt">np. lat doswiadczenia, zadowolonych uczniow</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_description">
+                        <span class="label-text">Opis (opcjonalnie)</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_order_index">
+                            <span class="label-text">Kolejnosc</span>
+                        </label>
+                        {{ form.order_index }}
+                        {% if form.order_index.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.order_index.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_is_published">
+                            <span class="label-text">Status</span>
+                        </label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_published }}
+                            <span class="label-text">Opublikowane (widoczne na stronie)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-statistic-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Zapisz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

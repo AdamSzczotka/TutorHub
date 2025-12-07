@@ -1,0 +1,108 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ title }} - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-pricing-list' %}">Pakiety cenowe</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_name">
+                            <span class="label-text">Nazwa <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.name.errors.0 }}</span></label>
+                        {% endif %}
+                        <label class="label"><span class="label-text-alt">np. Mini, Standard, Intensywny, Premium</span></label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_sessions_count">
+                            <span class="label-text">Liczba spotkan <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.sessions_count }}
+                        {% if form.sessions_count.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.sessions_count.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_individual_price">
+                            <span class="label-text">Cena indywidualna (od) <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.individual_price }}
+                        {% if form.individual_price.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.individual_price.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_group_price">
+                            <span class="label-text">Cena grupowa (od) <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.group_price }}
+                        {% if form.group_price.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.group_price.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_order_index">
+                            <span class="label-text">Kolejnosc</span>
+                        </label>
+                        {{ form.order_index }}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">Najpopularniejszy</span></label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_popular }}
+                            <span class="label-text">Oznacz jako najpopularniejszy</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">Status</span></label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_published }}
+                            <span class="label-text">Opublikowany</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-pricing-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Zapisz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

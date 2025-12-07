@@ -1,0 +1,88 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ title }} - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-whyus-list' %}">Dlaczego my</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="form-control">
+                    <label class="label" for="id_title">
+                        <span class="label-text">Tytul <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.title.errors.0 }}</span></label>
+                    {% endif %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_description">
+                        <span class="label-text">Opis <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.description.errors.0 }}</span></label>
+                    {% endif %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_icon">
+                        <span class="label-text">Ikona SVG</span>
+                    </label>
+                    {{ form.icon }}
+                    {% if form.icon.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.icon.errors.0 }}</span></label>
+                    {% endif %}
+                    <label class="label"><span class="label-text-alt">Wklej kod SVG ikony</span></label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_color"><span class="label-text">Kolor</span></label>
+                        {{ form.color }}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_link"><span class="label-text">Link (opcjonalnie)</span></label>
+                        {{ form.link }}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_order_index"><span class="label-text">Kolejnosc</span></label>
+                        {{ form.order_index }}
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="cursor-pointer label justify-start gap-4">
+                        {{ form.is_published }}
+                        <span class="label-text">Opublikowana (widoczna na stronie)</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-whyus-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
