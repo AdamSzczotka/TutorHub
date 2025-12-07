@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Przypomnienie o zajeciach</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #570df8;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f5f5f5;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+        }
+        .lesson-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #570df8;
+        }
+        .lesson-time {
+            font-size: 24px;
+            font-weight: bold;
+            color: #570df8;
+        }
+        .lesson-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .lesson-detail {
+            color: #666;
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Przypomnienie o zajeciach</h1>
+    </div>
+
+    <div class="content">
+        <p>Witaj {{ recipient.first_name }}!</p>
+
+        <p>Przypominamy o zajeciach zaplanowanych na jutro:</p>
+
+        <div class="lesson-card">
+            <div class="lesson-time">{{ lesson.start_time|date:"H:i" }} - {{ lesson.end_time|date:"H:i" }}</div>
+            <div class="lesson-title">{{ lesson.title }}</div>
+            {% if lesson.subject %}
+            <div class="lesson-detail">Przedmiot: {{ lesson.subject.name }}</div>
+            {% endif %}
+            {% if lesson.level %}
+            <div class="lesson-detail">Poziom: {{ lesson.level.name }}</div>
+            {% endif %}
+            {% if recipient_type == 'student' %}
+            <div class="lesson-detail">Korepetytor: {{ lesson.tutor.get_full_name }}</div>
+            {% endif %}
+            {% if lesson.room %}
+            <div class="lesson-detail">Sala: {{ lesson.room.name }}</div>
+            {% else %}
+            <div class="lesson-detail">Forma: Online</div>
+            {% endif %}
+            {% if lesson.description %}
+            <div class="lesson-detail">{{ lesson.description }}</div>
+            {% endif %}
+        </div>
+
+        <p>Do zobaczenia!</p>
+    </div>
+
+    <div class="footer">
+        <p>Pozdrawiamy,<br>Zespol Na Piatke</p>
+        <p>Ta wiadomosc zostala wygenerowana automatycznie. Prosimy nie odpowiadac na nia.</p>
+    </div>
+</body>
+</html>
