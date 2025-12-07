@@ -13,9 +13,9 @@
         <tbody>
             {% for subject in subjects %}
             <tr>
-                <td class="font-medium">
+                <td class="font-medium flex items-center gap-2">
                     {% if subject.icon %}
-                    <span class="mr-2">{{ subject.icon }}</span>
+                    <i data-lucide="{{ subject.icon }}" class="w-5 h-5"></i>
                     {% endif %}
                     {{ subject.name }}
                 </td>
