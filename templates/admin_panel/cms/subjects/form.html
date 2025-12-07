@@ -1,0 +1,145 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ title }} - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-subject-list' %}">Przedmioty</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_name">
+                            <span class="label-text">Nazwa <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.name.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_slug">
+                            <span class="label-text">Slug <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.slug }}
+                        {% if form.slug.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.slug.errors.0 }}</span></label>
+                        {% endif %}
+                        <label class="label"><span class="label-text-alt">np. matematyka, angielski</span></label>
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_short_description">
+                        <span class="label-text">Krotki opis <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.short_description }}
+                    {% if form.short_description.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.short_description.errors.0 }}</span></label>
+                    {% endif %}
+                    <label class="label"><span class="label-text-alt">Wyswietlany na karcie przedmiotu</span></label>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_full_description">
+                        <span class="label-text">Pelny opis</span>
+                    </label>
+                    {{ form.full_description }}
+                    {% if form.full_description.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.full_description.errors.0 }}</span></label>
+                    {% endif %}
+                    <label class="label"><span class="label-text-alt">Wyswietlany w modalu po kliknieciu</span></label>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_icon_svg">
+                        <span class="label-text">Ikona SVG <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.icon_svg }}
+                    {% if form.icon_svg.errors %}
+                    <label class="label"><span class="label-text-alt text-error">{{ form.icon_svg.errors.0 }}</span></label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_color_from"><span class="label-text">Kolor gradient (od)</span></label>
+                        {{ form.color_from }}
+                        <label class="label"><span class="label-text-alt">np. blue-500</span></label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_color_to"><span class="label-text">Kolor gradient (do)</span></label>
+                        {{ form.color_to }}
+                        <label class="label"><span class="label-text-alt">np. indigo-600</span></label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_levels"><span class="label-text">Poziomy</span></label>
+                        {{ form.levels }}
+                        <label class="label"><span class="label-text-alt">np. A1-C2</span></label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_topics_text"><span class="label-text">Tematy</span></label>
+                        {{ form.topics_text }}
+                        <label class="label"><span class="label-text-alt">Jeden temat na linie</span></label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_target_groups_text"><span class="label-text">Grupy docelowe</span></label>
+                        {{ form.target_groups_text }}
+                        <label class="label"><span class="label-text-alt">Jedna grupa na linie</span></label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_order_index"><span class="label-text">Kolejnosc</span></label>
+                        {{ form.order_index }}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">Wyrozniony</span></label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_featured }}
+                            <span class="label-text">Wyrozniony (wieksza karta)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">Status</span></label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_published }}
+                            <span class="label-text">Opublikowany</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-subject-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

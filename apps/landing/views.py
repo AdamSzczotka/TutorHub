@@ -20,14 +20,33 @@ from apps.core.mixins import AdminRequiredMixin, HTMXMixin
 
 from .forms import (
     ContactForm,
+    EducationLevelForm,
     FAQItemForm,
+    LandingStatisticForm,
     LeadStatusForm,
+    LessonTypeForm,
     PageContentForm,
+    PricingPackageForm,
     SchoolInfoForm,
+    SubjectForm,
     TeamMemberForm,
     TestimonialForm,
+    WhyUsCardForm,
 )
-from .models import FAQItem, Lead, PageContent, SchoolInfo, TeamMember, Testimonial
+from .models import (
+    EducationLevel,
+    FAQItem,
+    LandingStatistic,
+    LandingSubject,
+    Lead,
+    LessonType,
+    PageContent,
+    PricingPackage,
+    SchoolInfo,
+    TeamMember,
+    Testimonial,
+    WhyUsCard,
+)
 
 
 # =============================================================================
@@ -51,6 +70,13 @@ class LandingPageView(TemplateView):
             'faq_items': FAQItem.objects.filter(is_published=True),
             'school_info': SchoolInfo.objects.first(),
             'contact_form': ContactForm(),
+            # New CMS data
+            'statistics': LandingStatistic.objects.filter(is_published=True),
+            'why_us_cards': WhyUsCard.objects.filter(is_published=True),
+            'subjects': LandingSubject.objects.filter(is_published=True),
+            'pricing_packages': PricingPackage.objects.filter(is_published=True),
+            'education_levels': EducationLevel.objects.filter(is_published=True),
+            'lesson_types': LessonType.objects.filter(is_published=True),
         })
 
         return context
@@ -662,4 +688,478 @@ class LeadDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
             return HttpResponse('')
 
         messages.success(request, 'Wiadomość została usunięta.')
+        return redirect(self.success_url)
+
+
+# =============================================================================
+# CMS Admin Views - Statistics
+# =============================================================================
+
+
+class StatisticListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all landing page statistics."""
+
+    model = LandingStatistic
+    template_name = 'admin_panel/cms/statistics/list.html'
+    partial_template_name = 'admin_panel/cms/statistics/partials/_list.html'
+    context_object_name = 'statistics'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Statystyki'
+        return context
+
+
+class StatisticCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView):
+    """Create new statistic."""
+
+    model = LandingStatistic
+    form_class = LandingStatisticForm
+    template_name = 'admin_panel/cms/statistics/form.html'
+    success_url = reverse_lazy('landing:cms-statistic-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj statystykę'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Statystyka została dodana.')
+        return super().form_valid(form)
+
+
+class StatisticUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView):
+    """Edit statistic."""
+
+    model = LandingStatistic
+    form_class = LandingStatisticForm
+    template_name = 'admin_panel/cms/statistics/form.html'
+    success_url = reverse_lazy('landing:cms-statistic-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.value}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Statystyka została zaktualizowana.')
+        return super().form_valid(form)
+
+
+class StatisticDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete statistic."""
+
+    model = LandingStatistic
+    success_url = reverse_lazy('landing:cms-statistic-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Statystyka została usunięta.')
+        return redirect(self.success_url)
+
+
+# =============================================================================
+# CMS Admin Views - Why Us Cards
+# =============================================================================
+
+
+class WhyUsCardListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all 'Why Us' cards."""
+
+    model = WhyUsCard
+    template_name = 'admin_panel/cms/whyus/list.html'
+    partial_template_name = 'admin_panel/cms/whyus/partials/_list.html'
+    context_object_name = 'cards'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Karty "Dlaczego my"'
+        return context
+
+
+class WhyUsCardCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView):
+    """Create new 'Why Us' card."""
+
+    model = WhyUsCard
+    form_class = WhyUsCardForm
+    template_name = 'admin_panel/cms/whyus/form.html'
+    success_url = reverse_lazy('landing:cms-whyus-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj kartę'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Karta została dodana.')
+        return super().form_valid(form)
+
+
+class WhyUsCardUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView):
+    """Edit 'Why Us' card."""
+
+    model = WhyUsCard
+    form_class = WhyUsCardForm
+    template_name = 'admin_panel/cms/whyus/form.html'
+    success_url = reverse_lazy('landing:cms-whyus-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.title}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Karta została zaktualizowana.')
+        return super().form_valid(form)
+
+
+class WhyUsCardDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete 'Why Us' card."""
+
+    model = WhyUsCard
+    success_url = reverse_lazy('landing:cms-whyus-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Karta została usunięta.')
+        return redirect(self.success_url)
+
+
+class WhyUsCardReorderView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Reorder 'Why Us' cards via AJAX."""
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            order = data.get('order', [])
+            for index, card_id in enumerate(order):
+                WhyUsCard.objects.filter(pk=card_id).update(order_index=index)
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# =============================================================================
+# CMS Admin Views - Subjects
+# =============================================================================
+
+
+class SubjectListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all subjects."""
+
+    model = LandingSubject
+    template_name = 'admin_panel/cms/subjects/list.html'
+    partial_template_name = 'admin_panel/cms/subjects/partials/_list.html'
+    context_object_name = 'subjects'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Przedmioty'
+        return context
+
+
+class SubjectCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView):
+    """Create new subject."""
+
+    model = LandingSubject
+    form_class = SubjectForm
+    template_name = 'admin_panel/cms/subjects/form.html'
+    success_url = reverse_lazy('landing:cms-subject-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj przedmiot'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Przedmiot został dodany.')
+        return super().form_valid(form)
+
+
+class SubjectUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView):
+    """Edit subject."""
+
+    model = LandingSubject
+    form_class = SubjectForm
+    template_name = 'admin_panel/cms/subjects/form.html'
+    success_url = reverse_lazy('landing:cms-subject-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.name}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Przedmiot został zaktualizowany.')
+        return super().form_valid(form)
+
+
+class SubjectDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete subject."""
+
+    model = LandingSubject
+    success_url = reverse_lazy('landing:cms-subject-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Przedmiot został usunięty.')
+        return redirect(self.success_url)
+
+
+class SubjectReorderView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Reorder subjects via AJAX."""
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            order = data.get('order', [])
+            for index, subject_id in enumerate(order):
+                LandingSubject.objects.filter(pk=subject_id).update(order_index=index)
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# =============================================================================
+# CMS Admin Views - Pricing Packages
+# =============================================================================
+
+
+class PricingPackageListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all pricing packages."""
+
+    model = PricingPackage
+    template_name = 'admin_panel/cms/pricing/list.html'
+    partial_template_name = 'admin_panel/cms/pricing/partials/_list.html'
+    context_object_name = 'packages'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Pakiety cenowe'
+        return context
+
+
+class PricingPackageCreateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView
+):
+    """Create new pricing package."""
+
+    model = PricingPackage
+    form_class = PricingPackageForm
+    template_name = 'admin_panel/cms/pricing/form.html'
+    success_url = reverse_lazy('landing:cms-pricing-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj pakiet'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Pakiet został dodany.')
+        return super().form_valid(form)
+
+
+class PricingPackageUpdateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView
+):
+    """Edit pricing package."""
+
+    model = PricingPackage
+    form_class = PricingPackageForm
+    template_name = 'admin_panel/cms/pricing/form.html'
+    success_url = reverse_lazy('landing:cms-pricing-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.name}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Pakiet został zaktualizowany.')
+        return super().form_valid(form)
+
+
+class PricingPackageDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete pricing package."""
+
+    model = PricingPackage
+    success_url = reverse_lazy('landing:cms-pricing-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Pakiet został usunięty.')
+        return redirect(self.success_url)
+
+
+class PricingPackageReorderView(LoginRequiredMixin, AdminRequiredMixin, View):
+    """Reorder pricing packages via AJAX."""
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            order = data.get('order', [])
+            for index, package_id in enumerate(order):
+                PricingPackage.objects.filter(pk=package_id).update(order_index=index)
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# =============================================================================
+# CMS Admin Views - Education Levels
+# =============================================================================
+
+
+class EducationLevelListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all education levels."""
+
+    model = EducationLevel
+    template_name = 'admin_panel/cms/levels/list.html'
+    partial_template_name = 'admin_panel/cms/levels/partials/_list.html'
+    context_object_name = 'levels'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Poziomy edukacyjne'
+        return context
+
+
+class EducationLevelCreateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView
+):
+    """Create new education level."""
+
+    model = EducationLevel
+    form_class = EducationLevelForm
+    template_name = 'admin_panel/cms/levels/form.html'
+    success_url = reverse_lazy('landing:cms-level-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj poziom'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Poziom został dodany.')
+        return super().form_valid(form)
+
+
+class EducationLevelUpdateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView
+):
+    """Edit education level."""
+
+    model = EducationLevel
+    form_class = EducationLevelForm
+    template_name = 'admin_panel/cms/levels/form.html'
+    success_url = reverse_lazy('landing:cms-level-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.name}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Poziom został zaktualizowany.')
+        return super().form_valid(form)
+
+
+class EducationLevelDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete education level."""
+
+    model = EducationLevel
+    success_url = reverse_lazy('landing:cms-level-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Poziom został usunięty.')
+        return redirect(self.success_url)
+
+
+# =============================================================================
+# CMS Admin Views - Lesson Types
+# =============================================================================
+
+
+class LessonTypeListView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, ListView):
+    """List all lesson types."""
+
+    model = LessonType
+    template_name = 'admin_panel/cms/lessontypes/list.html'
+    partial_template_name = 'admin_panel/cms/lessontypes/partials/_list.html'
+    context_object_name = 'lesson_types'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formy zajęć'
+        return context
+
+
+class LessonTypeCreateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateView
+):
+    """Create new lesson type."""
+
+    model = LessonType
+    form_class = LessonTypeForm
+    template_name = 'admin_panel/cms/lessontypes/form.html'
+    success_url = reverse_lazy('landing:cms-lessontype-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Dodaj formę zajęć'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Forma zajęć została dodana.')
+        return super().form_valid(form)
+
+
+class LessonTypeUpdateView(
+    LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, UpdateView
+):
+    """Edit lesson type."""
+
+    model = LessonType
+    form_class = LessonTypeForm
+    template_name = 'admin_panel/cms/lessontypes/form.html'
+    success_url = reverse_lazy('landing:cms-lessontype-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edytuj: {self.object.name}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Forma zajęć została zaktualizowana.')
+        return super().form_valid(form)
+
+
+class LessonTypeDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    """Delete lesson type."""
+
+    model = LessonType
+    success_url = reverse_lazy('landing:cms-lessontype-list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if request.headers.get('HX-Request'):
+            return HttpResponse('')
+        messages.success(request, 'Forma zajęć została usunięta.')
         return redirect(self.success_url)

@@ -1,6 +1,6 @@
 """Mixins for views in napiatke project."""
 
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import AccessMixin
 from django.core.exceptions import PermissionDenied
 
 from apps.core.permissions import Permission, has_permission
@@ -18,59 +18,60 @@ class HTMXMixin:
         return super().get_template_names()
 
 
-class PermissionRequiredMixin(UserPassesTestMixin):
-    """Mixin that checks for specific permissions."""
+class PermissionRequiredMixin(AccessMixin):
+    """Mixin that checks for specific permissions.
+
+    Redirects to login if not authenticated, raises 403 if no permission.
+    """
 
     required_permissions: list[Permission] = []
 
-    def test_func(self) -> bool:
-        """Check if user has all required permissions."""
-        if not self.request.user.is_authenticated:
-            return False
-
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
         for permission in self.required_permissions:
-            if not has_permission(self.request.user, permission):
-                return False
-        return True
-
-    def handle_no_permission(self):
-        """Handle permission denied."""
-        raise PermissionDenied('Brak uprawnień do tej akcji.')
+            if not has_permission(request.user, permission):
+                raise PermissionDenied('Brak uprawnień do tej akcji.')
+        return super().dispatch(request, *args, **kwargs)
 
 
-class AdminRequiredMixin(UserPassesTestMixin):
-    """Mixin requiring admin role."""
+class AdminRequiredMixin(AccessMixin):
+    """Mixin requiring admin role.
 
-    def test_func(self) -> bool:
-        """Check if user is admin."""
-        return self.request.user.is_authenticated and self.request.user.is_admin
+    Redirects to login if not authenticated, raises 403 if not admin.
+    """
 
-    def handle_no_permission(self):
-        """Handle permission denied."""
-        raise PermissionDenied('Wymagane uprawnienia administratora.')
-
-
-class TutorRequiredMixin(UserPassesTestMixin):
-    """Mixin requiring tutor or admin role."""
-
-    def test_func(self) -> bool:
-        """Check if user is tutor or admin."""
-        user = self.request.user
-        return user.is_authenticated and (user.is_tutor or user.is_admin)
-
-    def handle_no_permission(self):
-        """Handle permission denied."""
-        raise PermissionDenied('Wymagane uprawnienia korepetytora.')
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not request.user.is_admin:
+            raise PermissionDenied('Wymagane uprawnienia administratora.')
+        return super().dispatch(request, *args, **kwargs)
 
 
-class StudentRequiredMixin(UserPassesTestMixin):
-    """Mixin requiring student or admin role."""
+class TutorRequiredMixin(AccessMixin):
+    """Mixin requiring tutor or admin role.
 
-    def test_func(self) -> bool:
-        """Check if user is student or admin."""
-        user = self.request.user
-        return user.is_authenticated and (user.is_student or user.is_admin)
+    Redirects to login if not authenticated, raises 403 if not tutor/admin.
+    """
 
-    def handle_no_permission(self):
-        """Handle permission denied."""
-        raise PermissionDenied('Wymagane uprawnienia ucznia.')
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not (request.user.is_tutor or request.user.is_admin):
+            raise PermissionDenied('Wymagane uprawnienia korepetytora.')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class StudentRequiredMixin(AccessMixin):
+    """Mixin requiring student or admin role.
+
+    Redirects to login if not authenticated, raises 403 if not student/admin.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not (request.user.is_student or request.user.is_admin):
+            raise PermissionDenied('Wymagane uprawnienia ucznia.')
+        return super().dispatch(request, *args, **kwargs)

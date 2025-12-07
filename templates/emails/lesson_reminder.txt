@@ -1,0 +1,23 @@
+Przypomnienie o zajeciach - Na Piatke
+
+Witaj {{ recipient.first_name }}!
+
+Przypominamy o zajeciach zaplanowanych na jutro:
+
+{{ lesson.title }}
+Godzina: {{ lesson.start_time|date:"H:i" }} - {{ lesson.end_time|date:"H:i" }}
+{% if lesson.subject %}Przedmiot: {{ lesson.subject.name }}{% endif %}
+{% if lesson.level %}Poziom: {{ lesson.level.name }}{% endif %}
+{% if recipient_type == 'student' %}Korepetytor: {{ lesson.tutor.get_full_name }}{% endif %}
+{% if lesson.room %}Sala: {{ lesson.room.name }}{% else %}Forma: Online{% endif %}
+{% if lesson.description %}
+{{ lesson.description }}
+{% endif %}
+
+Do zobaczenia!
+
+---
+Pozdrawiamy,
+Zespol Na Piatke
+
+Ta wiadomosc zostala wygenerowana automatycznie. Prosimy nie odpowiadac na nia.

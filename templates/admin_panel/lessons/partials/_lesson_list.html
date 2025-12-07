@@ -1,0 +1,97 @@
+<div class="overflow-x-auto bg-base-100 rounded-lg border">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tytuł</th>
+                <th>Przedmiot</th>
+                <th>Korepetytor</th>
+                <th>Data i czas</th>
+                <th>Status</th>
+                <th>Uczniów</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lesson in lessons %}
+            <tr class="hover">
+                <td class="font-medium">
+                    {{ lesson.title }}
+                    {% if lesson.is_group_lesson %}
+                        <span class="badge badge-xs badge-secondary ml-1">Grupowa</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge" style="background-color: {{ lesson.subject.color|default:'#3B82F6' }}; color: white;">
+                        {{ lesson.subject.name }}
+                    </span>
+                </td>
+                <td>{{ lesson.tutor.get_full_name }}</td>
+                <td>
+                    <div class="text-sm">
+                        {{ lesson.start_time|date:'d.m.Y' }}
+                    </div>
+                    <div class="text-xs text-base-content/60">
+                        {{ lesson.start_time|date:'H:i' }} - {{ lesson.end_time|date:'H:i' }}
+                    </div>
+                </td>
+                <td>
+                    {% if lesson.status == 'scheduled' %}
+                        <span class="badge badge-info badge-sm">Zaplanowana</span>
+                    {% elif lesson.status == 'ongoing' %}
+                        <span class="badge badge-success badge-sm">W trakcie</span>
+                    {% elif lesson.status == 'completed' %}
+                        <span class="badge badge-neutral badge-sm">Zakończona</span>
+                    {% elif lesson.status == 'cancelled' %}
+                        <span class="badge badge-error badge-sm">Anulowana</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-ghost badge-sm">{{ lesson.student_count }}</span>
+                </td>
+                <td>
+                    <div class="flex gap-1">
+                        <button class="btn btn-ghost btn-xs"
+                                hx-get="{% url 'lessons:detail' lesson.pk %}"
+                                hx-target="#modal-content"
+                                hx-swap="innerHTML"
+                                onclick="document.getElementById('modal').showModal()">
+                            Szczegóły
+                        </button>
+                        <button class="btn btn-ghost btn-xs"
+                                hx-get="{% url 'lessons:update' lesson.pk %}"
+                                hx-target="#modal-content"
+                                hx-swap="innerHTML"
+                                onclick="document.getElementById('modal').showModal()">
+                            Edytuj
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-base-content/60 py-8">
+                    Brak zajęć do wyświetlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-sm">«</a>
+        {% endif %}
+
+        <button class="join-item btn btn-sm btn-disabled">
+            Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+        </button>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-sm">»</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

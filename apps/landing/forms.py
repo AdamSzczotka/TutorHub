@@ -2,7 +2,20 @@
 
 from django import forms
 
-from .models import FAQItem, Lead, PageContent, SchoolInfo, TeamMember, Testimonial
+from .models import (
+    EducationLevel,
+    FAQItem,
+    LandingStatistic,
+    LandingSubject,
+    Lead,
+    LessonType,
+    PageContent,
+    PricingPackage,
+    SchoolInfo,
+    TeamMember,
+    Testimonial,
+    WhyUsCard,
+)
 
 
 class ContactForm(forms.ModelForm):
@@ -269,13 +282,19 @@ class SchoolInfoForm(forms.ModelForm):
             'name',
             'tagline',
             'description',
+            'logo',
+            'logo_dark',
+            'favicon',
             'email',
             'phone',
+            'phone_secondary',
             'address',
             'city',
             'postal_code',
             'latitude',
             'longitude',
+            'footer_text',
+            'copyright_text',
         ]
         widgets = {
             'name': forms.TextInput(attrs={
@@ -291,6 +310,18 @@ class SchoolInfoForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Opis szkoły...',
             }),
+            'logo': forms.FileInput(attrs={
+                'class': 'file-input file-input-bordered w-full',
+                'accept': 'image/*',
+            }),
+            'logo_dark': forms.FileInput(attrs={
+                'class': 'file-input file-input-bordered w-full',
+                'accept': 'image/*',
+            }),
+            'favicon': forms.FileInput(attrs={
+                'class': 'file-input file-input-bordered w-full',
+                'accept': 'image/*',
+            }),
             'email': forms.EmailInput(attrs={
                 'class': 'input input-bordered w-full',
                 'placeholder': 'kontakt@napiatke.pl',
@@ -298,6 +329,10 @@ class SchoolInfoForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={
                 'class': 'input input-bordered w-full',
                 'placeholder': '+48 123 456 789',
+            }),
+            'phone_secondary': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': '+48 987 654 321',
             }),
             'address': forms.TextInput(attrs={
                 'class': 'input input-bordered w-full',
@@ -321,6 +356,15 @@ class SchoolInfoForm(forms.ModelForm):
                 'placeholder': '21.0122',
                 'step': '0.00000001',
             }),
+            'footer_text': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3,
+                'placeholder': 'Tekst wyświetlany w stopce...',
+            }),
+            'copyright_text': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': '© 2024 Na Piątkę. Wszelkie prawa zastrzeżone.',
+            }),
         }
 
 
@@ -335,3 +379,354 @@ class LeadStatusForm(forms.ModelForm):
                 'class': 'select select-bordered w-full',
             }),
         }
+
+
+# =============================================================================
+# New CMS Forms for Landing Page Sections
+# =============================================================================
+
+
+class LandingStatisticForm(forms.ModelForm):
+    """Form for managing landing page statistics."""
+
+    class Meta:
+        model = LandingStatistic
+        fields = ['value', 'label', 'description', 'order_index', 'is_published']
+        widgets = {
+            'value': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. 5+, 100+, 3',
+            }),
+            'label': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. lat doświadczenia',
+            }),
+            'description': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'Dodatkowy opis (opcjonalnie)',
+            }),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+        }
+
+
+class WhyUsCardForm(forms.ModelForm):
+    """Form for managing 'Why Us' cards."""
+
+    class Meta:
+        model = WhyUsCard
+        fields = ['title', 'description', 'icon', 'color', 'link', 'order_index', 'is_published']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Małe grupy do 4 osób',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3,
+                'placeholder': 'Opis korzyści...',
+            }),
+            'icon': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full font-mono text-sm',
+                'rows': 3,
+                'placeholder': '<svg>...</svg>',
+            }),
+            'color': forms.Select(
+                choices=[
+                    ('brand', 'Brand (niebieski)'),
+                    ('emerald', 'Emerald (zielony)'),
+                    ('blue', 'Blue (jasnoniebieski)'),
+                    ('purple', 'Purple (fioletowy)'),
+                    ('orange', 'Orange (pomarańczowy)'),
+                    ('teal', 'Teal (morski)'),
+                ],
+                attrs={'class': 'select select-bordered w-full'},
+            ),
+            'link': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': '#pakiety lub /kontakt',
+            }),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+        }
+
+
+class SubjectForm(forms.ModelForm):
+    """Form for managing subjects."""
+
+    topics_text = forms.CharField(
+        label='Tematy',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'textarea textarea-bordered w-full',
+            'rows': 4,
+            'placeholder': 'Jeden temat na linię:\nArytmetyka\nAlgebra\nGeometria',
+        }),
+        help_text='Wpisz każdy temat w nowej linii',
+    )
+
+    target_groups_text = forms.CharField(
+        label='Grupy docelowe',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'textarea textarea-bordered w-full',
+            'rows': 3,
+            'placeholder': 'Jedna grupa na linię:\nSzkoła podstawowa\nLiceum\nMatura',
+        }),
+        help_text='Wpisz każdą grupę w nowej linii',
+    )
+
+    class Meta:
+        model = LandingSubject
+        fields = [
+            'name',
+            'slug',
+            'short_description',
+            'full_description',
+            'icon_svg',
+            'color_from',
+            'color_to',
+            'levels',
+            'order_index',
+            'is_published',
+            'is_featured',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Matematyka',
+            }),
+            'slug': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. matematyka',
+            }),
+            'short_description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 2,
+                'placeholder': 'Krótki opis wyświetlany na karcie...',
+            }),
+            'full_description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 4,
+                'placeholder': 'Pełny opis wyświetlany w modalu...',
+            }),
+            'icon_svg': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full font-mono text-sm',
+                'rows': 3,
+                'placeholder': '<svg>...</svg>',
+            }),
+            'color_from': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. blue-500',
+            }),
+            'color_to': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. indigo-600',
+            }),
+            'levels': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Wszystkie poziomy lub A1-C2',
+            }),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+            'is_featured': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-secondary',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['topics_text'].initial = '\n'.join(self.instance.topics or [])
+            self.fields['target_groups_text'].initial = '\n'.join(
+                self.instance.target_groups or []
+            )
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        topics_text = self.cleaned_data.get('topics_text', '')
+        instance.topics = [
+            line.strip() for line in topics_text.split('\n') if line.strip()
+        ]
+        target_groups_text = self.cleaned_data.get('target_groups_text', '')
+        instance.target_groups = [
+            line.strip() for line in target_groups_text.split('\n') if line.strip()
+        ]
+        if commit:
+            instance.save()
+        return instance
+
+
+class PricingPackageForm(forms.ModelForm):
+    """Form for managing pricing packages."""
+
+    class Meta:
+        model = PricingPackage
+        fields = [
+            'name',
+            'sessions_count',
+            'individual_price',
+            'group_price',
+            'is_popular',
+            'order_index',
+            'is_published',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Standard',
+            }),
+            'sessions_count': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 1,
+                'placeholder': 'np. 8',
+            }),
+            'individual_price': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+                'step': '0.01',
+                'placeholder': 'np. 460.00',
+            }),
+            'group_price': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+                'step': '0.01',
+                'placeholder': 'np. 300.00',
+            }),
+            'is_popular': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-success',
+            }),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+        }
+
+
+class EducationLevelForm(forms.ModelForm):
+    """Form for managing education levels."""
+
+    class Meta:
+        model = EducationLevel
+        fields = ['name', 'icon_svg', 'color', 'order_index', 'is_published']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Szkoła podstawowa',
+            }),
+            'icon_svg': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full font-mono text-sm',
+                'rows': 2,
+                'placeholder': '<svg>...</svg>',
+            }),
+            'color': forms.Select(
+                choices=[
+                    ('brand', 'Brand (niebieski)'),
+                    ('emerald', 'Emerald (zielony)'),
+                    ('blue', 'Blue (jasnoniebieski)'),
+                    ('red', 'Red (czerwony)'),
+                ],
+                attrs={'class': 'select select-bordered w-full'},
+            ),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+        }
+
+
+class LessonTypeForm(forms.ModelForm):
+    """Form for managing lesson types."""
+
+    features_text = forms.CharField(
+        label='Cechy',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'textarea textarea-bordered w-full',
+            'rows': 4,
+            'placeholder': 'Jedna cecha na linię:\nIndywidualny program\nElastyczne tempo\n100% uwagi',
+        }),
+        help_text='Wpisz każdą cechę w nowej linii',
+    )
+
+    class Meta:
+        model = LessonType
+        fields = [
+            'name',
+            'subtitle',
+            'description',
+            'icon_svg',
+            'color',
+            'order_index',
+            'is_published',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. Zajęcia indywidualne',
+            }),
+            'subtitle': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'np. (do 4 osób)',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3,
+                'placeholder': 'Opis formy zajęć...',
+            }),
+            'icon_svg': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full font-mono text-sm',
+                'rows': 3,
+                'placeholder': '<svg>...</svg>',
+            }),
+            'color': forms.Select(
+                choices=[
+                    ('brand', 'Brand (niebieski)'),
+                    ('emerald', 'Emerald (zielony)'),
+                ],
+                attrs={'class': 'select select-bordered w-full'},
+            ),
+            'order_index': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0,
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['features_text'].initial = '\n'.join(self.instance.features or [])
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        features_text = self.cleaned_data.get('features_text', '')
+        instance.features = [
+            line.strip() for line in features_text.split('\n') if line.strip()
+        ]
+        if commit:
+            instance.save()
+        return instance

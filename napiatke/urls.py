@@ -11,6 +11,7 @@ urlpatterns = [
     path('panel/', include('apps.admin_panel.urls')),
     path('panel/subjects/', include('apps.subjects.urls')),
     path('panel/rooms/', include('apps.rooms.urls')),
+    path('panel/lessons/', include('apps.lessons.urls')),
     path('panel/', include('apps.core.urls')),
     path('', include('apps.landing.urls')),
 ]

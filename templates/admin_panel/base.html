@@ -15,6 +15,9 @@
     <!-- Alpine.js -->
     <script src="{% static 'js/alpine.min.js' %}" defer></script>
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="min-h-screen bg-base-200"
@@ -82,5 +85,21 @@
 </dialog>
 
 {% block extra_js %}{% endblock %}
+
+<script>
+    // Initialize Lucide icons
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+
+    // Re-initialize after HTMX swaps
+    document.body.addEventListener('htmx:afterSwap', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>
 </body>
 </html>

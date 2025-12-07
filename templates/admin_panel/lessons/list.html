@@ -1,0 +1,77 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">Lista zajęć</h1>
+        <div class="flex gap-2">
+            <a href="{% url 'lessons:calendar' %}" class="btn btn-outline btn-sm">
+                Kalendarz
+            </a>
+            <button class="btn btn-primary btn-sm"
+                    hx-get="{% url 'lessons:create' %}"
+                    hx-target="#modal-content"
+                    hx-swap="innerHTML"
+                    onclick="document.getElementById('modal').showModal()">
+                + Nowe zajęcia
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-base-100 p-4 rounded-lg border">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text text-xs">Status</span>
+                </label>
+                <select name="status" class="select select-bordered select-sm">
+                    <option value="">Wszystkie</option>
+                    <option value="scheduled" {% if request.GET.status == 'scheduled' %}selected{% endif %}>Zaplanowane</option>
+                    <option value="ongoing" {% if request.GET.status == 'ongoing' %}selected{% endif %}>W trakcie</option>
+                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Zakończone</option>
+                    <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Anulowane</option>
+                </select>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text text-xs">Korepetytor</span>
+                </label>
+                <select name="tutor" class="select select-bordered select-sm">
+                    <option value="">Wszyscy</option>
+                    {% for tutor in tutors %}
+                        <option value="{{ tutor.id }}" {% if request.GET.tutor == tutor.id|stringformat:'s' %}selected{% endif %}>
+                            {{ tutor.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text text-xs">Przedmiot</span>
+                </label>
+                <select name="subject" class="select select-bordered select-sm">
+                    <option value="">Wszystkie</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if request.GET.subject == subject.id|stringformat:'s' %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-sm btn-primary">Filtruj</button>
+            <a href="{% url 'lessons:list' %}" class="btn btn-sm btn-ghost">Wyczyść</a>
+        </form>
+    </div>
+
+    <div id="lesson-list"
+         hx-get="{% url 'lessons:list' %}"
+         hx-trigger="eventCreated from:body, eventUpdated from:body, eventDeleted from:body"
+         hx-swap="innerHTML">
+        {% include "admin_panel/lessons/partials/_lesson_list.html" %}
+    </div>
+</div>
+{% endblock %}

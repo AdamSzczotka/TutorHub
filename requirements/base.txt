@@ -38,3 +38,4 @@ django-ratelimit>=4.1
 
 # Utils
 python-dateutil>=2.9
+icalendar>=5.0
