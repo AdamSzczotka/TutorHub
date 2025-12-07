@@ -6,11 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>{% block title %}Na Piątkę - Centrum korepetycji{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Centrum korepetycji Na Piątkę. Profesjonalne korepetycje z matematyki, języka angielskiego i niemieckiego. Indywidualne podejście, doświadczeni nauczyciele.{% endblock %}">
+    <title>{% block title %}{{ school_info.name|default:'Na Piątkę' }} - {{ school_info.tagline|default:'Centrum korepetycji' }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ school_info.description|default:'Centrum korepetycji Na Piątkę. Profesjonalne korepetycje z matematyki, języka angielskiego i niemieckiego. Indywidualne podejście, doświadczeni nauczyciele.' }}{% endblock %}">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    {% if school_info.favicon %}
+        <link rel="icon" href="{{ school_info.favicon.url }}">
+    {% else %}
+        <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    {% endif %}
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -25,8 +29,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
-    <meta property="og:title" content="Na Piątkę - Korepetycje" />
-    <meta property="og:description" content="Matematyka, angielski, niemiecki. Indywidualnie lub w małych grupach." />
+    <meta property="og:title" content="{{ school_info.name|default:'Na Piątkę' }} - {{ school_info.tagline|default:'Korepetycje' }}" />
+    <meta property="og:description" content="{{ school_info.description|default:'Matematyka, angielski, niemiecki. Indywidualnie lub w małych grupach.' }}" />
     <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 
     <style>
@@ -89,8 +93,12 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <a href="{% url 'landing:home' %}" class="flex items-center gap-2 font-semibold text-brand text-lg">
-                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white font-bold">5</span>
-                    <span>Na Piątkę</span>
+                    {% if school_info.logo %}
+                        <img src="{{ school_info.logo.url }}" alt="{{ school_info.name|default:'Na Piątkę' }}" class="h-8 w-auto">
+                    {% else %}
+                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white font-bold">5</span>
+                    {% endif %}
+                    <span>{{ school_info.name|default:'Na Piątkę' }}</span>
                 </a>
 
                 <!-- Desktop Navigation -->
@@ -174,17 +182,22 @@
                 <!-- Company Info -->
                 <div class="lg:col-span-1">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-12 h-12 bg-gradient-to-br from-brand to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <span class="text-white font-bold text-xl">5</span>
-                        </div>
+                        {% if school_info.logo_dark %}
+                            <img src="{{ school_info.logo_dark.url }}" alt="{{ school_info.name|default:'Na Piątkę' }}" class="h-12 w-auto">
+                        {% elif school_info.logo %}
+                            <img src="{{ school_info.logo.url }}" alt="{{ school_info.name|default:'Na Piątkę' }}" class="h-12 w-auto">
+                        {% else %}
+                            <div class="w-12 h-12 bg-gradient-to-br from-brand to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <span class="text-white font-bold text-xl">5</span>
+                            </div>
+                        {% endif %}
                         <div>
-                            <h3 class="text-xl font-bold text-white">Na Piątkę</h3>
-                            <p class="text-slate-300 text-sm">Centrum korepetycji</p>
+                            <h3 class="text-xl font-bold text-white">{{ school_info.name|default:'Na Piątkę' }}</h3>
+                            <p class="text-slate-300 text-sm">{{ school_info.tagline|default:'Centrum korepetycji' }}</p>
                         </div>
                     </div>
                     <p class="text-slate-300 leading-relaxed mb-6">
-                        Profesjonalne korepetycje i zajęcia edukacyjne dla dzieci i młodzieży.
-                        Indywidualne podejście do każdego ucznia.
+                        {{ school_info.footer_text|default:'Profesjonalne korepetycje i zajęcia edukacyjne dla dzieci i młodzieży. Indywidualne podejście do każdego ucznia.' }}
                     </p>
                     <div class="flex gap-4">
                         {% if school_info.email %}
@@ -270,7 +283,11 @@
             <div class="border-t border-white/10 pt-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <p class="text-slate-300 text-sm">
-                        &copy; {% now "Y" %} Na Piątkę - Centrum korepetycji. Wszelkie prawa zastrzeżone.
+                        {% if school_info.copyright_text %}
+                            {{ school_info.copyright_text }}
+                        {% else %}
+                            &copy; {% now "Y" %} {{ school_info.name|default:'Na Piątkę' }} - {{ school_info.tagline|default:'Centrum korepetycji' }}. Wszelkie prawa zastrzeżone.
+                        {% endif %}
                     </p>
                     <div class="flex items-center gap-6 text-sm">
                         <a href="{% url 'landing:privacy_policy' %}" class="text-slate-300 hover:text-white transition-colors duration-300">Polityka prywatnosci</a>

@@ -63,7 +63,7 @@
 
                 <div class="space-y-4 text-slate-600 leading-relaxed">
                     {% if about.content %}
-                        {{ about.content|linebreaks }}
+                        {{ about.content|safe }}
                     {% else %}
                     <p class="text-lg">
                         Jesteśmy zespołem doświadczonych korepetytorów, którzy łączą <strong class="text-slate-700">pasję do nauczania</strong> z nowoczesnym podejściem do edukacji.
@@ -79,18 +79,27 @@
 
                 <!-- Stats -->
                 <div class="grid grid-cols-3 gap-4 mt-8 p-6 bg-gradient-to-r from-brandBg/50 to-blue-50/50 rounded-2xl border border-brand/10">
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-brand mb-1">5+</div>
-                        <div class="text-xs text-slate-600">lat doświadczenia</div>
-                    </div>
-                    <div class="text-center border-x border-slate-200">
-                        <div class="text-2xl font-bold text-brand mb-1">3</div>
-                        <div class="text-xs text-slate-600">nowoczesne sale</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-brand mb-1">100+</div>
-                        <div class="text-xs text-slate-600">zadowolonych uczniów</div>
-                    </div>
+                    {% if statistics %}
+                        {% for stat in statistics %}
+                        <div class="text-center{% if not forloop.first and not forloop.last %} border-x border-slate-200{% endif %}">
+                            <div class="text-2xl font-bold text-brand mb-1">{{ stat.value }}</div>
+                            <div class="text-xs text-slate-600">{{ stat.label }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-brand mb-1">5+</div>
+                            <div class="text-xs text-slate-600">lat doświadczenia</div>
+                        </div>
+                        <div class="text-center border-x border-slate-200">
+                            <div class="text-2xl font-bold text-brand mb-1">3</div>
+                            <div class="text-xs text-slate-600">nowoczesne sale</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-brand mb-1">100+</div>
+                            <div class="text-xs text-slate-600">zadowolonych uczniów</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -160,7 +169,29 @@
             <p class="text-slate-600 max-w-2xl mx-auto">Łączymy doświadczenie z nowoczesnym podejściem do nauki</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <!-- Card 1 -->
+            {% if why_us_cards %}
+                {% for card in why_us_cards %}
+                {% if card.link %}
+                <a href="{{ card.link }}" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
+                {% else %}
+                <div class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
+                {% endif %}
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-{{ card.color }}-500/5 to-{{ card.color }}-500/10 rounded-bl-3xl"></div>
+                    <div class="relative">
+                        <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-{{ card.color }}-500 to-{{ card.color }}-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                            {% if card.icon %}{{ card.icon|safe }}{% endif %}
+                        </div>
+                        <h3 class="font-semibold text-slate-900 mb-2">{{ card.title }}</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">{{ card.description }}</p>
+                    </div>
+                {% if card.link %}
+                </a>
+                {% else %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+            <!-- Fallback cards -->
             <a href="#pakiety" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand/5 to-brand/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -172,7 +203,6 @@
                 </div>
             </a>
 
-            <!-- Card 2 -->
             <div class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -184,7 +214,6 @@
                 </div>
             </div>
 
-            <!-- Card 3 -->
             <a href="#pakiety" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/5 to-blue-500/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -196,7 +225,6 @@
                 </div>
             </a>
 
-            <!-- Card 4 -->
             <a href="#zespol" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/5 to-purple-500/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -208,7 +236,6 @@
                 </div>
             </a>
 
-            <!-- Card 5 -->
             <div class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-500/5 to-orange-500/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -220,7 +247,6 @@
                 </div>
             </div>
 
-            <!-- Card 6 -->
             <a href="#kontakt" class="group relative block rounded-3xl bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-500/5 to-teal-500/10 rounded-bl-3xl"></div>
                 <div class="relative">
@@ -231,6 +257,7 @@
                     <p class="text-sm text-slate-600 leading-relaxed">Nowoczesne sale w świetnej lokalizacji. Wygodny dojazd i parking.</p>
                 </div>
             </a>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -624,7 +651,7 @@
 
         <div class="max-w-4xl mx-auto">
             <div class="grid grid-cols-1 gap-4">
-                {% for faq in faqs %}
+                {% for faq in faq_items %}
                 <details class="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-brand/20">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-3xl">
                         <div class="flex items-center gap-4">
