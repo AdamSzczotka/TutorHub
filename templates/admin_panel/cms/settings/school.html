@@ -1,0 +1,224 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <p class="text-base-content/70">Dane kontaktowe i lokalizacja szkoły</p>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Basic Info -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Podstawowe informacje</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="form-control">
+                        <label class="label" for="id_name">
+                            <span class="label-text">Nazwa szkoły <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_tagline">
+                            <span class="label-text">Slogan</span>
+                        </label>
+                        {{ form.tagline }}
+                        {% if form.tagline.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.tagline.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-control mt-4">
+                    <label class="label" for="id_description">
+                        <span class="label-text">Opis</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Dane kontaktowe</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="form-control">
+                        <label class="label" for="id_email">
+                            <span class="label-text">Email</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_phone">
+                            <span class="label-text">Telefon</span>
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.phone.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Adres</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                    <div class="form-control md:col-span-2">
+                        <label class="label" for="id_address">
+                            <span class="label-text">Ulica i numer</span>
+                        </label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.address.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_postal_code">
+                            <span class="label-text">Kod pocztowy</span>
+                        </label>
+                        {{ form.postal_code }}
+                        {% if form.postal_code.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.postal_code.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-control mt-4">
+                    <label class="label" for="id_city">
+                        <span class="label-text">Miasto</span>
+                    </label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.city.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Location -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Lokalizacja na mapie</h2>
+                <p class="text-sm text-base-content/70">Podaj współrzędne geograficzne aby wyświetlić mapę Google Maps</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="form-control">
+                        <label class="label" for="id_latitude">
+                            <span class="label-text">Szerokość geograficzna (latitude)</span>
+                        </label>
+                        {{ form.latitude }}
+                        {% if form.latitude.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.latitude.errors.0 }}</span>
+                        </label>
+                        {% else %}
+                        <label class="label">
+                            <span class="label-text-alt">np. 52.2297 dla Warszawy</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_longitude">
+                            <span class="label-text">Długość geograficzna (longitude)</span>
+                        </label>
+                        {{ form.longitude }}
+                        {% if form.longitude.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.longitude.errors.0 }}</span>
+                        </label>
+                        {% else %}
+                        <label class="label">
+                            <span class="label-text-alt">np. 21.0122 dla Warszawy</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if object.latitude and object.longitude %}
+                <div class="alert alert-info mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h3 class="font-bold">Mapa skonfigurowana</h3>
+                        <p class="text-sm">Mapa Google Maps będzie wyświetlana na stronie kontaktowej.</p>
+                    </div>
+                    <a href="https://www.google.com/maps?q={{ object.latitude }},{{ object.longitude }}" target="_blank" class="btn btn-sm">
+                        Podgląd w Google Maps
+                    </a>
+                </div>
+                {% else %}
+                <div class="alert mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Mapa nie będzie wyświetlana do momentu podania współrzędnych.</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'landing:cms-dashboard' %}" class="btn btn-ghost">Anuluj</a>
+            <button type="submit" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Zapisz ustawienia
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Uzupełnij profil - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl flex items-center gap-2">
+                <svg class="w-6 h-6 text-warning" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Uzupełnij swój profil
+                <span class="text-sm font-normal text-base-content/60">
+                    ({{ completion.completed_steps }}/{{ completion.total_steps }})
+                </span>
+            </h2>
+
+            <!-- Progress Bar -->
+            <div id="wizard-progress">
+                {% include "accounts/partials/_wizard_progress.html" %}
+            </div>
+
+            <!-- Step Form Container -->
+            <div id="step-form-container" class="mt-6"></div>
+
+            {% if next_step %}
+                <div class="card-actions justify-end mt-6">
+                    <button class="btn btn-primary w-full"
+                            hx-get="{% url 'accounts:profile-step' next_step.id %}"
+                            hx-target="#step-form-container"
+                            hx-swap="innerHTML">
+                        Kontynuuj uzupełnianie profilu
+                    </button>
+                </div>
+            {% else %}
+                <div class="alert alert-success mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Twój profil jest kompletny!</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

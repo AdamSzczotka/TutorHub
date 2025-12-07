@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl" data-theme="corporate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Na Piątkę - Korepetycje{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Profesjonalne korepetycje dla uczniów szkół podstawowych, liceum i studentów. Indywidualne podejście, doświadczeni korepetytorzy.{% endblock %}">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    <!-- HTMX -->
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+
+    <!-- Alpine.js -->
+    <script src="{% static 'js/alpine.min.js' %}" defer></script>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen bg-base-100"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    <!-- Navigation -->
+    <div class="navbar bg-base-100 shadow-lg fixed top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="#o-nas">O nas</a></li>
+                    <li><a href="#zespol">Korepetytorzy</a></li>
+                    <li><a href="#opinie">Opinie</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="#kontakt">Kontakt</a></li>
+                </ul>
+            </div>
+            <a href="{% url 'landing:home' %}" class="btn btn-ghost text-xl">
+                <span class="text-primary font-bold">Na Piątkę</span>
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="#o-nas">O nas</a></li>
+                <li><a href="#zespol">Korepetytorzy</a></li>
+                <li><a href="#opinie">Opinie</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#kontakt">Kontakt</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end">
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary">Panel logowania</a>
+        </div>
+    </div>
+
+    <!-- Main content with top padding for fixed navbar -->
+    <main class="pt-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer p-10 bg-neutral text-neutral-content">
+        <nav>
+            <h6 class="footer-title">Szkoła</h6>
+            <a href="#o-nas" class="link link-hover">O nas</a>
+            <a href="#zespol" class="link link-hover">Korepetytorzy</a>
+            <a href="#kontakt" class="link link-hover">Kontakt</a>
+        </nav>
+        <nav>
+            <h6 class="footer-title">Informacje</h6>
+            <a href="#faq" class="link link-hover">FAQ</a>
+            <a class="link link-hover">Regulamin</a>
+            <a class="link link-hover">Polityka prywatności</a>
+        </nav>
+        <nav>
+            <h6 class="footer-title">Kontakt</h6>
+            {% if school_info %}
+                <span>{{ school_info.phone }}</span>
+                <span>{{ school_info.email }}</span>
+                <span>{{ school_info.address }}</span>
+            {% endif %}
+        </nav>
+    </footer>
+    <footer class="footer footer-center p-4 bg-neutral text-neutral-content">
+        <aside>
+            <p>Copyright &copy; {% now "Y" %} Na Piątkę - Wszystkie prawa zastrzeżone</p>
+        </aside>
+    </footer>
+
+    <!-- Toast notifications -->
+    <div id="toast-container"
+         class="toast toast-end z-50"
+         hx-swap-oob="true">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}"
+                     x-data="{ show: true }"
+                     x-show="show"
+                     x-init="setTimeout(() => show = false, 5000)">
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

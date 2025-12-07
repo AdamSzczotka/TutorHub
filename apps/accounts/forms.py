@@ -5,11 +5,14 @@ import string
 
 from django import forms
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator
+from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import transaction
+from PIL import Image
 
 from apps.students.models import StudentProfile
 from apps.tutors.models import TutorProfile
+
+from .models import NotificationPreference, ParentAccess, UserRelationship
 
 User = get_user_model()
 
@@ -362,3 +365,210 @@ class PasswordChangeForm(forms.Form):
             self.add_error('confirm_password', 'Hasła nie są takie same.')
 
         return cleaned_data
+
+
+class AvatarUploadForm(forms.Form):
+    """Form for avatar upload with validation."""
+
+    avatar = forms.ImageField(
+        validators=[
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
+        ],
+        widget=forms.FileInput(
+            attrs={
+                'class': 'file-input file-input-bordered w-full',
+                'accept': 'image/*',
+            }
+        ),
+    )
+
+    def clean_avatar(self):
+        """Validate avatar image."""
+        avatar = self.cleaned_data.get('avatar')
+
+        if avatar:
+            # Check file size (max 5MB)
+            if avatar.size > 5 * 1024 * 1024:
+                raise forms.ValidationError(
+                    'Plik jest za duży. Maksymalny rozmiar to 5MB.'
+                )
+
+            # Validate image dimensions
+            try:
+                img = Image.open(avatar)
+                img.verify()  # Verify image integrity
+                avatar.seek(0)  # Reset file pointer after verify
+                img = Image.open(avatar)  # Reopen after verify
+                if img.width < 100 or img.height < 100:
+                    raise forms.ValidationError(
+                        'Obraz musi mieć minimum 100x100 pikseli.'
+                    )
+            except forms.ValidationError:
+                raise
+            except Exception:
+                raise forms.ValidationError('Nieprawidłowy plik obrazu.')
+
+        return avatar
+
+
+class NotificationPreferenceForm(forms.ModelForm):
+    """Form for user notification preferences."""
+
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            # Email
+            'email_lesson_reminders',
+            'email_lesson_changes',
+            'email_messages',
+            'email_invoices',
+            'email_system',
+            'email_marketing',
+            # SMS
+            'sms_lesson_reminders',
+            'sms_lesson_changes',
+            'sms_urgent',
+            # Push
+            'push_enabled',
+            'push_lesson_reminders',
+            'push_messages',
+            # In-app
+            'in_app_enabled',
+            # Timing
+            'reminder_hours_before',
+            'quiet_hours_start',
+            'quiet_hours_end',
+        ]
+        widgets = {
+            'email_lesson_reminders': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'email_lesson_changes': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'email_messages': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'email_invoices': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'email_system': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'email_marketing': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'sms_lesson_reminders': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'sms_lesson_changes': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'sms_urgent': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'push_enabled': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'push_lesson_reminders': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'push_messages': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'in_app_enabled': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'reminder_hours_before': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 1,
+                'max': 72,
+            }),
+            'quiet_hours_start': forms.TimeInput(attrs={
+                'class': 'input input-bordered w-full',
+                'type': 'time',
+            }),
+            'quiet_hours_end': forms.TimeInput(attrs={
+                'class': 'input input-bordered w-full',
+                'type': 'time',
+            }),
+        }
+
+
+class UserRelationshipForm(forms.ModelForm):
+    """Form for creating/editing user relationships."""
+
+    class Meta:
+        model = UserRelationship
+        fields = [
+            'from_user',
+            'to_user',
+            'relationship_type',
+            'is_active',
+            'notes',
+            'started_at',
+            'ended_at',
+        ]
+        widgets = {
+            'from_user': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'to_user': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'relationship_type': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'notes': forms.Textarea(attrs={'class': 'textarea textarea-bordered w-full', 'rows': 3}),
+            'started_at': forms.DateInput(attrs={'class': 'input input-bordered w-full', 'type': 'date'}),
+            'ended_at': forms.DateInput(attrs={'class': 'input input-bordered w-full', 'type': 'date'}),
+        }
+
+    def clean(self):
+        """Validate relationship data."""
+        cleaned_data = super().clean()
+        from_user = cleaned_data.get('from_user')
+        to_user = cleaned_data.get('to_user')
+        relationship_type = cleaned_data.get('relationship_type')
+
+        if from_user and to_user and from_user == to_user:
+            raise forms.ValidationError('Użytkownik nie może mieć relacji sam ze sobą.')
+
+        # Validate relationship type based on user roles
+        if relationship_type == UserRelationship.RelationshipType.TUTOR_STUDENT:
+            if from_user and not from_user.is_tutor:
+                self.add_error('from_user', 'Pierwszy użytkownik musi być korepetytorem.')
+            if to_user and not to_user.is_student:
+                self.add_error('to_user', 'Drugi użytkownik musi być uczniem.')
+
+        return cleaned_data
+
+
+class ParentAccessForm(forms.ModelForm):
+    """Form for parent access configuration."""
+
+    class Meta:
+        model = ParentAccess
+        fields = [
+            'access_level',
+            'can_view_lessons',
+            'can_view_attendance',
+            'can_view_grades',
+            'can_view_invoices',
+            'can_message_tutors',
+            'can_cancel_lessons',
+            'can_reschedule_lessons',
+        ]
+        widgets = {
+            'access_level': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'can_view_lessons': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_view_attendance': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_view_grades': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_view_invoices': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_message_tutors': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_cancel_lessons': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+            'can_reschedule_lessons': forms.CheckboxInput(attrs={'class': 'checkbox checkbox-primary'}),
+        }
+
+
+class ParentInvitationForm(forms.Form):
+    """Form for inviting a parent to access student data."""
+
+    parent_email = forms.EmailField(
+        label='Email rodzica',
+        widget=forms.EmailInput(attrs={'class': 'input input-bordered w-full'}),
+    )
+    access_level = forms.ChoiceField(
+        label='Poziom dostępu',
+        choices=ParentAccess.AccessLevel.choices,
+        initial=ParentAccess.AccessLevel.VIEW_ONLY,
+        widget=forms.Select(attrs={'class': 'select select-bordered w-full'}),
+    )
+
+    def __init__(self, *args, student=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.student = student
+
+    def clean_parent_email(self):
+        """Validate parent email."""
+        email = self.cleaned_data.get('parent_email')
+
+        if self.student:
+            # Check if invitation already exists
+            existing = ParentAccess.objects.filter(
+                student=self.student,
+                invited_email=email,
+            ).exists()
+            if existing:
+                raise forms.ValidationError('Zaproszenie dla tego adresu email już istnieje.')
+
+        return email

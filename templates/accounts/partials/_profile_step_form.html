@@ -1,0 +1,45 @@
+<div class="card bg-base-100 border border-base-300">
+    <div class="card-body">
+        <h3 class="card-title text-lg">
+            {% if step %}{{ step.title }}{% else %}Uzupełnij dane{% endif %}
+        </h3>
+
+        <form method="post"
+              hx-post="{% url 'accounts:profile-step' step_id %}"
+              hx-target="#wizard-progress"
+              hx-swap="outerHTML"
+              class="space-y-4">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">{{ field.label }}{% if field.field.required %} *{% endif %}</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ field.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <label class="label">
+                            <span class="label-text-alt">{{ field.help_text }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button"
+                        class="btn btn-ghost"
+                        onclick="document.getElementById('step-form-container').innerHTML = ''">
+                    Anuluj
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Zapisz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,169 @@
+{% extends "layouts/admin.html" %}
+
+{% block title %}{{ title }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'landing:cms-dashboard' %}">CMS</a></li>
+                    <li><a href="{% url 'landing:cms-testimonial-list' %}">Opinie</a></li>
+                    <li>{{ title }}</li>
+                </ul>
+            </div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_student_name">
+                            <span class="label-text">Imię ucznia <span class="text-error">*</span></span>
+                        </label>
+                        {{ form.student_name }}
+                        {% if form.student_name.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.student_name.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_parent_name">
+                            <span class="label-text">Imię rodzica</span>
+                        </label>
+                        {{ form.parent_name }}
+                        {% if form.parent_name.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.parent_name.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_content">
+                        <span class="label-text">Treść opinii <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.content.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_rating">
+                            <span class="label-text">Ocena</span>
+                        </label>
+                        {{ form.rating }}
+                        {% if form.rating.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.rating.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_subject">
+                            <span class="label-text">Przedmiot</span>
+                        </label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.subject.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_level">
+                            <span class="label-text">Poziom</span>
+                        </label>
+                        {{ form.level }}
+                        {% if form.level.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.level.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_image">
+                            <span class="label-text">Zdjęcie</span>
+                        </label>
+                        {{ form.image }}
+                        {% if object.image %}
+                        <div class="mt-2">
+                            <img src="{{ object.image.url }}" alt="Aktualne zdjęcie" class="w-16 h-16 object-cover rounded-full" />
+                        </div>
+                        {% endif %}
+                        {% if form.image.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.image.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_display_order">
+                            <span class="label-text">Kolejność</span>
+                        </label>
+                        {{ form.display_order }}
+                        {% if form.display_order.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.display_order.errors.0 }}</span>
+                        </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label" for="id_is_verified">
+                            <span class="label-text">Status weryfikacji</span>
+                        </label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_verified }}
+                            <span class="label-text">Zweryfikowana</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="id_is_published">
+                            <span class="label-text">Status publikacji</span>
+                        </label>
+                        <label class="cursor-pointer label justify-start gap-4">
+                            {{ form.is_published }}
+                            <span class="label-text">Opublikowana na stronie</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{% url 'landing:cms-testimonial-list' %}" class="btn btn-ghost">Anuluj</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Zapisz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

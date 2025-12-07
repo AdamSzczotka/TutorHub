@@ -1,0 +1,69 @@
+<div class="card bg-base-200" id="team-row-{{ member.pk }}" data-id="{{ member.pk }}">
+    <div class="card-body p-4">
+        <div class="flex items-center gap-4">
+            <!-- Drag Handle -->
+            <div class="cursor-grab text-base-content/50 hover:text-base-content">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                </svg>
+            </div>
+
+            <!-- Avatar -->
+            {% if member.image %}
+            <div class="avatar">
+                <div class="w-16 rounded-full">
+                    <img src="{{ member.image.url }}" alt="{{ member.name }} {{ member.surname }}" />
+                </div>
+            </div>
+            {% else %}
+            <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-16">
+                    <span class="text-xl">{{ member.name.0 }}{{ member.surname.0 }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Info -->
+            <div class="flex-1">
+                <div class="flex items-center gap-2">
+                    <h3 class="font-semibold text-lg">{{ member.name }} {{ member.surname }}</h3>
+                    <button hx-post="{% url 'landing:cms-team-toggle' member.pk %}"
+                            hx-target="#team-row-{{ member.pk }}"
+                            hx-swap="outerHTML"
+                            class="badge {% if member.is_published %}badge-success{% else %}badge-ghost{% endif %} cursor-pointer">
+                        {% if member.is_published %}Widoczny{% else %}Ukryty{% endif %}
+                    </button>
+                </div>
+                {% if member.position %}
+                <p class="text-base-content/70">{{ member.position }}</p>
+                {% endif %}
+                {% if member.expertise %}
+                <div class="flex flex-wrap gap-1 mt-2">
+                    {% for subject in member.expertise %}
+                    <span class="badge badge-outline badge-sm">{{ subject }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+                <a href="{% url 'landing:cms-team-update' member.pk %}" class="btn btn-ghost btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edytuj
+                </a>
+                <button hx-post="{% url 'landing:cms-team-delete' member.pk %}"
+                        hx-confirm="Czy na pewno chcesz usunąć {{ member.name }} {{ member.surname }}?"
+                        hx-target="#team-row-{{ member.pk }}"
+                        hx-swap="outerHTML swap:1s"
+                        class="btn btn-ghost btn-sm text-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

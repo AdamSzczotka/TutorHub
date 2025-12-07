@@ -1,0 +1,292 @@
+{% extends "landing/base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero min-h-screen bg-gradient-to-br from-primary to-secondary text-primary-content">
+    <div class="hero-content text-center">
+        <div class="max-w-3xl">
+            <h1 class="text-5xl font-bold">{{ hero.title|default:"Korepetycje, które prowadzą do sukcesu" }}</h1>
+            <p class="py-6 text-xl">{{ hero.subtitle|default:"Profesjonalni korepetytorzy, indywidualne podejście, gwarancja postępów" }}</p>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <a href="#kontakt" class="btn btn-accent btn-lg">Zapytaj o termin</a>
+                <a href="#zespol" class="btn btn-outline btn-lg border-white text-white hover:bg-white hover:text-primary">Poznaj naszych korepetytorów</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="o-nas" class="py-20">
+    <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-4xl font-bold mb-6">{{ about.title|default:"O szkole Na Piątkę" }}</h2>
+                <div class="prose prose-lg">
+                    {% if about.content %}
+                        {{ about.content|linebreaks }}
+                    {% else %}
+                        <p>Szkoła korepetycyjska "Na Piątkę" to miejsce, gdzie każdy uczeń może odkryć swój potencjał i osiągnąć sukces w nauce.</p>
+                        <p>Nasi doświadczeni korepetytorzy stosują indywidualne podejście do każdego ucznia, dostosowując metody nauczania do jego potrzeb i możliwości.</p>
+                        <p>Oferujemy korepetycje z matematyki, fizyki, chemii, języków obcych i wielu innych przedmiotów dla uczniów szkół podstawowych, liceum oraz studentów.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="stat bg-primary text-primary-content rounded-lg">
+                    <div class="stat-title text-primary-content/60">Uczniów</div>
+                    <div class="stat-value">500+</div>
+                </div>
+                <div class="stat bg-secondary text-secondary-content rounded-lg">
+                    <div class="stat-title text-secondary-content/60">Korepetytorów</div>
+                    <div class="stat-value">20+</div>
+                </div>
+                <div class="stat bg-accent text-accent-content rounded-lg">
+                    <div class="stat-title text-accent-content/60">Lat doświadczenia</div>
+                    <div class="stat-value">10+</div>
+                </div>
+                <div class="stat bg-neutral text-neutral-content rounded-lg">
+                    <div class="stat-title text-neutral-content/60">Zadowolenia</div>
+                    <div class="stat-value">98%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section id="zespol" class="py-20 bg-base-200">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-4">Nasi Korepetytorzy</h2>
+        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
+            Poznaj nasz zespół doświadczonych korepetytorów, którzy pomogą Ci osiągnąć sukces w nauce
+        </p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for member in team %}
+            <div class="card bg-base-100 shadow-xl">
+                <figure class="px-10 pt-10">
+                    {% if member.image %}
+                        <img src="{{ member.image.url }}" alt="{{ member.name }} {{ member.surname }}" class="rounded-xl w-32 h-32 object-cover">
+                    {% else %}
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-32">
+                                <span class="text-3xl">{{ member.name.0 }}{{ member.surname.0 }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </figure>
+                <div class="card-body items-center text-center">
+                    <h3 class="card-title">{{ member.name }} {{ member.surname }}</h3>
+                    {% if member.position %}
+                        <p class="text-sm text-base-content/60">{{ member.position }}</p>
+                    {% endif %}
+                    {% if member.bio %}
+                        <p class="text-sm mt-2">{{ member.bio|truncatewords:30 }}</p>
+                    {% endif %}
+                    <div class="flex flex-wrap gap-2 mt-2 justify-center">
+                        {% for subject in member.expertise %}
+                            <span class="badge badge-outline badge-primary">{{ subject }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-8">
+                <p class="text-base-content/60">Wkrótce przedstawimy nasz zespół korepetytorów.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Carousel -->
+<section id="opinie" class="py-20">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-4">Opinie rodziców i uczniów</h2>
+        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
+            Zobacz, co mówią o nas nasi uczniowie i ich rodzice
+        </p>
+        {% if testimonials %}
+        <div x-data="{ current: 0, total: {{ testimonials|length }} }" class="max-w-2xl mx-auto">
+            <div class="relative overflow-hidden">
+                {% for testimonial in testimonials %}
+                <div class="transition-opacity duration-300"
+                     :class="current === {{ forloop.counter0 }} ? 'block' : 'hidden'">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <div class="rating mb-4 justify-center">
+                                {% for i in "12345" %}
+                                    <input type="radio"
+                                           class="mask mask-star-2 bg-warning"
+                                           {% if forloop.counter <= testimonial.rating %}checked{% endif %}
+                                           disabled>
+                                {% endfor %}
+                            </div>
+                            <blockquote class="text-lg italic text-center">"{{ testimonial.content }}"</blockquote>
+                            <div class="text-center mt-4">
+                                <p class="font-semibold">{{ testimonial.student_name }}</p>
+                                {% if testimonial.subject %}
+                                    <p class="text-sm text-base-content/60">{{ testimonial.subject }}{% if testimonial.level %} - {{ testimonial.level }}{% endif %}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex justify-center gap-2 mt-6">
+                <button class="btn btn-circle btn-sm"
+                        @click="current = current === 0 ? total - 1 : current - 1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                {% for testimonial in testimonials %}
+                    <button class="btn btn-xs"
+                            :class="current === {{ forloop.counter0 }} ? 'btn-primary' : 'btn-ghost'"
+                            @click="current = {{ forloop.counter0 }}">
+                        {{ forloop.counter }}
+                    </button>
+                {% endfor %}
+                <button class="btn btn-circle btn-sm"
+                        @click="current = current === total - 1 ? 0 : current + 1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-base-content/60">Wkrótce pojawią się opinie naszych uczniów i rodziców.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="py-20 bg-base-200">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <h2 class="text-4xl font-bold text-center mb-4">Często zadawane pytania</h2>
+        <p class="text-center text-base-content/60 mb-12">
+            Znajdź odpowiedzi na najczęściej zadawane pytania
+        </p>
+        {% if faq_items %}
+        <div class="space-y-4">
+            {% for item in faq_items %}
+            <div class="collapse collapse-arrow bg-base-100 shadow">
+                <input type="radio" name="faq-accordion" {% if forloop.first %}checked{% endif %}>
+                <div class="collapse-title text-xl font-medium">{{ item.question }}</div>
+                <div class="collapse-content">
+                    <p>{{ item.answer }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-base-content/60">Wkrótce pojawią się odpowiedzi na najczęściej zadawane pytania.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="kontakt" class="py-20">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-4">Skontaktuj się z nami</h2>
+        <p class="text-center text-base-content/60 mb-12 max-w-2xl mx-auto">
+            Masz pytania? Chcesz umówić się na lekcję próbną? Napisz do nas!
+        </p>
+        <div class="grid lg:grid-cols-2 gap-12">
+            <!-- Contact Form -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl mb-4">Wyślij wiadomość</h3>
+                    <div id="contact-form-container">
+                        {% include "landing/partials/_contact_form.html" %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map & Contact Info -->
+            <div class="space-y-6">
+                {% if school_info %}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h4 class="font-semibold flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Adres
+                        </h4>
+                        <p>{{ school_info.address|default:"ul. Przykładowa 1" }}, {{ school_info.postal_code }} {{ school_info.city|default:"Miasto" }}</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h4 class="font-semibold flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            Telefon
+                        </h4>
+                        <p>{{ school_info.phone|default:"+48 123 456 789" }}</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h4 class="font-semibold flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Email
+                        </h4>
+                        <p>{{ school_info.email|default:"kontakt@napiatke.pl" }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Google Map -->
+                {% if school_info.latitude and school_info.longitude %}
+                <div class="card bg-base-100 shadow-xl overflow-hidden">
+                    <div id="map"
+                         class="w-full h-64"
+                         data-lat="{{ school_info.latitude }}"
+                         data-lng="{{ school_info.longitude }}">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if school_info.latitude and school_info.longitude %}
+<script>
+    function initMap() {
+        const mapElement = document.getElementById('map');
+        if (!mapElement) return;
+
+        const lat = parseFloat(mapElement.dataset.lat);
+        const lng = parseFloat(mapElement.dataset.lng);
+
+        const map = new google.maps.Map(mapElement, {
+            center: { lat: lat, lng: lng },
+            zoom: 15
+        });
+
+        new google.maps.Marker({
+            position: { lat: lat, lng: lng },
+            map: map,
+            title: 'Na Piątkę'
+        });
+    }
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">
+</script>
+{% endif %}
+{% endblock %}

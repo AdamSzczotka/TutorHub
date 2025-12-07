@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'apps.lessons',
     'apps.messages',
     'apps.notifications',
+    'apps.landing',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,11 @@ WSGI_APPLICATION = 'napiatke.wsgi.application'
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
+
+# Login settings
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'accounts:user-list'
+LOGOUT_REDIRECT_URL = 'landing:home'
 
 
 # Password validation

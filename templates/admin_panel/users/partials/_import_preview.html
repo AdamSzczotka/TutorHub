@@ -1,0 +1,101 @@
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">Podgląd importu</h2>
+
+        <!-- Summary -->
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-title">Razem wierszy</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Poprawnych</div>
+                <div class="stat-value text-success">{{ valid }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Błędów</div>
+                <div class="stat-value text-error">{{ errors|length }}</div>
+            </div>
+        </div>
+
+        {% if errors %}
+        <!-- Errors -->
+        <div class="mt-4">
+            <h3 class="font-bold mb-2">Błędy:</h3>
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Wiersz</th>
+                            <th>Błędy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for error in errors %}
+                        <tr>
+                            <td>{{ error.row }}</td>
+                            <td>
+                                <ul class="list-disc list-inside text-error">
+                                    {% for err in error.errors %}
+                                    <li>{{ err }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if preview %}
+        <!-- Preview of valid rows -->
+        <div class="mt-4">
+            <h3 class="font-bold mb-2">Podgląd poprawnych wierszy (pierwsze 5):</h3>
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Imię</th>
+                            <th>Nazwisko</th>
+                            <th>Rola</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview %}
+                        <tr>
+                            <td>{{ row.email }}</td>
+                            <td>{{ row.first_name }}</td>
+                            <td>{{ row.last_name }}</td>
+                            <td>
+                                <span class="badge {% if row.role == 'admin' %}badge-error{% elif row.role == 'tutor' %}badge-info{% else %}badge-success{% endif %}">
+                                    {{ row.role }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if valid > 0 %}
+        <div class="alert alert-success mt-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Plik jest gotowy do importu. Kliknij "Importuj użytkowników" aby kontynuować.</span>
+        </div>
+        {% else %}
+        <div class="alert alert-error mt-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Plik zawiera błędy. Popraw je przed importem.</span>
+        </div>
+        {% endif %}
+    </div>
+</div>

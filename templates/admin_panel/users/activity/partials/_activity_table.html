@@ -1,0 +1,56 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra table-sm">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Uzytkownik</th>
+                <th>Typ</th>
+                <th>Opis</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in activities %}
+            <tr>
+                <td class="text-sm">{{ activity.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <a href="{% url 'accounts:user-activity' activity.user.pk %}" class="link link-hover">
+                        {{ activity.user.get_full_name }}
+                    </a>
+                </td>
+                <td>
+                    <span class="badge badge-ghost badge-sm">
+                        {{ activity.get_activity_type_display }}
+                    </span>
+                </td>
+                <td class="text-sm">{{ activity.description|default:"-" }}</td>
+                <td class="text-sm font-mono">{{ activity.ip_address|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-8 text-base-content/60">
+                    Brak aktywnosci do wyswietlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center py-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}"
+           class="join-item btn btn-sm">Poprzednia</a>
+        {% endif %}
+        <span class="join-item btn btn-sm btn-disabled">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}"
+           class="join-item btn btn-sm">Nastepna</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

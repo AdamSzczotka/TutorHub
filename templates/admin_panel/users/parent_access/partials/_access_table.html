@@ -1,0 +1,101 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Uczen</th>
+                <th>Rodzic</th>
+                <th>Poziom dostepu</th>
+                <th>Status</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for access in accesses %}
+            <tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="avatar placeholder">
+                            <div class="bg-primary text-primary-content rounded-full w-8">
+                                <span class="text-xs">{{ access.student.first_name|slice:":1"|default:"?" }}{{ access.student.last_name|slice:":1"|default:"?" }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-medium">{{ access.student.get_full_name }}</div>
+                            <div class="text-xs text-base-content/60">{{ access.student.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if access.parent %}
+                    <div>
+                        <div class="font-medium">{{ access.parent.get_full_name }}</div>
+                        <div class="text-xs text-base-content/60">{{ access.parent.email }}</div>
+                    </div>
+                    {% else %}
+                    <div class="text-base-content/60">
+                        <div class="text-sm">{{ access.invited_email }}</div>
+                        <span class="badge badge-warning badge-xs">Oczekuje</span>
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge {% if access.access_level == 'full' %}badge-success{% elif access.access_level == 'limited' %}badge-warning{% else %}badge-ghost{% endif %}">
+                        {{ access.get_access_level_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if access.is_active %}
+                    <span class="badge badge-success badge-sm">Aktywny</span>
+                    {% elif access.invitation_accepted_at %}
+                    <span class="badge badge-error badge-sm">Cofniety</span>
+                    {% else %}
+                    <span class="badge badge-warning badge-sm">Oczekuje</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="flex gap-1">
+                        {% if access.is_active %}
+                        <a href="{% url 'accounts:parent-access-update' access.pk %}"
+                           class="btn btn-ghost btn-xs">Edytuj</a>
+                        <form method="post" action="{% url 'accounts:parent-access-revoke' access.pk %}"
+                              hx-post="{% url 'accounts:parent-access-revoke' access.pk %}"
+                              hx-confirm="Czy na pewno chcesz cofnac dostep?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-xs text-error">Cofnij</button>
+                        </form>
+                        {% elif not access.invitation_accepted_at %}
+                        <form method="post" action="{% url 'accounts:parent-access-resend' access.pk %}"
+                              hx-post="{% url 'accounts:parent-access-resend' access.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-xs">Wyslij ponownie</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-8 text-base-content/60">
+                    Brak dostepow do wyswietlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center py-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-sm">Poprzednia</a>
+        {% endif %}
+        <span class="join-item btn btn-sm btn-disabled">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-sm">Nastepna</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

@@ -25,6 +25,11 @@
                     Analityka
                 </a>
             </li>
+            <li>
+                <a href="{% url 'landing:cms-dashboard' %}" class="{% if 'cms' in request.path %}active{% endif %}">
+                    CMS
+                </a>
+            </li>
         </ul>
         <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">

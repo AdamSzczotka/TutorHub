@@ -1,0 +1,71 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Oryg. ID uzytkownika</th>
+                <th>Powod</th>
+                <th>Data archiwizacji</th>
+                <th>Przechowywac do</th>
+                <th>Status</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for archive in archives %}
+            <tr>
+                <td>{{ archive.id }}</td>
+                <td>{{ archive.original_user_id }}</td>
+                <td>
+                    <span class="badge badge-ghost">{{ archive.get_reason_display }}</span>
+                </td>
+                <td>{{ archive.created_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ archive.retention_until|date:"Y-m-d" }}</td>
+                <td>
+                    {% if archive.is_anonymized %}
+                    <span class="badge badge-success badge-sm">Zanonimizowane</span>
+                    {% else %}
+                    <span class="badge badge-warning badge-sm">Dane dostepne</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="flex gap-1">
+                        <a href="{% url 'accounts:archive-detail' archive.pk %}"
+                           class="btn btn-ghost btn-xs">Szczegoly</a>
+                        {% if not archive.is_anonymized %}
+                        <form method="post" action="{% url 'accounts:archive-anonymize' archive.pk %}"
+                              hx-post="{% url 'accounts:archive-anonymize' archive.pk %}"
+                              hx-confirm="Czy na pewno chcesz zanonimizowac dane? Ta operacja jest nieodwracalna.">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-xs text-warning">Anonimizuj</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-8 text-base-content/60">
+                    Brak archiow do wyswietlenia
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center py-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="join-item btn btn-sm">Poprzednia</a>
+        {% endif %}
+        <span class="join-item btn btn-sm btn-disabled">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="join-item btn btn-sm">Nastepna</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

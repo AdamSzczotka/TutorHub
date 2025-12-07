@@ -1,0 +1,70 @@
+<div class="flex flex-col items-center gap-4"
+     x-data="{ preview: null }"
+     id="avatar-container">
+
+    <!-- Current Avatar -->
+    <div class="avatar">
+        <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar"
+                     x-show="!preview">
+            {% else %}
+                <div class="bg-neutral text-neutral-content w-24 h-24 flex items-center justify-center text-3xl font-bold"
+                     x-show="!preview">
+                    {{ user.first_name.0|default:'?' }}{{ user.last_name.0|default:'?' }}
+                </div>
+            {% endif %}
+            <img :src="preview" alt="Preview" x-show="preview" x-cloak class="w-24 h-24 object-cover">
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <form method="post"
+          enctype="multipart/form-data"
+          hx-post="{% url 'accounts:avatar-upload' %}"
+          hx-target="#avatar-container"
+          hx-swap="outerHTML"
+          hx-encoding="multipart/form-data">
+        {% csrf_token %}
+
+        <input type="file"
+               name="avatar"
+               accept="image/*"
+               class="file-input file-input-bordered file-input-sm"
+               @change="
+                   const file = $event.target.files[0];
+                   if (file) {
+                       const reader = new FileReader();
+                       reader.onload = (e) => preview = e.target.result;
+                       reader.readAsDataURL(file);
+                   }
+               ">
+
+        {% if form.avatar.errors %}
+            <div class="text-error text-sm mt-2">
+                {{ form.avatar.errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="flex gap-2 mt-4" x-show="preview">
+            <button type="submit" class="btn btn-primary btn-sm">
+                Zapisz
+            </button>
+            <button type="button"
+                    class="btn btn-ghost btn-sm"
+                    @click="preview = null; $el.closest('form').reset()">
+                Anuluj
+            </button>
+        </div>
+    </form>
+
+    {% if user.avatar %}
+        <button class="btn btn-error btn-sm btn-outline"
+                hx-post="{% url 'accounts:avatar-delete' %}"
+                hx-target="#avatar-container"
+                hx-swap="outerHTML"
+                hx-confirm="Czy na pewno chcesz usunąć avatar?">
+            Usuń avatar
+        </button>
+    {% endif %}
+</div>

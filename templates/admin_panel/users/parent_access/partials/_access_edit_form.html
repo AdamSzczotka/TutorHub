@@ -1,0 +1,60 @@
+<div class="space-y-4">
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Poziom dostepu</span>
+        </label>
+        {{ form.access_level }}
+    </div>
+
+    <div class="divider">Uprawnienia</div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_view_lessons }}
+                <span class="label-text">Przeglad lekcji</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_view_attendance }}
+                <span class="label-text">Przeglad obecnosci</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_view_grades }}
+                <span class="label-text">Przeglad ocen</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_view_invoices }}
+                <span class="label-text">Przeglad faktur</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_message_tutors }}
+                <span class="label-text">Wiadomosci do korepetytora</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_cancel_lessons }}
+                <span class="label-text">Odwolywanie lekcji</span>
+            </label>
+        </div>
+        <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-4">
+                {{ form.can_reschedule_lessons }}
+                <span class="label-text">Przekladanie lekcji</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="card-actions justify-end mt-6">
+        <a href="{% url 'accounts:parent-access-list' %}" class="btn btn-ghost">Anuluj</a>
+        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+    </div>
+</div>

@@ -1,0 +1,69 @@
+{% extends "landing/base.html" %}
+
+{% block title %}Logowanie - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-base-200 py-12 px-4">
+    <div class="card w-full max-w-md bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl font-bold text-center mb-6">Zaloguj się</h2>
+
+            {% if form.errors %}
+            <div class="alert alert-error mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Nieprawidłowy email lub hasło.</span>
+            </div>
+            {% endif %}
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="form-control">
+                    <label class="label" for="id_username">
+                        <span class="label-text">Email</span>
+                    </label>
+                    <input type="email"
+                           name="username"
+                           id="id_username"
+                           class="input input-bordered w-full {% if form.errors %}input-error{% endif %}"
+                           placeholder="email@example.com"
+                           required
+                           autofocus />
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="id_password">
+                        <span class="label-text">Hasło</span>
+                    </label>
+                    <input type="password"
+                           name="password"
+                           id="id_password"
+                           class="input input-bordered w-full {% if form.errors %}input-error{% endif %}"
+                           placeholder="********"
+                           required />
+                </div>
+
+                <div class="form-control mt-6">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Zaloguj się
+                    </button>
+                </div>
+
+                {% if next %}
+                <input type="hidden" name="next" value="{{ next }}" />
+                {% endif %}
+            </form>
+
+            <div class="divider">lub</div>
+
+            <div class="text-center">
+                <a href="{% url 'landing:home' %}" class="link link-primary">
+                    Wróć na stronę główną
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

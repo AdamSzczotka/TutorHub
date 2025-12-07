@@ -1,0 +1,104 @@
+<form hx-post="{% url 'landing:contact' %}"
+      hx-target="#contact-form-container"
+      hx-swap="innerHTML"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <div class="form-control">
+        <label class="label" for="id_name">
+            <span class="label-text">Imię i nazwisko <span class="text-error">*</span></span>
+        </label>
+        {{ form.name }}
+        {% if form.name.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label" for="id_email">
+            <span class="label-text">Email <span class="text-error">*</span></span>
+        </label>
+        {{ form.email }}
+        {% if form.email.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label" for="id_phone">
+            <span class="label-text">Telefon</span>
+        </label>
+        {{ form.phone }}
+        {% if form.phone.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.phone.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label" for="id_subject">
+            <span class="label-text">Temat <span class="text-error">*</span></span>
+        </label>
+        {{ form.subject }}
+        {% if form.subject.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.subject.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label" for="id_message">
+            <span class="label-text">Wiadomość <span class="text-error">*</span></span>
+        </label>
+        {{ form.message }}
+        {% if form.message.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.message.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-3">
+            <input type="checkbox"
+                   name="gdpr_consent"
+                   id="id_gdpr_consent"
+                   class="checkbox checkbox-primary"
+                   {% if form.gdpr_consent.value %}checked{% endif %}>
+            <span class="label-text">
+                Wyrażam zgodę na przetwarzanie danych osobowych <span class="text-error">*</span>
+            </span>
+        </label>
+        {% if form.gdpr_consent.errors %}
+            <label class="label">
+                <span class="label-text-alt text-error">{{ form.gdpr_consent.errors.0 }}</span>
+            </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-3">
+            <input type="checkbox"
+                   name="marketing_consent"
+                   id="id_marketing_consent"
+                   class="checkbox checkbox-primary"
+                   {% if form.marketing_consent.value %}checked{% endif %}>
+            <span class="label-text">
+                Wyrażam zgodę na otrzymywanie informacji marketingowych
+            </span>
+        </label>
+    </div>
+
+    <div class="form-control mt-6">
+        <button type="submit" class="btn btn-primary">
+            <span class="htmx-indicator loading loading-spinner"></span>
+            Wyślij wiadomość
+        </button>
+    </div>
+</form>
