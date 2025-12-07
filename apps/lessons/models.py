@@ -12,11 +12,11 @@ class LessonStatus(models.TextChoices):
 
 
 class AttendanceStatus(models.TextChoices):
-    UNKNOWN = 'unknown', 'Nieznany'
-    PRESENT = 'present', 'Obecny'
-    ABSENT = 'absent', 'Nieobecny'
-    LATE = 'late', 'Spóźniony'
-    EXCUSED = 'excused', 'Usprawiedliwiony'
+    PENDING = 'PENDING', 'Oczekujące'
+    PRESENT = 'PRESENT', 'Obecny'
+    ABSENT = 'ABSENT', 'Nieobecny'
+    LATE = 'LATE', 'Spóźniony'
+    EXCUSED = 'EXCUSED', 'Usprawiedliwiony'
 
 
 class Lesson(models.Model):
@@ -150,7 +150,7 @@ class LessonStudent(models.Model):
         'Status obecności',
         max_length=20,
         choices=AttendanceStatus.choices,
-        default=AttendanceStatus.UNKNOWN,
+        default=AttendanceStatus.PENDING,
     )
     attendance_marked_at = models.DateTimeField(
         'Czas oznaczenia',
@@ -161,6 +161,17 @@ class LessonStudent(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name='marked_attendances',
+        null=True,
+        blank=True,
+    )
+    attendance_notes = models.TextField('Notatki obecności', blank=True)
+    check_in_time = models.DateTimeField(
+        'Czas wejścia',
+        null=True,
+        blank=True,
+    )
+    check_out_time = models.DateTimeField(
+        'Czas wyjścia',
         null=True,
         blank=True,
     )
