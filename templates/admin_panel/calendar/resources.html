@@ -1,0 +1,116 @@
+{% extends "admin_panel/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div x-data="resourceCalendarApp()" x-init="init()">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+        <h1 class="text-2xl font-bold">Widok zasobów</h1>
+
+        <!-- Resource Type Switcher -->
+        <div class="tabs tabs-boxed">
+            <a class="tab" :class="resourceType === 'rooms' ? 'tab-active' : ''"
+               @click="switchResourceType('rooms')">
+                Sale
+            </a>
+            <a class="tab" :class="resourceType === 'tutors' ? 'tab-active' : ''"
+               @click="switchResourceType('tutors')">
+                Korepetytorzy
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-base-100 rounded-lg shadow-sm border p-4">
+        <div id="resource-calendar"></div>
+    </div>
+
+    <!-- Resource Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <template x-for="resource in resources.slice(0, 3)" :key="resource.id">
+            <div class="bg-base-100 p-4 rounded-lg border">
+                <h4 class="font-medium" x-text="resource.title"></h4>
+                <p class="text-sm text-base-content/60 mt-1" x-text="resource.subtitle"></p>
+                <div class="mt-2 text-xs text-base-content/50">
+                    <template x-if="resource.extendedProps.type === 'room'">
+                        <div>
+                            <span>Pojemność: <span x-text="resource.extendedProps.capacity"></span> osób</span>
+                        </div>
+                    </template>
+                    <template x-if="resource.extendedProps.type === 'tutor'">
+                        <div>
+                            <span>Stawka: <span x-text="resource.extendedProps.hourly_rate"></span> zł/h</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/pl.global.min.js"></script>
+
+<script>
+function resourceCalendarApp() {
+    return {
+        calendar: null,
+        resourceType: 'rooms',
+        resources: [],
+
+        init() {
+            this.loadResources();
+            this.initCalendar();
+        },
+
+        async loadResources() {
+            const response = await fetch(`/panel/lessons/api/resources/?type=${this.resourceType}`);
+            this.resources = await response.json();
+        },
+
+        initCalendar() {
+            const calendarEl = document.getElementById('resource-calendar');
+
+            this.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridDay',
+                locale: 'pl',
+                timeZone: 'Europe/Warsaw',
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                height: 'auto',
+                firstDay: 1,
+
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,timeGridWeek',
+                },
+
+                events: {
+                    url: '/panel/lessons/api/events/',
+                    method: 'GET',
+                },
+
+                businessHours: {
+                    daysOfWeek: [1, 2, 3, 4, 5, 6],
+                    startTime: '08:00',
+                    endTime: '18:00',
+                },
+            });
+
+            this.calendar.render();
+        },
+
+        switchResourceType(type) {
+            this.resourceType = type;
+            this.loadResources();
+            this.calendar.refetchEvents();
+        },
+    };
+}
+</script>
+{% endblock %}

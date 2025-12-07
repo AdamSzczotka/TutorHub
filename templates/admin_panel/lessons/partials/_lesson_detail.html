@@ -1,0 +1,112 @@
+<h3 class="font-bold text-lg mb-4">{{ lesson.title }}</h3>
+
+<div class="space-y-4">
+    <!-- Status Badge -->
+    <div>
+        {% if lesson.status == 'scheduled' %}
+            <span class="badge badge-info">Zaplanowana</span>
+        {% elif lesson.status == 'ongoing' %}
+            <span class="badge badge-success">W trakcie</span>
+        {% elif lesson.status == 'completed' %}
+            <span class="badge badge-neutral">Zakończona</span>
+        {% elif lesson.status == 'cancelled' %}
+            <span class="badge badge-error">Anulowana</span>
+        {% endif %}
+
+        {% if lesson.is_group_lesson %}
+            <span class="badge badge-secondary ml-1">Grupowa</span>
+        {% endif %}
+    </div>
+
+    <!-- Details Grid -->
+    <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+            <span class="text-base-content/60">Przedmiot:</span>
+            <span class="font-medium ml-2">{{ lesson.subject.name }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Poziom:</span>
+            <span class="font-medium ml-2">{{ lesson.level.name }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Korepetytor:</span>
+            <span class="font-medium ml-2">{{ lesson.tutor.get_full_name }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Sala:</span>
+            <span class="font-medium ml-2">{{ lesson.room.name|default:'Online' }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Rozpoczęcie:</span>
+            <span class="font-medium ml-2">{{ lesson.start_time|date:'d.m.Y H:i' }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Zakończenie:</span>
+            <span class="font-medium ml-2">{{ lesson.end_time|date:'d.m.Y H:i' }}</span>
+        </div>
+        <div>
+            <span class="text-base-content/60">Czas trwania:</span>
+            <span class="font-medium ml-2">{{ lesson.duration_minutes }} min</span>
+        </div>
+        {% if lesson.is_group_lesson %}
+        <div>
+            <span class="text-base-content/60">Max uczestników:</span>
+            <span class="font-medium ml-2">{{ lesson.max_participants }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if lesson.description %}
+    <div class="mt-4">
+        <span class="text-base-content/60 text-sm">Opis:</span>
+        <p class="mt-1">{{ lesson.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Students List -->
+    <div class="mt-4">
+        <h4 class="font-medium text-sm text-base-content/60 mb-2">
+            Uczniowie ({{ lesson.lesson_students.count }})
+        </h4>
+        <div class="space-y-1">
+            {% for ls in lesson.lesson_students.all %}
+            <div class="flex items-center justify-between p-2 bg-base-200 rounded">
+                <span>{{ ls.student.get_full_name }}</span>
+                <span class="badge badge-sm
+                    {% if ls.attendance_status == 'present' %}badge-success
+                    {% elif ls.attendance_status == 'absent' %}badge-error
+                    {% elif ls.attendance_status == 'late' %}badge-warning
+                    {% elif ls.attendance_status == 'excused' %}badge-info
+                    {% else %}badge-ghost{% endif %}">
+                    {{ ls.get_attendance_status_display }}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-sm text-base-content/60">Brak przypisanych uczniów</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="modal-action">
+    <button type="button"
+            class="btn btn-ghost"
+            onclick="this.closest('dialog').close()">
+        Zamknij
+    </button>
+    <button type="button"
+            class="btn btn-outline btn-error"
+            hx-delete="{% url 'lessons:delete' lesson.pk %}"
+            hx-confirm="Czy na pewno chcesz usunąć te zajęcia?"
+            hx-swap="none">
+        Usuń
+    </button>
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'lessons:update' lesson.pk %}"
+            hx-target="#modal-content"
+            hx-swap="innerHTML">
+        Edytuj
+    </button>
+</div>

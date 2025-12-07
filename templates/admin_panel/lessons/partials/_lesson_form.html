@@ -1,0 +1,181 @@
+<h3 class="font-bold text-lg mb-4">{{ form_title }}</h3>
+
+<form hx-post="{{ request.path }}"
+      hx-swap="none"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Title -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Tytuł zajęć *</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <!-- Color -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Kolor</span>
+            </label>
+            {{ form.color }}
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Opis</span>
+        </label>
+        {{ form.description }}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Subject -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Przedmiot *</span>
+            </label>
+            {{ form.subject }}
+            {% if form.subject.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.subject.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <!-- Level -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Poziom *</span>
+            </label>
+            {{ form.level }}
+            {% if form.level.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.level.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Tutor -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Korepetytor *</span>
+            </label>
+            {{ form.tutor }}
+            {% if form.tutor.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.tutor.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <!-- Room -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Sala</span>
+            </label>
+            {{ form.room }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Start Time -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Rozpoczęcie *</span>
+            </label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.start_time.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+
+        <!-- End Time -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Zakończenie *</span>
+            </label>
+            {{ form.end_time }}
+            {% if form.end_time.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.end_time.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Group Lesson Toggle -->
+    <div class="form-control" x-data="{ isGroup: {{ form.is_group_lesson.value|yesno:'true,false' }} }">
+        <label class="label cursor-pointer justify-start space-x-3">
+            <input type="checkbox"
+                   name="is_group_lesson"
+                   class="checkbox"
+                   x-model="isGroup"
+                   {% if form.is_group_lesson.value %}checked{% endif %}>
+            <span class="label-text">Zajęcia grupowe</span>
+        </label>
+
+        <div x-show="isGroup" x-cloak class="mt-2">
+            <label class="label">
+                <span class="label-text">Maksymalna liczba uczestników</span>
+            </label>
+            {{ form.max_participants }}
+        </div>
+    </div>
+
+    <!-- Student Selection -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Uczniowie</span>
+        </label>
+        <div class="border rounded-lg p-3 max-h-48 overflow-y-auto">
+            {% for student in students %}
+                <label class="flex items-center space-x-2 p-1 hover:bg-base-200 rounded cursor-pointer">
+                    <input type="checkbox"
+                           name="students"
+                           value="{{ student.id }}"
+                           class="checkbox checkbox-sm"
+                           {% if student.id in selected_students %}checked{% endif %}>
+                    <span>{{ student.get_full_name }}</span>
+                    <span class="text-xs text-base-content/60">({{ student.email }})</span>
+                </label>
+            {% empty %}
+                <p class="text-sm text-base-content/60">Brak dostępnych uczniów</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recurring Lessons (only for new lessons) -->
+    {% if not lesson %}
+    {% include "admin_panel/lessons/partials/_recurrence_editor.html" %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-error">
+            {% for error in form.non_field_errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form Actions -->
+    <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            {% if lesson %}Zapisz{% else %}Utwórz{% endif %}
+        </button>
+    </div>
+</form>

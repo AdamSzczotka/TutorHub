@@ -1,0 +1,162 @@
+<div class="bg-base-200 rounded-lg p-4 space-y-4" x-data="recurrenceEditor()">
+    <!-- Hidden field to always send pattern value -->
+    <input type="hidden" name="recurrence_pattern" :value="enabled ? pattern : 'none'">
+
+    <!-- Toggle -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <label class="label-text font-medium">Zajecia cykliczne</label>
+        </div>
+        <input type="checkbox" x-model="enabled" class="toggle">
+    </div>
+
+    <!-- Recurrence Settings -->
+    <div x-show="enabled" x-cloak class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Pattern -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Wzorzec powtarzania</span>
+                </label>
+                <select x-model="pattern" class="select select-bordered w-full">
+                    <option value="daily">Codziennie</option>
+                    <option value="weekly">Co tydzien</option>
+                    <option value="monthly">Co miesiac</option>
+                </select>
+            </div>
+
+            <!-- Interval -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Interwal</span>
+                </label>
+                <input type="number"
+                       name="recurrence_interval"
+                       x-model="interval"
+                       min="1"
+                       max="30"
+                       class="input input-bordered w-full">
+                <label class="label">
+                    <span class="label-text-alt" x-text="intervalDescription"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Days of Week (for weekly) -->
+        <div x-show="pattern === 'weekly'" class="form-control">
+            <label class="label">
+                <span class="label-text">Dni tygodnia</span>
+            </label>
+            <div class="flex flex-wrap gap-2">
+                <template x-for="day in daysOfWeek" :key="day.value">
+                    <label class="cursor-pointer">
+                        <input type="checkbox"
+                               name="days_of_week"
+                               :value="day.value"
+                               :checked="selectedDays.includes(day.value)"
+                               @change="toggleDay(day.value)"
+                               class="hidden">
+                        <span class="badge badge-lg"
+                              :class="selectedDays.includes(day.value) ? 'badge-primary' : 'badge-outline'"
+                              x-text="day.label">
+                        </span>
+                    </label>
+                </template>
+            </div>
+        </div>
+
+        <!-- End Date -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Data zakonczenia (opcjonalne)</span>
+            </label>
+            <input type="date"
+                   name="recurrence_end_date"
+                   x-model="endDate"
+                   :min="minEndDate"
+                   class="input input-bordered w-full">
+            <label class="label">
+                <span class="label-text-alt">Pozostaw puste dla 90 dni domyslnie</span>
+            </label>
+        </div>
+
+        <!-- Preview -->
+        <div x-show="pattern !== 'none'" class="alert alert-info">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span x-text="previewText"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+function recurrenceEditor() {
+    return {
+        enabled: false,
+        pattern: 'weekly',
+        interval: 1,
+        endDate: '',
+        selectedDays: [0, 1, 2, 3, 4],
+
+        daysOfWeek: [
+            { value: 0, label: 'Pn' },
+            { value: 1, label: 'Wt' },
+            { value: 2, label: 'Sr' },
+            { value: 3, label: 'Cz' },
+            { value: 4, label: 'Pt' },
+            { value: 5, label: 'Sb' },
+            { value: 6, label: 'Nd' },
+        ],
+
+        get minEndDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        },
+
+        get intervalDescription() {
+            const patterns = {
+                daily: ['dzien', 'dni'],
+                weekly: ['tydzien', 'tygodnie'],
+                monthly: ['miesiac', 'miesiace'],
+            };
+            const [singular, plural] = patterns[this.pattern] || ['', ''];
+            return `Co ${this.interval} ${this.interval === 1 ? singular : plural}`;
+        },
+
+        get previewText() {
+            if (this.pattern === 'none') return '';
+
+            let text = `Zajecia beda powtarzane ${this.intervalDescription.toLowerCase()}`;
+
+            if (this.pattern === 'weekly' && this.selectedDays.length > 0) {
+                const dayNames = this.selectedDays.map(d =>
+                    this.daysOfWeek.find(day => day.value === d)?.label
+                ).join(', ');
+                text += ` w dni: ${dayNames}`;
+            }
+
+            if (this.endDate) {
+                text += ` do ${this.endDate}`;
+            } else {
+                text += ' (przez 90 dni)';
+            }
+
+            return text;
+        },
+
+        toggleDay(value) {
+            const index = this.selectedDays.indexOf(value);
+            if (index > -1) {
+                this.selectedDays.splice(index, 1);
+            } else {
+                this.selectedDays.push(value);
+                this.selectedDays.sort();
+            }
+        },
+    };
+}
+</script>

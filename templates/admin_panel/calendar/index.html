@@ -1,0 +1,121 @@
+{% extends "admin_panel/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<!-- Tippy.js for tooltips -->
+<link href="https://unpkg.com/tippy.js@6/themes/light-border.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div x-data="calendarApp()" x-init="init()">
+    <!-- Toolbar -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold">Kalendarz zajęć</h1>
+            <div class="badge badge-secondary" x-text="`Widok: ${currentView}`"></div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- View Switcher -->
+            <div class="join">
+                <button class="btn btn-sm join-item"
+                        :class="currentView === 'timeGridDay' ? 'btn-active' : ''"
+                        @click="changeView('timeGridDay')">
+                    Dzień
+                </button>
+                <button class="btn btn-sm join-item"
+                        :class="currentView === 'timeGridWeek' ? 'btn-active' : ''"
+                        @click="changeView('timeGridWeek')">
+                    Tydzień
+                </button>
+                <button class="btn btn-sm join-item"
+                        :class="currentView === 'dayGridMonth' ? 'btn-active' : ''"
+                        @click="changeView('dayGridMonth')">
+                    Miesiąc
+                </button>
+                <button class="btn btn-sm join-item"
+                        :class="currentView === 'listWeek' ? 'btn-active' : ''"
+                        @click="changeView('listWeek')">
+                    Lista
+                </button>
+            </div>
+
+            <!-- Create Button -->
+            <button class="btn btn-primary btn-sm"
+                    hx-get="{% url 'lessons:create' %}"
+                    hx-target="#modal-content"
+                    hx-swap="innerHTML"
+                    onclick="document.getElementById('event-modal').showModal()">
+                + Nowe zajęcia
+            </button>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="bg-base-100 rounded-lg shadow-sm border p-4">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Color Legend -->
+    <div class="mt-6 bg-base-100 rounded-lg border p-4">
+        <h3 class="font-semibold text-sm mb-3">Legenda kolorów</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h4 class="text-xs font-medium text-base-content/60 mb-2">Przedmioty</h4>
+                <div class="flex flex-wrap gap-2">
+                    <span class="badge" style="background-color: #EF4444; color: white;">Matematyka</span>
+                    <span class="badge" style="background-color: #3B82F6; color: white;">J. Polski</span>
+                    <span class="badge" style="background-color: #10B981; color: white;">J. Angielski</span>
+                    <span class="badge" style="background-color: #8B5CF6; color: white;">Fizyka</span>
+                    <span class="badge" style="background-color: #F59E0B; color: white;">Chemia</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-medium text-base-content/60 mb-2">Status</h4>
+                <div class="flex flex-wrap gap-2">
+                    <span class="badge" style="background-color: #3B82F6; color: white;">Zaplanowane</span>
+                    <span class="badge" style="background-color: #10B981; color: white;">W trakcie</span>
+                    <span class="badge" style="background-color: #6B7280; color: white;">Zakończone</span>
+                    <span class="badge" style="background-color: #EF4444; color: white;">Anulowane</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Modal -->
+<dialog id="event-modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <div id="modal-content">
+            <!-- Content loaded via HTMX -->
+            <div class="flex items-center justify-center h-32">
+                <span class="loading loading-spinner loading-lg"></span>
+            </div>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/pl.global.min.js"></script>
+<!-- Tippy.js -->
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<!-- Calendar Component -->
+<script src="{% static 'js/calendar/calendar-config.js' %}"></script>
+<script src="{% static 'js/calendar/calendar-component.js' %}"></script>
+{% endblock %}
