@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Anulowanie zaakceptowane</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+        <h1 style="color: #22c55e; margin-top: 0;">Anulowanie zaakceptowane</h1>
+
+        <p>Czesc {{ student_name }},</p>
+
+        <p>Twoja prosba o anulowanie zajec zostala <strong>zaakceptowana</strong>.</p>
+
+        <div style="background-color: #fff; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #22c55e;">
+            <p style="margin: 0;"><strong>Zajecia:</strong> {{ lesson_title }}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Data:</strong> {{ lesson_date|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        {% if admin_notes %}
+        <p><strong>Komentarz administratora:</strong></p>
+        <p style="background-color: #fff; padding: 10px; border-radius: 4px;">{{ admin_notes }}</p>
+        {% endif %}
+
+        <div style="background-color: #dbeafe; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; color: #1d4ed8;"><strong>Wazne:</strong> Masz 30 dni na umowienie zajec zastepczych. Po tym czasie prawo do odrobienia wygasa.</p>
+        </div>
+
+        <p>Pozdrawiamy,<br>Zespol Na Piatke</p>
+    </div>
+</body>
+</html>
