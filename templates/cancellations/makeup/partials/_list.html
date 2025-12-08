@@ -1,0 +1,128 @@
+{% if makeup_lessons %}
+<div class="space-y-4">
+    {% for lesson in makeup_lessons %}
+    <div class="card bg-base-100 shadow relative overflow-hidden">
+        <!-- Progress Bar -->
+        {% if lesson.countdown.variant != 'expired' %}
+        <div class="absolute top-0 left-0 right-0 h-1 bg-base-300">
+            <div class="h-full {% if lesson.countdown.variant == 'urgent' %}bg-warning{% else %}bg-primary{% endif %}"
+                 style="width: {{ lesson.countdown.progress }}%"></div>
+        </div>
+        {% endif %}
+
+        <div class="card-body pt-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <h3 class="card-title text-lg">{{ lesson.original_lesson.title }}</h3>
+                    <div class="flex items-center gap-2 text-sm text-base-content/70">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Oryginalna data: {{ lesson.original_lesson.start_time|date:"d.m.Y, H:i" }}
+                    </div>
+                </div>
+
+                {% if lesson.status == 'pending' %}
+                <span class="badge badge-primary">Do odrobienia</span>
+                {% elif lesson.status == 'scheduled' %}
+                <span class="badge badge-info">Zaplanowane</span>
+                {% elif lesson.status == 'completed' %}
+                <span class="badge badge-success">Odrobione</span>
+                {% else %}
+                <span class="badge badge-error">Wygaslo</span>
+                {% endif %}
+            </div>
+
+            <!-- Countdown Alert -->
+            {% if lesson.status == 'pending' %}
+                {% if lesson.countdown.variant == 'urgent' %}
+                <div class="alert alert-warning mt-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>Uwaga! Zostalo tylko {{ lesson.countdown.text }} do wygasniecia!</span>
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Masz {{ lesson.countdown.text }} na umowienie zajec zastepczych</span>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <!-- Expiration Details -->
+            <div class="bg-base-200 rounded-lg p-4 mt-4 space-y-2">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-base-content/70">Data wygasniecia:</span>
+                    <span class="font-medium">{{ lesson.expires_at|date:"d.m.Y, H:i" }}</span>
+                </div>
+
+                {% if lesson.status == 'pending' %}
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-base-content/70">Czas pozostaly:</span>
+                    <span class="font-medium {% if lesson.countdown.variant == 'urgent' %}text-warning{% else %}text-primary{% endif %}">
+                        {{ lesson.countdown.text }}
+                    </span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="pt-2">
+                    <progress class="progress {% if lesson.countdown.variant == 'urgent' %}progress-warning{% else %}progress-primary{% endif %} w-full"
+                              value="{{ lesson.countdown.progress }}"
+                              max="100"></progress>
+                </div>
+                {% endif %}
+
+                {% if lesson.new_lesson %}
+                <div class="flex items-center justify-between text-sm pt-2 border-t border-base-300 mt-2">
+                    <span class="text-base-content/70">Nowy termin:</span>
+                    <span class="font-medium text-success">
+                        {{ lesson.new_lesson.start_time|date:"d.m.Y, H:i" }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if lesson.notes %}
+            <div class="mt-4">
+                <div class="text-sm font-medium mb-1">Notatka:</div>
+                <div class="text-sm text-base-content/70 bg-base-200 p-2 rounded">
+                    {{ lesson.notes|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Button -->
+            {% if lesson.status == 'pending' %}
+            <div class="card-actions justify-end mt-4 pt-4 border-t">
+                <button class="btn btn-primary"
+                        hx-get="{% url 'cancellations:reschedule_form' lesson.id %}"
+                        hx-target="#reschedule-modal-content"
+                        onclick="document.getElementById('reschedule-modal').showModal()">
+                    Umow zajecia zastepcze
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body py-12 text-center">
+        <svg class="w-12 h-12 mx-auto mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-lg font-medium">Brak zajec do odrobienia</p>
+        <p class="text-sm text-base-content/70 mt-2">
+            Wszystkie anulowane zajecia zostaly juz odrobione lub wygasly
+        </p>
+    </div>
+</div>
+{% endif %}
