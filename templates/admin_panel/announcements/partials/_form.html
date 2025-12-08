@@ -1,0 +1,83 @@
+<form hx-post="{% url 'notifications:announcement_create' %}"
+      hx-swap="none"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <h3 class="text-lg font-bold mb-4">Nowe ogłoszenie</h3>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Tytuł</span>
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Treść</span>
+        </label>
+        {{ form.content }}
+        {% if form.content.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.content.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Typ</span>
+        </label>
+        {{ form.type }}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Widoczne dla</span>
+        </label>
+        <div class="flex flex-wrap gap-4">
+            {% for choice in form.target_roles %}
+            <label class="flex items-center gap-2">
+                {{ choice.tag }}
+                <span>{{ choice.choice_label }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <label class="label">
+            <span class="label-text-alt">{{ form.target_roles.help_text }}</span>
+        </label>
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Data wygaśnięcia (opcjonalne)</span>
+        </label>
+        {{ form.expires_at }}
+    </div>
+
+    <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2">
+            {{ form.is_pinned }}
+            <span>Przypnij na górze</span>
+        </label>
+
+        <label class="flex items-center gap-2">
+            {{ form.notify_users }}
+            <span>Wyślij powiadomienie</span>
+        </label>
+    </div>
+
+    <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Utwórz ogłoszenie
+        </button>
+    </div>
+</form>

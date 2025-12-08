@@ -1,0 +1,54 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Powiadomienia{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Powiadomienia</h1>
+        <div class="flex items-center gap-2">
+            {% if unread_count > 0 %}
+            <button class="btn btn-ghost btn-sm"
+                    hx-post="{% url 'notifications:mark_all_read' %}"
+                    hx-swap="none">
+                Oznacz wszystkie jako przeczytane
+            </button>
+            {% endif %}
+            <a href="{% url 'notifications:preferences' %}" class="btn btn-outline btn-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Ustawienia
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed mb-4">
+        <a class="tab {% if not request.GET.all %}tab-active{% endif %}"
+           hx-get="{% url 'notifications:list' %}"
+           hx-target="#notification-list"
+           hx-push-url="true">
+            Nieprzeczytane
+            {% if unread_count > 0 %}
+            <span class="badge badge-primary badge-sm ml-2">{{ unread_count }}</span>
+            {% endif %}
+        </a>
+        <a class="tab {% if request.GET.all == 'true' %}tab-active{% endif %}"
+           hx-get="{% url 'notifications:list' %}?all=true"
+           hx-target="#notification-list"
+           hx-push-url="true">
+            Wszystkie
+        </a>
+    </div>
+
+    <div id="notification-list"
+         hx-trigger="notificationRead from:body, notificationArchived from:body, notificationDeleted from:body, allNotificationsRead from:body"
+         hx-get="{% url 'notifications:list' %}{% if request.GET.all %}?all=true{% endif %}"
+         hx-select="#notification-list"
+         hx-swap="outerHTML">
+        {% include "notifications/partials/_notification_list.html" %}
+    </div>
+</div>
+{% endblock %}

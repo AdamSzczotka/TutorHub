@@ -1,0 +1,273 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Ustawienia powiadomien{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'notifications:list' %}" class="btn btn-ghost btn-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold">Ustawienia powiadomien</h1>
+    </div>
+
+    <form hx-post="{% url 'notifications:preferences' %}"
+          hx-swap="none"
+          hx-on::after-request="if(event.detail.successful) { htmx.find('#save-toast').classList.remove('hidden'); setTimeout(() => htmx.find('#save-toast').classList.add('hidden'), 3000) }">
+        {% csrf_token %}
+
+        <!-- Email notifications -->
+        <div class="card bg-base-100 shadow mb-6">
+            <div class="card-body">
+                <h2 class="card-title">Powiadomienia email</h2>
+                <p class="text-gray-600 text-sm mb-4">
+                    Wybierz jakie powiadomienia email chcesz otrzymywac
+                </p>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Przypomnienia o lekcjach</span>
+                            <p class="text-sm text-gray-500">Przypomnienia przed zaplanowanymi lekcjami</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_lesson_reminders"
+                               {% if form.instance.email_lesson_reminders %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Zmiany w lekcjach</span>
+                            <p class="text-sm text-gray-500">Informacje o zmianach terminu lub anulowaniu</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_lesson_changes"
+                               {% if form.instance.email_lesson_changes %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Wiadomosci</span>
+                            <p class="text-sm text-gray-500">Powiadomienia o nowych wiadomosciach</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_messages"
+                               {% if form.instance.email_messages %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Faktury</span>
+                            <p class="text-sm text-gray-500">Powiadomienia o fakturach i platosciach</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_invoices"
+                               {% if form.instance.email_invoices %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Systemowe</span>
+                            <p class="text-sm text-gray-500">Wazne powiadomienia systemowe</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_system"
+                               {% if form.instance.email_system %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Marketing</span>
+                            <p class="text-sm text-gray-500">Informacje o promocjach i nowosciach</p>
+                        </div>
+                        <input type="checkbox"
+                               name="email_marketing"
+                               {% if form.instance.email_marketing %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS notifications -->
+        <div class="card bg-base-100 shadow mb-6">
+            <div class="card-body">
+                <h2 class="card-title">Powiadomienia SMS</h2>
+                <p class="text-gray-600 text-sm mb-4">
+                    Wybierz jakie powiadomienia SMS chcesz otrzymywac
+                </p>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Przypomnienia o lekcjach</span>
+                            <p class="text-sm text-gray-500">SMS przed zaplanowanymi lekcjami</p>
+                        </div>
+                        <input type="checkbox"
+                               name="sms_lesson_reminders"
+                               {% if form.instance.sms_lesson_reminders %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Zmiany w lekcjach</span>
+                            <p class="text-sm text-gray-500">SMS o zmianach terminu lub anulowaniu</p>
+                        </div>
+                        <input type="checkbox"
+                               name="sms_lesson_changes"
+                               {% if form.instance.sms_lesson_changes %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Pilne powiadomienia</span>
+                            <p class="text-sm text-gray-500">Wazne i pilne powiadomienia</p>
+                        </div>
+                        <input type="checkbox"
+                               name="sms_urgent"
+                               {% if form.instance.sms_urgent %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Push notifications -->
+        <div class="card bg-base-100 shadow mb-6">
+            <div class="card-body">
+                <h2 class="card-title">Powiadomienia Push</h2>
+                <p class="text-gray-600 text-sm mb-4">
+                    Powiadomienia w przegladarce
+                </p>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Powiadomienia push wlaczone</span>
+                            <p class="text-sm text-gray-500">Glowny wlacznik powiadomien push</p>
+                        </div>
+                        <input type="checkbox"
+                               name="push_enabled"
+                               {% if form.instance.push_enabled %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Przypomnienia o lekcjach</span>
+                            <p class="text-sm text-gray-500">Push przed zaplanowanymi lekcjami</p>
+                        </div>
+                        <input type="checkbox"
+                               name="push_lesson_reminders"
+                               {% if form.instance.push_lesson_reminders %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Wiadomosci</span>
+                            <p class="text-sm text-gray-500">Push o nowych wiadomosciach</p>
+                        </div>
+                        <input type="checkbox"
+                               name="push_messages"
+                               {% if form.instance.push_messages %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- In-app notifications -->
+        <div class="card bg-base-100 shadow mb-6">
+            <div class="card-body">
+                <h2 class="card-title">Powiadomienia w aplikacji</h2>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between">
+                        <div>
+                            <span class="font-medium">Powiadomienia w aplikacji</span>
+                            <p class="text-sm text-gray-500">Wyswietlaj powiadomienia w panelu</p>
+                        </div>
+                        <input type="checkbox"
+                               name="in_app_enabled"
+                               {% if form.instance.in_app_enabled %}checked{% endif %}
+                               class="toggle toggle-primary">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timing preferences -->
+        <div class="card bg-base-100 shadow mb-6">
+            <div class="card-body">
+                <h2 class="card-title">Ustawienia czasowe</h2>
+
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text">Przypomnienie przed lekcja (godziny)</span>
+                    </label>
+                    <input type="number"
+                           name="reminder_hours_before"
+                           value="{{ form.instance.reminder_hours_before|default:24 }}"
+                           min="1"
+                           max="72"
+                           class="input input-bordered w-full max-w-xs">
+                    <label class="label">
+                        <span class="label-text-alt">Ile godzin przed lekcja wyslac przypomnienie</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Cisza nocna od</span>
+                        </label>
+                        <input type="time"
+                               name="quiet_hours_start"
+                               value="{{ form.instance.quiet_hours_start|date:'H:i'|default:'' }}"
+                               class="input input-bordered w-full">
+                        <label class="label">
+                            <span class="label-text-alt">Nie wysylaj powiadomien po tej godzinie</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Cisza nocna do</span>
+                        </label>
+                        <input type="time"
+                               name="quiet_hours_end"
+                               value="{{ form.instance.quiet_hours_end|date:'H:i'|default:'' }}"
+                               class="input input-bordered w-full">
+                        <label class="label">
+                            <span class="label-text-alt">Nie wysylaj powiadomien przed ta godzina</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="btn btn-primary">
+                Zapisz ustawienia
+            </button>
+        </div>
+    </form>
+
+    <!-- Toast -->
+    <div id="save-toast" class="toast toast-end hidden">
+        <div class="alert alert-success">
+            <span>Zapisano!</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

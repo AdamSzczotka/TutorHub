@@ -1,0 +1,30 @@
+{% if announcements %}
+<div class="space-y-2" x-data="{ dismissed: [] }">
+    {% for announcement in announcements %}
+    <div x-show="!dismissed.includes('{{ announcement.id }}')"
+         x-transition
+         class="alert {% if announcement.type == 'INFO' %}alert-info{% elif announcement.type == 'WARNING' %}alert-warning{% elif announcement.type == 'SUCCESS' %}alert-success{% else %}alert-error{% endif %}">
+
+        <div class="flex-1">
+            <div class="flex items-center space-x-2">
+                {% if announcement.is_pinned %}
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v2H5V5z"/>
+                    <path fill-rule="evenodd" d="M10 18a.75.75 0 01-.75-.75V13H5.75a.75.75 0 010-1.5H10V8a.75.75 0 011.5 0v3.5h4.25a.75.75 0 010 1.5H11.5v4.25a.75.75 0 01-.75.75z" clip-rule="evenodd"/>
+                </svg>
+                {% endif %}
+                <h3 class="font-bold">{{ announcement.title }}</h3>
+            </div>
+            <p class="text-sm mt-1">{{ announcement.content }}</p>
+        </div>
+
+        <button @click="dismissed.push('{{ announcement.id }}')"
+                class="btn btn-ghost btn-sm btn-circle">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
