@@ -1,0 +1,78 @@
+<h3 class="font-bold text-lg mb-4">Rozpatrz prosbe o anulowanie</h3>
+
+<!-- Lesson Details -->
+<div class="bg-info/10 border border-info/30 rounded-lg p-4 space-y-2 mb-4">
+    <h4 class="font-semibold text-info-content">{{ cancellation.lesson.title }}</h4>
+    <div class="text-sm text-info-content/80">
+        Data: {{ cancellation.lesson.start_time|date:"d.m.Y, H:i" }}
+    </div>
+    <div class="text-sm text-info-content/80">
+        Uczen: {{ cancellation.student.get_full_name }}
+    </div>
+</div>
+
+<!-- Student's Reason -->
+<div class="mb-4">
+    <div class="font-medium text-sm mb-2">Powod ucznia:</div>
+    <div class="bg-base-200 p-3 rounded-lg text-sm">
+        {{ cancellation.reason }}
+    </div>
+</div>
+
+<!-- Info Alert -->
+<div class="alert alert-info mb-4">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span class="text-sm">
+        Po zaakceptowaniu zajecia zostana anulowane, a uczen otrzyma prawo do
+        odrobienia zajec w ciagu 30 dni.
+    </span>
+</div>
+
+<form hx-post="{% url 'cancellations:review' cancellation.id %}"
+      hx-target="#requests-list"
+      hx-swap="innerHTML"
+      x-data="{ action: '' }"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <input type="hidden" name="action" x-model="action">
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Notatka administratora (opcjonalna dla akceptacji, wymagana dla odrzucenia)</span>
+        </label>
+        <textarea name="notes"
+                  class="textarea textarea-bordered w-full"
+                  rows="3"
+                  placeholder="Dodatkowe informacje lub komentarz..."></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 pt-4 border-t">
+        <button type="button"
+                class="btn btn-ghost"
+                onclick="document.getElementById('review-modal').close()">
+            Anuluj
+        </button>
+        <button type="submit"
+                class="btn btn-error gap-2"
+                @click="action = 'REJECT'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Odrzuc
+        </button>
+        <button type="submit"
+                class="btn btn-success gap-2"
+                @click="action = 'APPROVE'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 13l4 4L19 7"/>
+            </svg>
+            Zaakceptuj
+        </button>
+    </div>
+</form>

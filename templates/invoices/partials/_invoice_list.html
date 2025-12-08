@@ -1,0 +1,79 @@
+{% if invoices %}
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Numer</th>
+                <th>Miesiąc</th>
+                <th>Kwota brutto</th>
+                <th>Status</th>
+                <th>Termin</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td class="font-medium">{{ invoice.invoice_number }}</td>
+                <td>{{ invoice.month_year }}</td>
+                <td class="font-bold">{{ invoice.total_amount|floatformat:2 }} zł</td>
+                <td>
+                    {% if invoice.status == 'PAID' %}
+                    <span class="badge badge-success">Opłacona</span>
+                    {% elif invoice.status == 'OVERDUE' %}
+                    <span class="badge badge-error">Zaległa</span>
+                    {% elif invoice.status == 'SENT' %}
+                    <span class="badge badge-info">Wysłana</span>
+                    {% elif invoice.status == 'CANCELLED' %}
+                    <span class="badge badge-ghost">Anulowana</span>
+                    {% elif invoice.status == 'CORRECTED' %}
+                    <span class="badge badge-warning">Skorygowana</span>
+                    {% else %}
+                    <span class="badge badge-ghost">{{ invoice.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ invoice.due_date|date:"d.m.Y" }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <a href="{% url 'invoices:detail' invoice.id %}"
+                           class="btn btn-sm btn-ghost">
+                            Szczegóły
+                        </a>
+                        <a href="{% url 'invoices:download_pdf' invoice.id %}"
+                           class="btn btn-sm btn-primary"
+                           download>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            PDF
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="btn-group">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-sm" href="?page={{ page_obj.previous_page_number }}">«</a>
+        {% endif %}
+        <button class="btn btn-sm">Strona {{ page_obj.number }}</button>
+        {% if page_obj.has_next %}
+        <a class="btn btn-sm" href="?page={{ page_obj.next_page_number }}">»</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body py-12 text-center text-base-content/50">
+        Brak faktur do wyświetlenia
+    </div>
+</div>
+{% endif %}

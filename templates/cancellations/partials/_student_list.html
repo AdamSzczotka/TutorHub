@@ -1,0 +1,93 @@
+{% if requests %}
+<div class="space-y-4">
+    {% for req in requests %}
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <h3 class="card-title text-lg">{{ req.lesson.title }}</h3>
+                    <div class="flex items-center gap-4 text-sm text-base-content/70">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {{ req.lesson.start_time|date:"d.m.Y, H:i" }}
+                        </div>
+                        {% if req.lesson.subject %}
+                        <div>{{ req.lesson.subject.name }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if req.status == 'pending' %}
+                <span class="badge badge-warning gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Oczekuje
+                </span>
+                {% elif req.status == 'approved' %}
+                <span class="badge badge-success gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Zaakceptowana
+                </span>
+                {% else %}
+                <span class="badge badge-error gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Odrzucona
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Reason -->
+            <div class="mt-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="font-medium text-sm">Twoj powod:</span>
+                </div>
+                <p class="text-sm text-base-content/80 bg-base-200 p-3 rounded-lg">
+                    {{ req.reason }}
+                </p>
+            </div>
+
+            {% if req.admin_notes %}
+            <div class="mt-2">
+                <div class="font-medium text-sm mb-1">Odpowiedz admina:</div>
+                <p class="text-sm text-base-content/80 bg-base-200 p-3 rounded-lg">
+                    {{ req.admin_notes }}
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="text-xs text-base-content/50 pt-2 border-t mt-4">
+                Wyslano: {{ req.request_date|date:"d.m.Y, H:i" }}
+                {% if req.reviewed_at %}
+                | Rozpatrzone: {{ req.reviewed_at|date:"d.m.Y, H:i" }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body py-12 text-center text-base-content/50">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p>Nie masz zadnych prosb o anulowanie</p>
+    </div>
+</div>
+{% endif %}

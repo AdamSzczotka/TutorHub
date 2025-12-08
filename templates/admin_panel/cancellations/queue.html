@@ -1,0 +1,62 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Prosby o anulowanie{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Prosby o anulowanie zajec</h1>
+            <p class="text-base-content/70">Zarzadzaj prosbami o anulowanie zajec od uczniow</p>
+        </div>
+
+        {% if pending_count > 0 %}
+        <span class="badge badge-warning badge-lg">
+            {{ pending_count }} oczekujacych
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed">
+        <a class="tab {% if current_status == 'pending' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:admin_queue' %}?status=pending"
+           hx-target="#requests-list"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            Oczekujace
+        </a>
+        <a class="tab {% if current_status == 'approved' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:admin_queue' %}?status=approved"
+           hx-target="#requests-list"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            Zaakceptowane
+        </a>
+        <a class="tab {% if current_status == 'rejected' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:admin_queue' %}?status=rejected"
+           hx-target="#requests-list"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            Odrzucone
+        </a>
+    </div>
+
+    <div id="requests-list"
+         hx-get="{% url 'cancellations:admin_queue' %}?status={{ current_status }}"
+         hx-trigger="cancellationReviewed from:body"
+         hx-swap="innerHTML">
+        {% include "admin_panel/cancellations/partials/_queue_list.html" %}
+    </div>
+</div>
+
+<!-- Review Modal -->
+<dialog id="review-modal" class="modal">
+    <div class="modal-box max-w-lg">
+        <div id="review-modal-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}

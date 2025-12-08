@@ -1,0 +1,80 @@
+{% if invoices %}
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Numer</th>
+                <th>Uczeń</th>
+                <th>Miesiąc</th>
+                <th>Kwota brutto</th>
+                <th>Status</th>
+                <th>Termin</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td class="font-medium">{{ invoice.invoice_number }}</td>
+                <td>{{ invoice.student.get_full_name }}</td>
+                <td>{{ invoice.month_year }}</td>
+                <td class="font-bold">{{ invoice.total_amount|floatformat:2 }} zł</td>
+                <td>
+                    {% if invoice.status == 'PAID' %}
+                    <span class="badge badge-success">Opłacona</span>
+                    {% elif invoice.status == 'OVERDUE' %}
+                    <span class="badge badge-error">Zaległa</span>
+                    {% elif invoice.status == 'SENT' %}
+                    <span class="badge badge-info">Wysłana</span>
+                    {% elif invoice.status == 'CANCELLED' %}
+                    <span class="badge badge-ghost">Anulowana</span>
+                    {% elif invoice.status == 'CORRECTED' %}
+                    <span class="badge badge-warning">Skorygowana</span>
+                    {% else %}
+                    <span class="badge badge-ghost">{{ invoice.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ invoice.due_date|date:"d.m.Y" }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <a href="{% url 'admin_invoices:detail' invoice.id %}"
+                           class="btn btn-sm btn-ghost">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </a>
+                        <a href="{% url 'admin_invoices:download_pdf' invoice.id %}"
+                           class="btn btn-sm btn-ghost"
+                           download>
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="join">
+        {% if page_obj.has_previous %}
+        <a class="join-item btn btn-sm"
+           hx-get="{% url 'admin_invoices:list' %}?page={{ page_obj.previous_page_number }}"
+           hx-target="#invoice-table">«</a>
+        {% endif %}
+        <button class="join-item btn btn-sm">Strona {{ page_obj.number }}</button>
+        {% if page_obj.has_next %}
+        <a class="join-item btn btn-sm"
+           hx-get="{% url 'admin_invoices:list' %}?page={{ page_obj.next_page_number }}"
+           hx-target="#invoice-table">»</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="py-12 text-center text-base-content/50">
+    <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+    <p>Brak faktur do wyświetlenia</p>
+</div>
+{% endif %}

@@ -1,0 +1,68 @@
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">Podgląd faktury</h2>
+        <p class="text-base-content/70">
+            {{ student.get_full_name }} - {{ month_year }}
+        </p>
+
+        <div class="overflow-x-auto mt-4">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Lp.</th>
+                        <th>Opis</th>
+                        <th class="text-right">Ilość (h)</th>
+                        <th class="text-right">Cena jedn.</th>
+                        <th class="text-right">Wartość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.description }}</td>
+                        <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                        <td class="text-right">{{ item.unit_price|floatformat:2 }} zł</td>
+                        <td class="text-right font-medium">{{ item.total_price|floatformat:2 }} zł</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Summary -->
+        <div class="flex justify-end">
+            <div class="w-64 space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-base-content/70">Suma netto:</span>
+                    <span>{{ totals.net_amount|floatformat:2 }} zł</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-base-content/70">VAT (23%):</span>
+                    <span>{{ totals.vat_amount|floatformat:2 }} zł</span>
+                </div>
+                <div class="divider my-2"></div>
+                <div class="flex justify-between text-lg">
+                    <span class="font-bold">Do zapłaty:</span>
+                    <span class="font-bold text-primary">{{ totals.total_amount|floatformat:2 }} zł</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-actions justify-end mt-6">
+            <form hx-post="{% url 'admin_invoices:create_submit' %}"
+                  hx-swap="innerHTML"
+                  hx-target="#calculated-items">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                <input type="hidden" name="month_year" value="{{ month_year }}">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="file-plus" class="w-5 h-5"></i>
+                    Wygeneruj fakturę
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

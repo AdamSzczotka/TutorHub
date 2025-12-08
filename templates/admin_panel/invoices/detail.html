@@ -1,0 +1,30 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Faktura {{ invoice.invoice_number }} - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'admin_invoices:list' %}" class="btn btn-ghost btn-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-bold">{{ invoice.invoice_number }}</h1>
+                <p class="text-base-content/70">{{ invoice.student.get_full_name }}</p>
+            </div>
+        </div>
+        <a href="{% url 'admin_invoices:download_pdf' invoice.id %}"
+           class="btn btn-primary"
+           download>
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Pobierz PDF
+        </a>
+    </div>
+
+    <div id="invoice-detail">
+        {% include "admin_panel/invoices/partials/_invoice_detail.html" %}
+    </div>
+</div>
+{% endblock %}

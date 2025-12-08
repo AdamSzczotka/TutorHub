@@ -1,0 +1,107 @@
+<h3 class="font-bold text-lg mb-4">Umow zajecia zastepcze</h3>
+
+<!-- Original Lesson Info -->
+<div class="bg-info/10 border border-info/30 rounded-lg p-4 mb-4">
+    <h4 class="font-semibold text-info-content mb-2">Anulowane zajecia:</h4>
+    <div class="text-sm text-info-content/80 space-y-1">
+        <div>{{ makeup_lesson.original_lesson.title }}</div>
+        <div>{{ makeup_lesson.original_lesson.start_time|date:"d.m.Y, H:i" }}</div>
+        {% if makeup_lesson.original_lesson.subject %}
+        <div>Przedmiot: {{ makeup_lesson.original_lesson.subject.name }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Expiration Warning -->
+<div class="alert {% if countdown.variant == 'urgent' %}alert-warning{% else %}alert-info{% endif %} mb-4">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span>Termin waznosci: {{ makeup_lesson.expires_at|date:"d.m.Y, H:i" }} ({{ countdown.text }})</span>
+</div>
+
+<!-- Available Slots -->
+<form hx-post="{% url 'cancellations:schedule_makeup' makeup_lesson.id %}"
+      hx-target="#reschedule-result"
+      hx-swap="innerHTML"
+      x-data="{ selectedSlot: '' }">
+    {% csrf_token %}
+
+    <input type="hidden" name="new_lesson_id" x-model="selectedSlot">
+
+    <div id="reschedule-result"></div>
+
+    {% if available_slots %}
+    <h4 class="font-semibold mb-3">Dostepne terminy ({{ available_slots|length }})</h4>
+
+    <div class="space-y-2 max-h-96 overflow-y-auto">
+        {% for slot in available_slots %}
+        <div class="border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md"
+             :class="selectedSlot === '{{ slot.id }}' ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-base-300'"
+             @click="selectedSlot = '{{ slot.id }}'">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1 flex-1">
+                    <div class="font-medium">{{ slot.title }}</div>
+                    <div class="flex flex-wrap gap-3 text-sm text-base-content/70">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {{ slot.start_time|date:"l, d.m.Y" }}
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                        </div>
+                        {% if slot.room %}
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            </svg>
+                            {{ slot.room.name }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if slot.is_group_lesson %}
+                <span class="badge badge-outline">Grupowe</span>
+                {% else %}
+                <span class="badge badge-primary badge-outline">Indywidualne</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-base-content/50">
+        <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="font-medium">Brak dostepnych terminow</p>
+        <p class="text-sm mt-2">Skontaktuj sie z administratorem w celu ustalenia terminu</p>
+    </div>
+    {% endif %}
+
+    <div class="flex items-center justify-end gap-2 pt-4 mt-4 border-t">
+        <button type="button"
+                class="btn btn-ghost"
+                onclick="document.getElementById('reschedule-modal').close()">
+            Anuluj
+        </button>
+        {% if available_slots %}
+        <button type="submit"
+                class="btn btn-primary"
+                :disabled="!selectedSlot">
+            Potwierdz termin
+        </button>
+        {% endif %}
+    </div>
+</form>

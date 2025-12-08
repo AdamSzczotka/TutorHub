@@ -1,0 +1,67 @@
+<h3 class="font-bold text-lg mb-4">Przedluz termin odrobienia</h3>
+
+<!-- Student & Lesson Info -->
+<div class="bg-info/10 border border-info/30 rounded-lg p-4 mb-4 space-y-2">
+    <div class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span class="font-medium">{{ makeup_lesson.student.get_full_name }}</span>
+    </div>
+    <div class="text-sm text-info-content/80">
+        Zajecia: {{ makeup_lesson.original_lesson.title }}
+    </div>
+</div>
+
+<!-- Current Expiration -->
+<div class="alert alert-info mb-4">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span>Aktualny termin wygasniecia: {{ makeup_lesson.expires_at|date:"d.m.Y, H:i" }}</span>
+</div>
+
+<form hx-post="{% url 'cancellations:extend_deadline' makeup_lesson.id %}"
+      hx-target="#extend-result"
+      hx-swap="innerHTML"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <div id="extend-result"></div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Nowy termin wygasniecia *</span>
+        </label>
+        <input type="datetime-local"
+               name="new_expires_at"
+               class="input input-bordered w-full"
+               min="{{ makeup_lesson.expires_at|date:'Y-m-d' }}T00:00"
+               required>
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Powod przedluzenia *</span>
+        </label>
+        <textarea name="reason"
+                  class="textarea textarea-bordered w-full"
+                  rows="3"
+                  placeholder="Podaj powod przedluzenia terminu (min. 10 znakow)..."
+                  minlength="10"
+                  required></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 pt-4 border-t">
+        <button type="button"
+                class="btn btn-ghost"
+                onclick="document.getElementById('extend-modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Przedluz termin
+        </button>
+    </div>
+</form>

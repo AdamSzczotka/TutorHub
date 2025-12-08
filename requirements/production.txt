@@ -2,7 +2,6 @@
 
 # Server
 gunicorn>=23.0
-whitenoise>=6.8
 
 # Storage
 django-storages>=1.14
