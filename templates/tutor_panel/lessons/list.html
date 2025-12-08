@@ -1,0 +1,131 @@
+{% extends "tutor_panel/base.html" %}
+
+{% block title %}Moje zajecia{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Moje zajecia</h1>
+            <p class="text-gray-600">Przegladaj i zarzadzaj swoimi zajeciami</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="?view=calendar" class="btn btn-sm {% if view_type == 'calendar' %}btn-primary{% else %}btn-ghost{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Kalendarz
+            </a>
+            <a href="?view=list" class="btn btn-sm {% if view_type == 'list' %}btn-primary{% else %}btn-ghost{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Lista
+            </a>
+        </div>
+    </div>
+
+    {% if view_type == 'calendar' %}
+    <!-- Calendar View -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+    {% else %}
+    <!-- List View -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            {% if lessons %}
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tytul</th>
+                            <th>Data</th>
+                            <th>Godzina</th>
+                            <th>Przedmiot</th>
+                            <th>Sala</th>
+                            <th>Uczniowie</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in lessons %}
+                        <tr class="hover">
+                            <td class="font-medium">{{ lesson.title }}</td>
+                            <td>{{ lesson.start_time|date:"d.m.Y" }}</td>
+                            <td>{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</td>
+                            <td>{{ lesson.subject.name }}</td>
+                            <td>{{ lesson.room.name|default:"Online" }}</td>
+                            <td>{{ lesson.lesson_students.count }}</td>
+                            <td>
+                                <span class="badge {% if lesson.status == 'completed' %}badge-success{% elif lesson.status == 'cancelled' %}badge-error{% elif lesson.status == 'ongoing' %}badge-primary{% else %}badge-ghost{% endif %}">
+                                    {% if lesson.status == 'completed' %}Zakonczone{% elif lesson.status == 'cancelled' %}Anulowane{% elif lesson.status == 'ongoing' %}W trakcie{% else %}Zaplanowane{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-ghost btn-xs"
+                                        hx-get="{% url 'tutor:lesson_detail' lesson.id %}"
+                                        hx-target="#modal-content"
+                                        onclick="document.getElementById('modal').showModal()">
+                                    Szczegoly
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <svg class="mx-auto h-12 w-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p>Brak zajec do wyswietlenia</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if view_type == 'calendar' %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        locale: 'pl',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '{% url "tutor:calendar_events" %}',
+        eventClick: function(info) {
+            htmx.ajax('GET', '{% url "tutor:lesson_detail" 0 %}'.replace('0', info.event.id), {
+                target: '#modal-content'
+            });
+            document.getElementById('modal').showModal();
+        },
+        slotMinTime: '07:00:00',
+        slotMaxTime: '21:00:00',
+        allDaySlot: false,
+        height: 'auto',
+        nowIndicator: true,
+    });
+    calendar.render();
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% if students %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for student in students %}
+    <a href="{% url 'tutor:student_detail' student.id %}" class="card bg-base-100 shadow hover:shadow-lg transition-shadow">
+        <div class="card-body">
+            <div class="flex items-center space-x-4">
+                <div class="avatar placeholder">
+                    {% if student.avatar %}
+                    <div class="w-12 rounded-full">
+                        <img src="{{ student.avatar }}" alt="Avatar">
+                    </div>
+                    {% else %}
+                    <div class="bg-primary text-primary-content rounded-full w-12">
+                        <span>{{ student.name.0 }}{{ student.surname.0 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-medium truncate">{{ student.name }} {{ student.surname }}</h3>
+                    <p class="text-sm text-gray-500">{{ student.email }}</p>
+                </div>
+            </div>
+
+            <div class="divider my-2"></div>
+
+            <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                <div>
+                    <div class="font-bold text-lg {% if student.attendance_rate >= 80 %}text-success{% elif student.attendance_rate >= 60 %}text-warning{% else %}text-error{% endif %}">
+                        {{ student.attendance_rate }}%
+                    </div>
+                    <div class="text-gray-500 text-xs">Obecnosc</div>
+                </div>
+                <div>
+                    <div class="font-bold text-lg">{{ student.total_lessons }}</div>
+                    <div class="text-gray-500 text-xs">Zajec</div>
+                </div>
+                <div>
+                    <div class="font-bold text-lg">{{ student.upcoming_lessons }}</div>
+                    <div class="text-gray-500 text-xs">Nadchodzacych</div>
+                </div>
+            </div>
+
+            {% if student.last_lesson_date %}
+            <div class="text-xs text-gray-500 mt-2">
+                Ostatnia lekcja: {{ student.last_lesson_date|date:"d.m.Y" }}
+            </div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <p class="text-gray-500">Brak uczniow do wyswietlenia</p>
+        <p class="text-sm text-gray-400 mt-1">Uczniowie pojawia sie tutaj po przypisaniu ich do Twoich zajec</p>
+    </div>
+</div>
+{% endif %}

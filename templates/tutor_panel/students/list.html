@@ -1,0 +1,43 @@
+{% extends "tutor_panel/base.html" %}
+
+{% block title %}Moi uczniowie{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Moi uczniowie</h1>
+            <p class="text-gray-600">Lista Twoich podopiecznych</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body py-4">
+            <form class="flex flex-wrap items-center gap-4" hx-get="{% url 'tutor:students' %}" hx-target="#student-list" hx-swap="innerHTML">
+                <div class="form-control">
+                    <input type="text"
+                           name="search"
+                           placeholder="Szukaj ucznia..."
+                           value="{{ request.GET.search }}"
+                           class="input input-bordered input-sm w-64">
+                </div>
+                <div class="form-control">
+                    <select name="sort" class="select select-bordered select-sm">
+                        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Sortuj: Nazwisko</option>
+                        <option value="attendance" {% if request.GET.sort == 'attendance' %}selected{% endif %}>Sortuj: Obecnosc</option>
+                        <option value="recent" {% if request.GET.sort == 'recent' %}selected{% endif %}>Sortuj: Ostatnia lekcja</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Filtruj</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student List -->
+    <div id="student-list">
+        {% include "tutor_panel/students/partials/_student_list.html" %}
+    </div>
+</div>
+{% endblock %}

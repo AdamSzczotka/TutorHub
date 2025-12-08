@@ -1,0 +1,197 @@
+{% extends "tutor_panel/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Witaj, {{ request.user.first_name }}!</h1>
+        <p class="text-gray-600 mt-1">Twoj panel korepetytora - wszystko w jednym miejscu</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-sm font-medium">Dzisiejsze zajecia</h2>
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.today_lessons_count }}</div>
+                <p class="text-xs text-gray-600">{{ stats.today_completed_count }} zakonczone</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-sm font-medium">Moi uczniowie</h2>
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.total_students }}</div>
+                <p class="text-xs text-gray-600">aktywnych uczniow</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-sm font-medium">Godziny w tym miesiacu</h2>
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.monthly_hours }}h</div>
+                <p class="text-xs text-gray-600">{{ stats.monthly_lessons_count }} zajec</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-sm font-medium">Zarobki w tym miesiacu</h2>
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.monthly_earnings|floatformat:0 }} zl</div>
+                <p class="text-xs {% if stats.earnings_growth >= 0 %}text-success{% else %}text-error{% endif %}">
+                    {% if stats.earnings_growth >= 0 %}+{% endif %}{{ stats.earnings_growth }}% vs poprzedni miesiac
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Today's Lessons -->
+        <div class="lg:col-span-2">
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title">Dzisiejsze zajecia</h2>
+                    <p class="text-sm text-gray-600">{{ today|date:"l, j F Y" }}</p>
+
+                    {% if today_lessons %}
+                    <div class="space-y-3 mt-4">
+                        {% for lesson in today_lessons %}
+                        <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="font-medium">{{ lesson.title }}</h4>
+                                    <span class="badge {% if lesson.status == 'completed' %}badge-success{% elif lesson.status == 'ongoing' %}badge-primary{% else %}badge-ghost{% endif %}">
+                                        {% if lesson.status == 'completed' %}Zakonczone{% elif lesson.status == 'ongoing' %}W trakcie{% else %}Zaplanowane{% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                                    <span>{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</span>
+                                    <span>{{ lesson.room.name|default:"Online" }}</span>
+                                    <span>{{ lesson.lesson_students.count }} uczniow</span>
+                                </div>
+                            </div>
+
+                            {% if lesson.status == 'scheduled' %}
+                            <button class="btn btn-sm btn-primary"
+                                    hx-get="{% url 'tutor:quick_attendance' lesson.id %}"
+                                    hx-target="#modal-content"
+                                    onclick="document.getElementById('modal').showModal()">
+                                Obecnosc
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <svg class="mx-auto h-12 w-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p>Brak zajec na dzisiaj</p>
+                        <p class="text-sm mt-1">Ciesz sie wolnym dniem!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Students -->
+        <div>
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title">Moi uczniowie</h2>
+                    <p class="text-sm text-gray-600">Ostatnio aktywni</p>
+
+                    {% if recent_students %}
+                    <div class="space-y-3 mt-4">
+                        {% for student in recent_students %}
+                        <a href="{% url 'tutor:student_detail' student.id %}"
+                           class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="avatar placeholder">
+                                <div class="bg-primary text-primary-content rounded-full w-10">
+                                    <span class="text-sm">{{ student.name.0 }}{{ student.surname.0 }}</span>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium truncate">{{ student.name }} {{ student.surname }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">{{ student.attendance_rate }}%</div>
+                                <div class="text-xs text-gray-500">obecnosc</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+
+                        <a href="{% url 'tutor:students' %}" class="btn btn-outline btn-sm w-full">
+                            Zobacz wszystkich uczniow
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <p class="text-sm">Brak przypisanych uczniow</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Szybkie akcje</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                <a href="{% url 'tutor:lessons' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Moje zajecia
+                </a>
+
+                <a href="{% url 'tutor:students' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                    Uczniowie
+                </a>
+
+                <a href="{% url 'tutor:attendance' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Obecnosc
+                </a>
+
+                <a href="{% url 'tutor:earnings' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    Zarobki
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
