@@ -1,0 +1,197 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Dashboard - Portal Rodzica{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Witaj w portalu rodzica</h1>
+        <p class="text-gray-600 mt-1">Sledz postepy nauki Twojego dziecka</p>
+    </div>
+
+    {% if selected_student %}
+    <!-- Child Info Card -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div class="flex items-center gap-4">
+                <div class="avatar placeholder">
+                    <div class="bg-secondary text-secondary-content rounded-full w-16">
+                        <span class="text-xl">{{ selected_student.name.0 }}{{ selected_student.surname.0 }}</span>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">{{ selected_student.name }} {{ selected_student.surname }}</h2>
+                    <p class="text-gray-600">{% if selected_student.class_name %}Klasa: {{ selected_student.class_name }}{% else %}Uczen{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Frekwencja</h3>
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.attendance_rate }}%</div>
+                <progress class="progress progress-success w-full" value="{{ stats.attendance_rate }}" max="100"></progress>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Zajec w tym miesiacu</h3>
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.monthly_lessons }}</div>
+                <p class="text-xs text-gray-500">{{ stats.monthly_hours }}h nauki</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Ukonczone zajecia</h3>
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.total_lessons }}</div>
+                <p class="text-xs text-gray-500">obecnych: {{ stats.present_count }}</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Osiagniecia</h3>
+                    <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.achievements_count }}</div>
+                <p class="text-xs text-gray-500">odblokowanych</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Upcoming Lessons -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title">Nadchodzace zajecia</h2>
+                    <a href="{% url 'parents:calendar' %}" class="btn btn-ghost btn-sm">
+                        Zobacz wszystkie
+                    </a>
+                </div>
+
+                {% if upcoming_lessons %}
+                <div class="space-y-3">
+                    {% for ls in upcoming_lessons %}
+                    <div class="flex items-center gap-4 p-3 bg-base-200 rounded-lg">
+                        <div class="text-center min-w-[60px]">
+                            <div class="text-2xl font-bold">{{ ls.lesson.start_time|date:"j" }}</div>
+                            <div class="text-xs text-gray-500">{{ ls.lesson.start_time|date:"M" }}</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium">{{ ls.lesson.subject.name|default:"Zajecia" }}</div>
+                            <div class="text-sm text-gray-600">
+                                {{ ls.lesson.start_time|time:"H:i" }} - {{ ls.lesson.end_time|time:"H:i" }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ ls.lesson.tutor.first_name }} {{ ls.lesson.tutor.last_name }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p>Brak zaplanowanych zajec</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Attendance -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title">Ostatnia frekwencja</h2>
+                    <a href="{% url 'parents:attendance' %}" class="btn btn-ghost btn-sm">
+                        Pelna historia
+                    </a>
+                </div>
+
+                {% if recent_attendance %}
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Przedmiot</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_attendance %}
+                            <tr>
+                                <td>{{ record.lesson.start_time|date:"d.m.Y" }}</td>
+                                <td>{{ record.lesson.subject.name|default:"-" }}</td>
+                                <td>
+                                    {% if record.attendance_status == 'PRESENT' %}
+                                    <span class="badge badge-success badge-sm">Obecny</span>
+                                    {% elif record.attendance_status == 'ABSENT' %}
+                                    <span class="badge badge-error badge-sm">Nieobecny</span>
+                                    {% elif record.attendance_status == 'LATE' %}
+                                    <span class="badge badge-warning badge-sm">Spozniony</span>
+                                    {% elif record.attendance_status == 'EXCUSED' %}
+                                    <span class="badge badge-info badge-sm">Usprawiedliwiony</span>
+                                    {% else %}
+                                    <span class="badge badge-ghost badge-sm">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <p>Brak danych o frekwencji</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No child selected -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body text-center py-12">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <h3 class="text-xl font-semibold mb-2">Brak powiazanych dzieci</h3>
+            <p class="text-gray-600">Nie znaleziono zadnych uczniow powiazanych z Twoim kontem.</p>
+            <p class="text-gray-600 mt-2">Skontaktuj sie z administracja, aby dodac Twoje dziecko.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

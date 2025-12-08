@@ -1,0 +1,115 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Kalendarz - Portal Rodzica{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Kalendarz zajec</h1>
+        <p class="text-gray-600 mt-1">Harmonogram zajec: {{ student.first_name }} {{ student.last_name }}</p>
+    </div>
+
+    <!-- Legend -->
+    <div class="flex flex-wrap gap-4 text-sm">
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span>Zaplanowane</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span>Ukonczone</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <span>Anulowane</span>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Event detail modal -->
+<dialog id="event-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg" id="event-title"></h3>
+        <div class="py-4 space-y-2">
+            <p><strong>Data:</strong> <span id="event-date"></span></p>
+            <p><strong>Godzina:</strong> <span id="event-time"></span></p>
+            <p><strong>Korepetytor:</strong> <span id="event-tutor"></span></p>
+            <p><strong>Status:</strong> <span id="event-status"></span></p>
+            <p><strong>Obecnosc:</strong> <span id="event-attendance"></span></p>
+        </div>
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn">Zamknij</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.9/locales/pl.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pl',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '{% url "parents:calendar-events" %}?student_id={{ student.id }}',
+        eventClick: function(info) {
+            var event = info.event;
+            var props = event.extendedProps;
+
+            document.getElementById('event-title').textContent = event.title;
+            document.getElementById('event-date').textContent = event.start.toLocaleDateString('pl-PL');
+            document.getElementById('event-time').textContent =
+                event.start.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'}) +
+                ' - ' +
+                event.end.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'});
+            document.getElementById('event-tutor').textContent = props.tutor || '-';
+
+            var statusMap = {
+                'scheduled': 'Zaplanowane',
+                'completed': 'Ukonczone',
+                'cancelled': 'Anulowane'
+            };
+            document.getElementById('event-status').textContent = statusMap[props.status] || props.status;
+
+            var attendanceMap = {
+                'PRESENT': 'Obecny',
+                'ABSENT': 'Nieobecny',
+                'LATE': 'Spozniony',
+                'EXCUSED': 'Usprawiedliwiony',
+                null: '-'
+            };
+            document.getElementById('event-attendance').textContent = attendanceMap[props.attendance] || '-';
+
+            document.getElementById('event-modal').showModal();
+        },
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

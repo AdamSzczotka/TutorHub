@@ -1,0 +1,147 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Postepy - Portal Rodzica{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Postepy nauki</h1>
+        <p class="text-gray-600 mt-1">Sledz postepy: {{ student.first_name }} {{ student.last_name }}</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Frekwencja</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.attendance_rate }}%</div>
+                <progress class="progress progress-success w-full" value="{{ stats.attendance_rate }}" max="100"></progress>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Zajec ukonczonych</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.total_lessons }}</div>
+                <p class="text-xs text-gray-500">obecnych: {{ stats.present_count }}</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Godzin nauki</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.monthly_hours }}h</div>
+                <p class="text-xs text-gray-500">w tym miesiacu</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Osiagniecia</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.achievements_count }}</div>
+                <p class="text-xs text-gray-500">odblokowanych</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress by Subject -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Postepy wedlug przedmiotow</h2>
+            <p class="text-sm text-gray-600">Wyniki w poszczegolnych przedmiotach</p>
+
+            {% if subjects %}
+            <div class="space-y-4 mt-4">
+                {% for subject in subjects %}
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full" style="background-color: {{ subject.color }}"></div>
+                            <span class="font-medium">{{ subject.name }}</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-gray-600">
+                                {{ subject.completed_lessons }} / {{ subject.total_lessons }} zajec
+                            </span>
+                        </div>
+                    </div>
+                    {% if subject.total_lessons > 0 %}
+                    {% widthratio subject.completed_lessons subject.total_lessons 100 as progress %}
+                    <progress class="progress progress-primary w-full" value="{{ progress }}" max="100"></progress>
+                    {% else %}
+                    <progress class="progress progress-primary w-full" value="0" max="100"></progress>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-500">
+                Brak danych o postepach
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Attendance summary by subject -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Podsumowanie</h2>
+            <p class="text-sm text-gray-600">Ogolna statystyka nauki</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                    <h3 class="font-medium mb-2">Frekwencja</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="radial-progress text-success" style="--value:{{ stats.attendance_rate }}; --size:8rem;">
+                            {{ stats.attendance_rate }}%
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p>Obecnych: {{ stats.present_count }}</p>
+                            <p>Wszystkich: {{ stats.total_lessons }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-medium mb-2">Aktywnosc</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>Zajec w tym miesiacu:</span>
+                            <span class="font-bold">{{ stats.monthly_lessons }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Godzin nauki:</span>
+                            <span class="font-bold">{{ stats.monthly_hours }}h</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Osiagniecia:</span>
+                            <span class="font-bold">{{ stats.achievements_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

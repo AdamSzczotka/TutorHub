@@ -1,0 +1,115 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Faktury - Portal Rodzica{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Faktury</h1>
+        <p class="text-gray-600 mt-1">Historia platnosci: {{ student.first_name }} {{ student.last_name }}</p>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">W tym roku</h3>
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ summary.year_total }} zl</div>
+                <p class="text-xs text-gray-500">{{ summary.year_invoices_count }} faktur</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Do zaplaty</h3>
+                    <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold text-warning">{{ summary.pending_total }} zl</div>
+                <p class="text-xs text-gray-500">{{ summary.pending_count }} oczekujacych</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Zaległe</h3>
+                    <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold text-error">{{ summary.overdue_total }} zl</div>
+                <p class="text-xs text-gray-500">{{ summary.overdue_count }} przeterminowanych</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices list -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Lista faktur</h2>
+
+            {% if invoices %}
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nr faktury</th>
+                            <th>Data wystawienia</th>
+                            <th>Termin platnosci</th>
+                            <th>Kwota</th>
+                            <th>Status</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ invoice.number }}</td>
+                            <td>{{ invoice.issue_date|date:"d.m.Y" }}</td>
+                            <td>{{ invoice.due_date|date:"d.m.Y" }}</td>
+                            <td>{{ invoice.amount }} zl</td>
+                            <td>
+                                {% if invoice.status == 'paid' %}
+                                <span class="badge badge-success">Oplacona</span>
+                                {% elif invoice.status == 'pending' %}
+                                <span class="badge badge-warning">Oczekuje</span>
+                                {% elif invoice.status == 'overdue' %}
+                                <span class="badge badge-error">Przeterminowana</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-ghost btn-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    PDF
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"/>
+                </svg>
+                <p class="text-lg font-medium mb-2">Brak faktur</p>
+                <p class="text-sm">Modul faktur nie jest jeszcze dostepny.</p>
+                <p class="text-sm">Prosimy o kontakt z administracja w sprawie platnosci.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
