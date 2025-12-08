@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.cancellations',
     'apps.invoices',
+    'apps.parents',
     'apps.landing',
     'apps.admin_panel',
 ]

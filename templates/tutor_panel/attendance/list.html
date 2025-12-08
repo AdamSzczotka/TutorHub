@@ -1,0 +1,56 @@
+{% extends "tutor_panel/base.html" %}
+
+{% block title %}Obecnosc{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold">Obecnosc</h1>
+        <p class="text-gray-600">Zajecia wymagajace oznaczenia obecnosci</p>
+    </div>
+
+    <!-- Pending Lessons -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Oczekujace na oznaczenie</h2>
+
+            {% if pending_lessons %}
+            <div class="space-y-3 mt-4">
+                {% for lesson in pending_lessons %}
+                <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-medium">{{ lesson.title }}</h4>
+                            <span class="badge badge-warning badge-sm">Oczekuje</span>
+                        </div>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                            <span>{{ lesson.start_time|date:"d.m.Y" }}</span>
+                            <span>{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</span>
+                            <span>{{ lesson.room.name|default:"Online" }}</span>
+                            <span>{{ lesson.lesson_students.count }} uczniow</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-sm btn-primary"
+                            hx-get="{% url 'tutor:quick_attendance' lesson.id %}"
+                            hx-target="#modal-content"
+                            onclick="document.getElementById('modal').showModal()">
+                        Oznacz obecnosc
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <svg class="mx-auto h-12 w-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p>Wszystkie obecnosci oznaczone!</p>
+                <p class="text-sm mt-1">Brak zajec wymagajacych oznaczenia obecnosci</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

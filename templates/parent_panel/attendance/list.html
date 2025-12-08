@@ -1,0 +1,114 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Frekwencja - Portal Rodzica{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold">Frekwencja</h1>
+            <p class="text-gray-600 mt-1">Historia obecnosci: {{ student.first_name }} {{ student.last_name }}</p>
+        </div>
+
+        <!-- Month selector -->
+        <div class="flex items-center gap-2">
+            <select class="select select-bordered"
+                    onchange="window.location.href='?student_id={{ student.id }}&month=' + this.value">
+                {% for month in available_months %}
+                <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>
+                    {{ month }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <div class="text-sm text-gray-600">Frekwencja</div>
+                <div class="text-2xl font-bold text-success">{{ stats.attendance_rate }}%</div>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <div class="text-sm text-gray-600">Obecny</div>
+                <div class="text-2xl font-bold text-success">{{ stats.present_count }}</div>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <div class="text-sm text-gray-600">Nieobecny</div>
+                <div class="text-2xl font-bold text-error">{{ stats.absent_count }}</div>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <div class="text-sm text-gray-600">Spozniony</div>
+                <div class="text-2xl font-bold text-warning">{{ stats.late_count }}</div>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <div class="text-sm text-gray-600">Usprawiedliwiony</div>
+                <div class="text-2xl font-bold text-info">{{ stats.excused_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance list -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Historia obecnosci</h2>
+
+            {% if attendance_records %}
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Godzina</th>
+                            <th>Przedmiot</th>
+                            <th>Korepetytor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.lesson.start_time|date:"d.m.Y" }}</td>
+                            <td>{{ record.lesson.start_time|time:"H:i" }} - {{ record.lesson.end_time|time:"H:i" }}</td>
+                            <td>{{ record.lesson.subject.name|default:"-" }}</td>
+                            <td>{{ record.lesson.tutor.first_name }} {{ record.lesson.tutor.last_name }}</td>
+                            <td>
+                                {% if record.attendance_status == 'PRESENT' %}
+                                <span class="badge badge-success">Obecny</span>
+                                {% elif record.attendance_status == 'ABSENT' %}
+                                <span class="badge badge-error">Nieobecny</span>
+                                {% elif record.attendance_status == 'LATE' %}
+                                <span class="badge badge-warning">Spozniony</span>
+                                {% elif record.attendance_status == 'EXCUSED' %}
+                                <span class="badge badge-info">Usprawiedliwiony</span>
+                                {% else %}
+                                <span class="badge badge-ghost">Nieokreslony</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <p>Brak danych o frekwencji w wybranym miesiacu</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

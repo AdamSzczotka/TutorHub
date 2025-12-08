@@ -1,0 +1,113 @@
+{% extends "tutor_panel/base.html" %}
+
+{% block title %}Zarobki{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Zarobki</h1>
+            <p class="text-gray-600">Przegladaj swoje zarobki i statystyki</p>
+        </div>
+        <div class="form-control">
+            <select class="select select-bordered"
+                    onchange="window.location.href='?month=' + this.value">
+                {% for option in month_options %}
+                <option value="{{ option.value }}" {% if option.value == selected_month %}selected{% endif %}>
+                    {{ option.label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title text-sm text-gray-600">Zarobki w tym miesiacu</h2>
+                <div class="text-3xl font-bold text-success">{{ stats.current_month|floatformat:0 }} zl</div>
+                {% if stats.previous_month > 0 %}
+                <p class="text-xs text-gray-500">
+                    {% if stats.current_month > stats.previous_month %}+{% endif %}
+                    {{ stats.current_month|add:stats.previous_month|floatformat:0 }} zl vs poprzedni miesiac
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title text-sm text-gray-600">Godziny pracy</h2>
+                <div class="text-3xl font-bold">{{ stats.hours_this_month }}h</div>
+                <p class="text-xs text-gray-500">~{{ stats.avg_hours_per_week }}h tygodniowo</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title text-sm text-gray-600">Stawka godzinowa</h2>
+                <div class="text-3xl font-bold">{{ stats.hourly_rate|floatformat:0 }} zl</div>
+                <p class="text-xs text-gray-500">bazowa stawka</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title text-sm text-gray-600">Ukonczone zajecia</h2>
+                <div class="text-3xl font-bold">{{ stats.lessons_completed }}</div>
+                <p class="text-xs text-gray-500">{{ stats.lessons_individual }} indyw. / {{ stats.lessons_group }} grup.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breakdown by Subject -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Podzial wg przedmiotow</h2>
+
+            {% if breakdown %}
+            <div class="overflow-x-auto mt-4">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Przedmiot</th>
+                            <th class="text-right">Zajecia</th>
+                            <th class="text-right">Godziny</th>
+                            <th class="text-right">Kwota</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in breakdown %}
+                        <tr class="hover">
+                            <td class="font-medium">{{ item.subject }}</td>
+                            <td class="text-right">{{ item.lessons }}</td>
+                            <td class="text-right">{{ item.hours }}h</td>
+                            <td class="text-right font-medium">{{ item.amount|floatformat:2 }} zl</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-bold">
+                            <td>Razem</td>
+                            <td class="text-right">{{ stats.lessons_completed }}</td>
+                            <td class="text-right">{{ stats.hours_this_month }}h</td>
+                            <td class="text-right">{{ stats.current_month|floatformat:2 }} zl</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <svg class="mx-auto h-12 w-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p>Brak danych za wybrany okres</p>
+                <p class="text-sm mt-1">Zarobki pojawia sie po ukonczeniu zajec</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

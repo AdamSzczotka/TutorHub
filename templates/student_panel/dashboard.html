@@ -1,0 +1,283 @@
+{% extends "student_panel/base.html" %}
+
+{% block title %}Panel Ucznia - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Witaj, {{ request.user.first_name }}!</h1>
+        <p class="text-gray-600 mt-1">Twoj plan zajec i postepy w nauce</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Dzisiejsze zajecia</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.today_lessons_count }}</div>
+                <p class="text-xs text-gray-500">
+                    {% if stats.next_lesson_time %}
+                        Nastepne o {{ stats.next_lesson_time }}
+                    {% else %}
+                        Brak zajec
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Frekwencja</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.attendance_rate }}%</div>
+                <progress class="progress progress-success w-full" value="{{ stats.attendance_rate }}" max="100"></progress>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Do odrobienia</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.makeup_count }}</div>
+                <p class="text-xs text-gray-500">zajec do przeprowadzenia</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-600">Osiagniecia</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold">{{ stats.achievements_count }}</div>
+                <p class="text-xs text-gray-500">odblokowanych odznak</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Today's Schedule -->
+        <div class="lg:col-span-2">
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title">Dzisiejszy plan</h2>
+                    <p class="text-sm text-gray-600">{{ today|date:"l, j F Y" }}</p>
+
+                    {% if today_lessons %}
+                        <div class="space-y-3 mt-4">
+                            {% for ls in today_lessons %}
+                                {% with lesson=ls.lesson %}
+                                <div class="flex items-start gap-4 p-4 border rounded-lg hover:bg-base-200 transition-colors">
+                                    <div class="w-1 self-stretch rounded-full"
+                                         style="background-color: {{ lesson.subject.color|default:'#3B82F6' }}"></div>
+
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-medium">{{ lesson.title }}</h4>
+                                            {% if lesson.status == 'ongoing' %}
+                                                <span class="badge badge-primary animate-pulse">Teraz</span>
+                                            {% elif lesson.status == 'completed' %}
+                                                <span class="badge badge-ghost">Zakonczone</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="text-sm text-gray-600 space-y-1">
+                                            <div class="flex items-center gap-4">
+                                                <span>{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</span>
+                                                <span>{{ lesson.tutor.get_full_name }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <span>{{ lesson.subject.name }}</span>
+                                                <span>{{ lesson.room.name|default:"Online" }}</span>
+                                            </div>
+                                        </div>
+
+                                        {% if lesson.description %}
+                                            <p class="text-sm text-gray-500 mt-2 line-clamp-2">{{ lesson.description }}</p>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if lesson.status == 'scheduled' %}
+                                        <button class="btn btn-outline btn-sm"
+                                                hx-get="{% url 'students:lesson-detail' lesson.pk %}"
+                                                hx-target="#modal-content"
+                                                onclick="document.getElementById('modal').showModal()">
+                                            Szczegoly
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <p>Brak zajec na dzisiaj</p>
+                            <p class="text-sm mt-1">Mozesz odpoczac!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Upcoming Lessons -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Nadchodzace zajecia</h2>
+
+                    {% if upcoming_lessons %}
+                        <div class="space-y-2">
+                            {% for ls in upcoming_lessons %}
+                                {% with lesson=ls.lesson %}
+                                <div class="flex items-center justify-between p-3 border rounded-lg text-sm">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium truncate">{{ lesson.title }}</div>
+                                        <div class="text-xs text-gray-600">
+                                            {{ lesson.start_time|date:"j M, H:i" }}
+                                        </div>
+                                    </div>
+                                    <div class="w-2 h-2 rounded-full ml-2"
+                                         style="background-color: {{ lesson.subject.color|default:'#3B82F6' }}"></div>
+                                </div>
+                                {% endwith %}
+                            {% endfor %}
+
+                            <a href="{% url 'students:calendar' %}" class="btn btn-outline btn-block mt-2">
+                                Caly kalendarz
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6 text-gray-500 text-sm">
+                            Brak zaplanowanych zajec
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Makeup Lessons Alert -->
+            {% if makeup_lessons %}
+                <div class="card bg-warning/10 border border-warning shadow">
+                    <div class="card-body">
+                        <h2 class="card-title text-lg text-warning-content flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            Zajecia do odrobienia
+                        </h2>
+
+                        <p class="text-sm text-warning-content/80 mb-3">
+                            Masz {{ makeup_lessons|length }} zajec do przeprowadzenia
+                        </p>
+
+                        {% for makeup in makeup_lessons|slice:":2" %}
+                            <div class="bg-base-100 border border-warning/30 rounded p-2 mb-2 text-sm">
+                                <div class="font-medium">{{ makeup.original_lesson.title }}</div>
+                                <div class="text-xs text-gray-600">
+                                    Wygasa: {{ makeup.expires_at|date:"j M Y" }}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <a href="{% url 'students:makeup-list' %}" class="btn btn-outline btn-warning btn-block mt-2">
+                            Zaplanuj zajecia zastercze
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Progress -->
+    {% if recent_progress %}
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Ostatnie postepy</h2>
+                <p class="text-sm text-gray-600">Twoje ostatnie oceny i notatki od korepetytorow</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    {% for ls in recent_progress %}
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-medium">{{ ls.lesson.subject.name }}</div>
+                                <span class="badge badge-primary">75/100</span>
+                            </div>
+
+                            {% if ls.attendance_notes %}
+                                <p class="text-sm text-gray-600 line-clamp-2">{{ ls.attendance_notes }}</p>
+                            {% endif %}
+
+                            <div class="text-xs text-gray-500 mt-2">
+                                {{ ls.lesson.start_time|date:"j M Y" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <a href="{% url 'students:progress' %}" class="btn btn-outline btn-block mt-4">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    Zobacz wszystkie postepy
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Szybkie akcje</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                <a href="{% url 'students:calendar' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Kalendarz
+                </a>
+
+                <a href="{% url 'students:cancellation-list' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    Anuluj zajecia
+                </a>
+
+                <a href="{% url 'students:makeup-list' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Odrobienie
+                </a>
+
+                <a href="{% url 'students:progress' %}" class="btn btn-outline h-auto flex-col py-4">
+                    <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    Postepy
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

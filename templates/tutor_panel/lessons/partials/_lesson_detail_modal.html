@@ -1,0 +1,77 @@
+<h3 class="font-bold text-lg mb-4">{{ lesson.title }}</h3>
+
+<div class="space-y-4">
+    <!-- Info -->
+    <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+            <span class="text-gray-500">Przedmiot:</span>
+            <span class="font-medium ml-2">{{ lesson.subject.name }}</span>
+        </div>
+        <div>
+            <span class="text-gray-500">Poziom:</span>
+            <span class="font-medium ml-2">{{ lesson.level.name }}</span>
+        </div>
+        <div>
+            <span class="text-gray-500">Data:</span>
+            <span class="font-medium ml-2">{{ lesson.start_time|date:"d.m.Y" }}</span>
+        </div>
+        <div>
+            <span class="text-gray-500">Godzina:</span>
+            <span class="font-medium ml-2">{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</span>
+        </div>
+        <div>
+            <span class="text-gray-500">Sala:</span>
+            <span class="font-medium ml-2">{{ lesson.room.name|default:"Online" }}</span>
+        </div>
+        <div>
+            <span class="text-gray-500">Status:</span>
+            <span class="badge ml-2 {% if lesson.status == 'completed' %}badge-success{% elif lesson.status == 'cancelled' %}badge-error{% elif lesson.status == 'ongoing' %}badge-primary{% else %}badge-ghost{% endif %}">
+                {% if lesson.status == 'completed' %}Zakonczone{% elif lesson.status == 'cancelled' %}Anulowane{% elif lesson.status == 'ongoing' %}W trakcie{% else %}Zaplanowane{% endif %}
+            </span>
+        </div>
+    </div>
+
+    {% if lesson.description %}
+    <div>
+        <span class="text-gray-500 text-sm">Opis:</span>
+        <p class="mt-1">{{ lesson.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Students -->
+    <div>
+        <h4 class="font-medium mb-2">Uczniowie ({{ lesson.lesson_students.count }})</h4>
+        <div class="space-y-2">
+            {% for ls in lesson.lesson_students.all %}
+            <div class="flex items-center justify-between p-2 bg-base-200 rounded">
+                <div class="flex items-center space-x-3">
+                    <div class="avatar placeholder">
+                        <div class="bg-gray-300 text-gray-600 rounded-full w-8">
+                            <span class="text-xs">{{ ls.student.first_name.0 }}{{ ls.student.last_name.0 }}</span>
+                        </div>
+                    </div>
+                    <span>{{ ls.student.get_full_name }}</span>
+                </div>
+                <span class="badge {% if ls.attendance_status == 'PRESENT' %}badge-success{% elif ls.attendance_status == 'LATE' %}badge-warning{% elif ls.attendance_status == 'ABSENT' %}badge-error{% elif ls.attendance_status == 'EXCUSED' %}badge-info{% else %}badge-ghost{% endif %}">
+                    {% if ls.attendance_status == 'PRESENT' %}Obecny{% elif ls.attendance_status == 'LATE' %}Spozniony{% elif ls.attendance_status == 'ABSENT' %}Nieobecny{% elif ls.attendance_status == 'EXCUSED' %}Usprawiedliwiony{% else %}Oczekujace{% endif %}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Brak przypisanych uczniow</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal-action">
+    {% if lesson.status == 'scheduled' %}
+    <button class="btn btn-primary"
+            hx-get="{% url 'tutor:quick_attendance' lesson.id %}"
+            hx-target="#modal-content">
+        Oznacz obecnosc
+    </button>
+    {% endif %}
+    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal').close()">
+        Zamknij
+    </button>
+</div>

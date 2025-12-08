@@ -1,0 +1,99 @@
+{% extends "parent_panel/base.html" %}
+
+{% block title %}Korepetytorzy - Portal Rodzica{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold">Korepetytorzy</h1>
+        <p class="text-gray-600 mt-1">Nauczyciele pracujacy z: {{ student.first_name }} {{ student.last_name }}</p>
+    </div>
+
+    {% if tutors %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for tutor in tutors %}
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <div class="flex items-start gap-4">
+                    <div class="avatar placeholder">
+                        <div class="bg-primary text-primary-content rounded-full w-16">
+                            <span class="text-xl">{{ tutor.name.0 }}{{ tutor.surname.0 }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg">{{ tutor.name }} {{ tutor.surname }}</h3>
+                        {% if tutor.subjects %}
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            {% for subject in tutor.subjects %}
+                            <span class="badge badge-ghost badge-sm">{{ subject }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if tutor.bio %}
+                <p class="text-sm text-gray-600 mt-4">{{ tutor.bio|truncatewords:30 }}</p>
+                {% endif %}
+
+                <div class="divider my-2"></div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500">Ukonczone zajecia</span>
+                        <div class="font-bold text-lg">{{ tutor.completed_lessons }}</div>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Zaplanowane</span>
+                        <div class="font-bold text-lg">{{ tutor.upcoming_lessons }}</div>
+                    </div>
+                </div>
+
+                {% if tutor.experience_years %}
+                <div class="mt-2 text-sm text-gray-600">
+                    <span class="font-medium">Doswiadczenie:</span> {{ tutor.experience_years }} lat
+                </div>
+                {% endif %}
+
+                {% if tutor.rating %}
+                <div class="mt-2 flex items-center gap-1">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= tutor.rating %}
+                    <svg class="w-4 h-4 text-warning" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    {% else %}
+                    <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="card-actions justify-end mt-4">
+                    <a href="{% url 'messages:compose' %}?recipient={{ tutor.id }}" class="btn btn-primary btn-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Wyslij wiadomosc
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card bg-base-100 shadow">
+        <div class="card-body text-center py-12">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <h3 class="text-xl font-semibold mb-2">Brak korepettytorow</h3>
+            <p class="text-gray-600">Nie znaleziono korepettytorow prowadzacych zajecia z uczniem.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

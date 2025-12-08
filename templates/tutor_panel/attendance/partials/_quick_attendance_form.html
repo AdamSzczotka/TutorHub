@@ -1,0 +1,140 @@
+<form hx-post="{% url 'tutor:quick_attendance' lesson.id %}"
+      hx-swap="none"
+      hx-on::after-request="document.getElementById('modal').close()">
+    {% csrf_token %}
+
+    <h3 class="font-bold text-lg mb-4">Obecnosc - {{ lesson.title }}</h3>
+    <p class="text-sm text-gray-600 mb-4">
+        {{ lesson.start_time|date:"d.m.Y H:i" }} - {{ lesson.end_time|time:"H:i" }}
+    </p>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center space-x-2 mb-4">
+        <span class="text-sm font-medium">Oznacz wszystkich:</span>
+        <button type="button"
+                class="btn btn-xs btn-success"
+                onclick="setAllAttendance('PRESENT')">
+            Obecni
+        </button>
+        <button type="button"
+                class="btn btn-xs btn-error"
+                onclick="setAllAttendance('ABSENT')">
+            Nieobecni
+        </button>
+    </div>
+
+    <!-- Students List -->
+    <div class="space-y-3 max-h-96 overflow-y-auto">
+        {% for student in students %}
+        <div class="flex items-center justify-between p-3 border rounded-lg">
+            <div class="flex items-center space-x-3">
+                <div class="avatar placeholder">
+                    <div class="bg-gray-200 text-gray-600 rounded-full w-10">
+                        <span class="text-sm">{{ student.name.0 }}{{ student.surname.0 }}</span>
+                    </div>
+                </div>
+                <div class="font-medium">{{ student.name }} {{ student.surname }}</div>
+            </div>
+
+            <div class="flex items-center space-x-1" data-student-id="{{ student.id }}">
+                <input type="hidden"
+                       name="attendance_{{ student.id }}"
+                       value="{{ student.current_status }}"
+                       class="attendance-input">
+
+                <button type="button"
+                        class="btn btn-sm {% if student.current_status == 'PRESENT' %}btn-success{% else %}btn-outline{% endif %}"
+                        onclick="setAttendance('{{ student.id }}', 'PRESENT', this)"
+                        title="Obecny">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm {% if student.current_status == 'LATE' %}btn-warning{% else %}btn-outline{% endif %}"
+                        onclick="setAttendance('{{ student.id }}', 'LATE', this)"
+                        title="Spozniony">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm {% if student.current_status == 'ABSENT' %}btn-error{% else %}btn-outline{% endif %}"
+                        onclick="setAttendance('{{ student.id }}', 'ABSENT', this)"
+                        title="Nieobecny">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm {% if student.current_status == 'EXCUSED' %}btn-info{% else %}btn-outline{% endif %}"
+                        onclick="setAttendance('{{ student.id }}', 'EXCUSED', this)"
+                        title="Usprawiedliwiony">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">Brak uczniow na tych zajeciach</p>
+        {% endfor %}
+    </div>
+
+    <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Zapisz obecnosc
+        </button>
+    </div>
+</form>
+
+<script>
+function setAttendance(studentId, status, btn) {
+    const container = btn.closest('[data-student-id]');
+    const input = container.querySelector('.attendance-input');
+    input.value = status;
+
+    // Update button styles
+    container.querySelectorAll('button').forEach(b => {
+        b.classList.remove('btn-success', 'btn-warning', 'btn-error', 'btn-info');
+        b.classList.add('btn-outline');
+    });
+
+    btn.classList.remove('btn-outline');
+    if (status === 'PRESENT') btn.classList.add('btn-success');
+    else if (status === 'LATE') btn.classList.add('btn-warning');
+    else if (status === 'ABSENT') btn.classList.add('btn-error');
+    else if (status === 'EXCUSED') btn.classList.add('btn-info');
+}
+
+function setAllAttendance(status) {
+    document.querySelectorAll('[data-student-id]').forEach(container => {
+        const input = container.querySelector('.attendance-input');
+        input.value = status;
+
+        container.querySelectorAll('button').forEach(b => {
+            b.classList.remove('btn-success', 'btn-warning', 'btn-error', 'btn-info');
+            b.classList.add('btn-outline');
+        });
+
+        const selector = status === 'PRESENT' ? '[title="Obecny"]' :
+                        status === 'LATE' ? '[title="Spozniony"]' :
+                        status === 'ABSENT' ? '[title="Nieobecny"]' : '[title="Usprawiedliwiony"]';
+
+        const btn = container.querySelector(selector);
+        if (btn) {
+            btn.classList.remove('btn-outline');
+            if (status === 'PRESENT') btn.classList.add('btn-success');
+            else if (status === 'LATE') btn.classList.add('btn-warning');
+            else if (status === 'ABSENT') btn.classList.add('btn-error');
+            else if (status === 'EXCUSED') btn.classList.add('btn-info');
+        }
+    });
+}
+</script>
