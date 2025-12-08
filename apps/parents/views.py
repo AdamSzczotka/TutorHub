@@ -25,6 +25,12 @@ class ParentDashboardView(LoginRequiredMixin, ParentRequiredMixin, HTMXMixin, Te
     template_name = 'parent_panel/dashboard.html'
     partial_template_name = 'parent_panel/partials/_dashboard_content.html'
 
+    def _has_access_to_student(self, student_id: int) -> bool:
+        """Verify current user has parent access to student."""
+        children = ParentDashboardService.get_children(self.request.user)
+        child_ids = [c['id'] for c in children]
+        return student_id in child_ids or self.request.user.is_admin
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -37,7 +43,19 @@ class ParentDashboardView(LoginRequiredMixin, ParentRequiredMixin, HTMXMixin, Te
         selected_student = None
 
         if student_id:
-            selected_student = get_object_or_404(User, pk=student_id, role='student')
+            # Validate access to requested student
+            try:
+                student_id_int = int(student_id)
+            except ValueError:
+                from django.http import Http404
+
+                raise Http404('Nieprawidłowy identyfikator ucznia') from None
+
+            if not self._has_access_to_student(student_id_int):
+                from django.core.exceptions import PermissionDenied
+
+                raise PermissionDenied('Brak dostępu do danych tego ucznia')
+            selected_student = get_object_or_404(User, pk=student_id_int, role='student')
         elif children:
             selected_student = get_object_or_404(User, pk=children[0]['id'])
 

@@ -181,20 +181,16 @@ class StudentProgressService:
         if total_lessons > 0:
             attendance_rate = round((completed_lessons / total_lessons) * 100)
 
-        # Hours calculation
-        total_minutes = (
-            LessonStudent.objects.filter(student=student, lesson__status='completed')
-            .select_related('lesson')
-            .aggregate(
-                total=Sum(
-                    (
-                        models.F('lesson__end_time') - models.F('lesson__start_time')
-                    ).seconds
-                    // 60
-                )
-            )['total']
-            or 0
-        )
+        # Hours calculation - iterate to calculate duration
+        completed_lesson_students = LessonStudent.objects.filter(
+            student=student, lesson__status='completed'
+        ).select_related('lesson')
+
+        total_minutes = 0
+        for ls in completed_lesson_students:
+            if ls.lesson.end_time and ls.lesson.start_time:
+                duration = (ls.lesson.end_time - ls.lesson.start_time).seconds // 60
+                total_minutes += duration
 
         monthly_lessons = LessonStudent.objects.filter(
             student=student,

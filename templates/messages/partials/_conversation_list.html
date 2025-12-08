@@ -42,7 +42,7 @@
                 </span>
             </div>
 
-            {% with last_message=conversation.messages.first %}
+            {% with last_message=conversation.recent_messages.0 %}
             {% if last_message %}
             <p class="text-sm text-gray-600 truncate">
                 {% if last_message.sender == request.user %}Ty: {% endif %}

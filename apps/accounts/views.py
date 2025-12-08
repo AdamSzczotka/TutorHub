@@ -24,6 +24,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
+
 from django_filters.views import FilterView
 from PIL import Image
 
@@ -798,9 +799,31 @@ class LoginRedirectView(LoginRequiredMixin, View):
         if user.is_admin:
             return redirect('admin_panel:dashboard')
         elif user.is_tutor:
-            return redirect('lessons:calendar')
+            return redirect('tutor:dashboard')
         elif user.is_student:
-            return redirect('lessons:calendar')
+            return redirect('students:dashboard')
+        else:
+            return redirect('landing:home')
+
+
+class ProfileRedirectView(LoginRequiredMixin, View):
+    """Redirect user to their profile or appropriate portal."""
+
+    def get(self, request):
+        """Redirect to appropriate profile/dashboard based on user role."""
+        user = request.user
+
+        # If profile is not complete, redirect to wizard
+        if not user.is_profile_completed:
+            return redirect('accounts:profile-wizard')
+
+        # Otherwise redirect to role-specific dashboard
+        if user.is_admin:
+            return redirect('admin_panel:dashboard')
+        elif user.is_tutor:
+            return redirect('tutor:dashboard')
+        elif user.is_student:
+            return redirect('students:dashboard')
         else:
             return redirect('landing:home')
 

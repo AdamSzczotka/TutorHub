@@ -176,29 +176,30 @@ class MessagingService:
         if not include_archived:
             queryset = queryset.filter(participants__is_archived=False)
 
-        # Prefetch dla optymalizacji
-        queryset = (
-            queryset.prefetch_related(
-                Prefetch(
-                    'participants',
-                    queryset=ConversationParticipant.objects.select_related('user'),
-                ),
-                Prefetch(
-                    'messages',
-                    queryset=Message.objects.filter(is_deleted=False).order_by(
-                        '-created_at'
-                    )[:1],
-                ),
+        # Annotate unread count first, then prefetch
+        queryset = queryset.annotate(
+            unread_count=Count(
+                'messages',
+                filter=Q(messages__is_deleted=False)
+                & ~Q(messages__sender=user)
+                & ~Q(messages__read_receipts__user=user),
             )
-            .annotate(
-                unread_count=Count(
-                    'messages',
-                    filter=Q(messages__is_deleted=False)
-                    & ~Q(messages__read_receipts__user=user),
-                )
-            )
-            .order_by('-last_message_at')
         )
+
+        # Prefetch dla optymalizacji (bez slicingu w Prefetch)
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                'participants',
+                queryset=ConversationParticipant.objects.select_related('user'),
+            ),
+            Prefetch(
+                'messages',
+                queryset=Message.objects.filter(is_deleted=False).order_by(
+                    '-created_at'
+                ),
+                to_attr='recent_messages',
+            ),
+        ).order_by('-last_message_at')
 
         return queryset
 

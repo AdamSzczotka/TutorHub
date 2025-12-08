@@ -79,6 +79,7 @@ urlpatterns = [
     path('users/<int:pk>/mark-complete/', views.MarkProfileCompleteView.as_view(), name='mark-profile-complete'),
 
     # Profile wizard (user self-service)
+    path('profile/', views.ProfileRedirectView.as_view(), name='profile'),
     path('profile/wizard/', views.ProfileWizardView.as_view(), name='profile-wizard'),
     path('profile/step/<str:step_id>/', views.ProfileStepView.as_view(), name='profile-step'),
 

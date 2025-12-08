@@ -1,7 +1,14 @@
 <ul class="menu p-4 w-64 min-h-full bg-base-200 text-base-content">
     <li class="mb-4">
         <a href="{% url 'admin_panel:dashboard' %}" class="text-xl font-bold">
-            Na Piątkę
+            Na Piatke
+            {% if request.user.is_admin %}
+            <span class="badge badge-primary badge-sm">Admin</span>
+            {% elif request.user.is_tutor %}
+            <span class="badge badge-secondary badge-sm">Tutor</span>
+            {% elif request.user.is_student %}
+            <span class="badge badge-accent badge-sm">Uczen</span>
+            {% endif %}
         </a>
     </li>
 
@@ -14,6 +21,8 @@
         </a>
     </li>
 
+    {% if request.user.is_admin %}
+    {# ===== ADMIN ONLY: Users management ===== #}
     <li>
         <details {% if 'users' in request.path %}open{% endif %}>
             <summary>
@@ -29,7 +38,9 @@
             </ul>
         </details>
     </li>
+    {% endif %}
 
+    {# ===== Calendar - visible to all, but admin has more options ===== #}
     <li>
         <details {% if 'calendar' in request.path or 'rooms' in request.path or 'lessons' in request.path or request.resolver_match.app_name == 'subjects' %}open{% endif %}>
             <summary>
@@ -40,15 +51,21 @@
             </summary>
             <ul>
                 <li><a href="{% url 'lessons:calendar' %}" class="{% if 'calendar' in request.path and 'resources' not in request.path %}active{% endif %}">Kalendarz</a></li>
-                <li><a href="{% url 'lessons:calendar_resources' %}" class="{% if 'resources' in request.path %}active{% endif %}">Widok zasobów</a></li>
-                <li><a href="{% url 'lessons:list' %}" class="{% if request.resolver_match.url_name == 'list' and 'lessons' in request.path %}active{% endif %}">Lista zajęć</a></li>
+                {% if request.user.is_admin %}
+                <li><a href="{% url 'lessons:calendar_resources' %}" class="{% if 'resources' in request.path %}active{% endif %}">Widok zasobow</a></li>
+                {% endif %}
+                <li><a href="{% url 'lessons:list' %}" class="{% if request.resolver_match.url_name == 'list' and 'lessons' in request.path %}active{% endif %}">Lista zajec</a></li>
+                {% if request.user.is_admin %}
                 <li><a href="{% url 'rooms:list' %}">Sale</a></li>
                 <li><a href="{% url 'subjects:list' %}">Przedmioty</a></li>
                 <li><a href="{% url 'subjects:level-list' %}">Poziomy</a></li>
+                {% endif %}
             </ul>
         </details>
     </li>
 
+    {# ===== Attendance - admin and tutor ===== #}
+    {% if request.user.is_admin or request.user.is_tutor %}
     <li>
         <details {% if 'attendance' in request.path %}open{% endif %}>
             <summary>
@@ -59,12 +76,17 @@
             </summary>
             <ul>
                 <li><a href="{% url 'attendance:overview' %}" class="{% if request.resolver_match.url_name == 'overview' %}active{% endif %}">Frekwencja</a></li>
+                {% if request.user.is_admin %}
                 <li><a href="{% url 'attendance:low_attendance' %}" class="{% if 'low-attendance' in request.path %}active{% endif %}">Niska frekwencja</a></li>
                 <li><a href="{% url 'attendance:export' %}" class="{% if 'export' in request.path %}active{% endif %}">Eksport i raporty</a></li>
+                {% endif %}
             </ul>
         </details>
     </li>
+    {% endif %}
 
+    {% if request.user.is_admin %}
+    {# ===== CMS - admin only ===== #}
     <li>
         <details {% if 'cms' in request.path %}open{% endif %}>
             <summary>
@@ -75,22 +97,24 @@
             </summary>
             <ul>
                 <li><a href="{% url 'landing:cms-dashboard' %}" class="{% if request.resolver_match.url_name == 'cms-dashboard' %}active{% endif %}">Dashboard CMS</a></li>
-                <li><a href="{% url 'landing:cms-content-list' %}" class="{% if 'content' in request.path %}active{% endif %}">Treści</a></li>
+                <li><a href="{% url 'landing:cms-content-list' %}" class="{% if 'content' in request.path %}active{% endif %}">Tresci</a></li>
                 <li><a href="{% url 'landing:cms-statistic-list' %}" class="{% if 'statistics' in request.path %}active{% endif %}">Statystyki</a></li>
                 <li><a href="{% url 'landing:cms-whyus-list' %}" class="{% if 'whyus' in request.path %}active{% endif %}">Dlaczego my</a></li>
                 <li><a href="{% url 'landing:cms-subject-list' %}" class="{% if 'cms/subjects' in request.path %}active{% endif %}">Przedmioty</a></li>
                 <li><a href="{% url 'landing:cms-pricing-list' %}" class="{% if 'pricing' in request.path %}active{% endif %}">Pakiety cenowe</a></li>
                 <li><a href="{% url 'landing:cms-level-list' %}" class="{% if 'levels' in request.path %}active{% endif %}">Poziomy edukacyjne</a></li>
-                <li><a href="{% url 'landing:cms-lessontype-list' %}" class="{% if 'lessontypes' in request.path %}active{% endif %}">Formy zajęć</a></li>
-                <li><a href="{% url 'landing:cms-team-list' %}" class="{% if 'team' in request.path %}active{% endif %}">Zespół</a></li>
+                <li><a href="{% url 'landing:cms-lessontype-list' %}" class="{% if 'lessontypes' in request.path %}active{% endif %}">Formy zajec</a></li>
+                <li><a href="{% url 'landing:cms-team-list' %}" class="{% if 'team' in request.path %}active{% endif %}">Zespol</a></li>
                 <li><a href="{% url 'landing:cms-testimonial-list' %}" class="{% if 'testimonials' in request.path %}active{% endif %}">Opinie</a></li>
                 <li><a href="{% url 'landing:cms-faq-list' %}" class="{% if 'faq' in request.path %}active{% endif %}">FAQ</a></li>
                 <li><a href="{% url 'landing:cms-lead-list' %}" class="{% if 'leads' in request.path %}active{% endif %}">Leady</a></li>
-                <li><a href="{% url 'landing:cms-school-settings' %}" class="{% if request.resolver_match.url_name == 'cms-school-settings' %}active{% endif %}">Ustawienia szkoły</a></li>
+                <li><a href="{% url 'landing:cms-school-settings' %}" class="{% if request.resolver_match.url_name == 'cms-school-settings' %}active{% endif %}">Ustawienia szkoly</a></li>
             </ul>
         </details>
     </li>
+    {% endif %}
 
+    {# ===== Communication - visible to all ===== #}
     <li>
         <details {% if 'messages' in request.path or 'notifications' in request.path %}open{% endif %}>
             <summary>
@@ -102,11 +126,15 @@
             <ul>
                 <li><a href="{% url 'messages:list' %}" class="{% if 'messages' in request.path %}active{% endif %}">Wiadomosci</a></li>
                 <li><a href="{% url 'notifications:list' %}" class="{% if 'notifications' in request.path and 'announcements' not in request.path %}active{% endif %}">Powiadomienia</a></li>
+                {% if request.user.is_admin %}
                 <li><a href="{% url 'notifications:announcement_list' %}" class="{% if 'announcements' in request.path %}active{% endif %}">Ogloszenia</a></li>
+                {% endif %}
             </ul>
         </details>
     </li>
 
+    {% if request.user.is_admin %}
+    {# ===== Invoices - admin only (placeholder) ===== #}
     <li>
         <a href="#">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,6 +144,7 @@
         </a>
     </li>
 
+    {# ===== Reports - admin only (placeholder) ===== #}
     <li>
         <a href="#">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,6 +154,7 @@
         </a>
     </li>
 
+    {# ===== Monitoring section - admin only ===== #}
     <li class="menu-title mt-4">
         <span>Monitoring</span>
     </li>
@@ -165,4 +195,15 @@
             Ustawienia
         </a>
     </li>
+    {% else %}
+    {# ===== Non-admin: Account settings ===== #}
+    <li class="mt-auto">
+        <a href="{% url 'accounts:profile-wizard' %}" class="{% if 'profile' in request.path %}active{% endif %}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            Moj profil
+        </a>
+    </li>
+    {% endif %}
 </ul>
