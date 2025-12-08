@@ -1,0 +1,61 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Wiadomości{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Wiadomości</h1>
+        <button class="btn btn-primary"
+                hx-get="{% url 'messages:create' %}"
+                hx-target="#modal-content"
+                hx-swap="innerHTML"
+                onclick="document.getElementById('modal').showModal()">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nowa konwersacja
+        </button>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-4">
+        <div class="relative">
+            <input type="text"
+                   class="input input-bordered w-full pl-10"
+                   placeholder="Szukaj wiadomości..."
+                   hx-get="{% url 'messages:search' %}"
+                   hx-trigger="input changed delay:300ms"
+                   hx-target="#search-results"
+                   name="q">
+            <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </div>
+        <div id="search-results" class="mt-2"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed mb-4">
+        <a class="tab {% if not show_archived %}tab-active{% endif %}"
+           hx-get="{% url 'messages:list' %}"
+           hx-target="#conversation-list"
+           hx-push-url="true">
+            Aktywne
+        </a>
+        <a class="tab {% if show_archived %}tab-active{% endif %}"
+           hx-get="{% url 'messages:list' %}?archived=true"
+           hx-target="#conversation-list"
+           hx-push-url="true">
+            Archiwum
+        </a>
+    </div>
+
+    <!-- Conversation List -->
+    <div id="conversation-list"
+         hx-get="{% url 'messages:list' %}"
+         hx-trigger="conversationArchived from:body, conversationUnarchived from:body, messageSent from:body">
+        {% include "messages/partials/_conversation_list.html" %}
+    </div>
+</div>
+{% endblock %}

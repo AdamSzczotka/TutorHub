@@ -1,0 +1,71 @@
+{% if conversations %}
+<div class="divide-y rounded-lg border bg-base-100">
+    {% for conversation in conversations %}
+    <a href="{% url 'messages:detail' conversation.id %}"
+       class="flex items-start p-4 hover:bg-base-200 transition-colors {% if conversation.unread_count > 0 %}bg-primary/5{% endif %}">
+
+        <!-- Avatar(s) -->
+        <div class="flex -space-x-2 mr-3">
+            {% for participant in conversation.participants.all|slice:":3" %}
+            {% if participant.user != request.user %}
+            <div class="avatar placeholder">
+                <div class="w-10 h-10 rounded-full ring-2 ring-base-100 {% if participant.user.avatar %}{% else %}bg-neutral text-neutral-content{% endif %}">
+                    {% if participant.user.avatar %}
+                    <img src="{{ participant.user.avatar.url }}" alt="{{ participant.user.get_full_name }}">
+                    {% else %}
+                    <span class="text-sm font-bold">
+                        {{ participant.user.first_name.0 }}{{ participant.user.last_name.0 }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="font-medium truncate">
+                    {% if conversation.subject %}
+                        {{ conversation.subject }}
+                    {% else %}
+                        {% for p in conversation.participants.all %}
+                            {% if p.user != request.user %}
+                                {{ p.user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </h3>
+                <span class="text-xs text-gray-500 whitespace-nowrap ml-2">
+                    {{ conversation.last_message_at|timesince }} temu
+                </span>
+            </div>
+
+            {% with last_message=conversation.messages.first %}
+            {% if last_message %}
+            <p class="text-sm text-gray-600 truncate">
+                {% if last_message.sender == request.user %}Ty: {% endif %}
+                {{ last_message.content|striptags|truncatewords:10 }}
+            </p>
+            {% endif %}
+            {% endwith %}
+
+            {% if conversation.unread_count > 0 %}
+            <span class="badge badge-primary badge-sm mt-1">
+                {{ conversation.unread_count }} {% if conversation.unread_count == 1 %}nowa{% else %}nowe{% endif %}
+            </span>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-12 text-gray-500">
+    <svg class="mx-auto h-12 w-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+    </svg>
+    <p>Brak konwersacji</p>
+    <p class="text-sm mt-2">Rozpocznij nową konwersację!</p>
+</div>
+{% endif %}

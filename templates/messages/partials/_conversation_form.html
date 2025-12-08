@@ -1,0 +1,72 @@
+<form hx-post="{% url 'messages:create' %}"
+      hx-swap="none"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <h3 class="text-lg font-bold mb-4">Nowa konwersacja</h3>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Uczestnicy</span>
+        </label>
+        {{ form.participants }}
+        {% if form.participants.help_text %}
+        <label class="label">
+            <span class="label-text-alt">{{ form.participants.help_text }}</span>
+        </label>
+        {% endif %}
+        {% if form.participants.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.participants.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Temat (opcjonalnie)</span>
+        </label>
+        {{ form.subject }}
+        {% if form.subject.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.subject.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Pierwsza wiadomość</span>
+        </label>
+        {{ form.initial_message }}
+        {% if form.initial_message.errors %}
+        <label class="label">
+            <span class="label-text-alt text-error">{{ form.initial_message.errors.0 }}</span>
+        </label>
+        {% endif %}
+    </div>
+
+    <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Utwórz konwersację
+        </button>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize TomSelect if available
+    if (typeof TomSelect !== 'undefined') {
+        const selects = document.querySelectorAll('[x-init*="TomSelect"]');
+        selects.forEach(select => {
+            new TomSelect(select, {
+                plugins: ['remove_button'],
+                placeholder: 'Wybierz uczestników...'
+            });
+        });
+    }
+});
+</script>

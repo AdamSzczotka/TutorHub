@@ -1,0 +1,56 @@
+{% if results.messages %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body p-4">
+        <h3 class="font-semibold mb-2">
+            Wyniki wyszukiwania
+            <span class="badge badge-ghost badge-sm ml-2">{{ results.total_count }}</span>
+        </h3>
+
+        <div class="divide-y">
+            {% for message in results.messages %}
+            <a href="{% url 'messages:detail' message.conversation.id %}#message-{{ message.id }}"
+               class="block py-3 hover:bg-base-200 -mx-4 px-4 transition-colors">
+                <div class="flex items-start gap-3">
+                    <div class="avatar placeholder">
+                        <div class="w-8 h-8 rounded-full {% if message.sender.avatar %}{% else %}bg-neutral text-neutral-content{% endif %}">
+                            {% if message.sender.avatar %}
+                            <img src="{{ message.sender.avatar.url }}" alt="">
+                            {% else %}
+                            <span class="text-xs font-bold">
+                                {{ message.sender.first_name.0 }}{{ message.sender.last_name.0 }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-sm">{{ message.sender.get_full_name }}</span>
+                            <span class="text-xs text-gray-500">{{ message.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">
+                            {{ message.content|striptags }}
+                        </p>
+                        {% if message.conversation.subject %}
+                        <span class="badge badge-ghost badge-xs mt-1">{{ message.conversation.subject }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if results.has_more %}
+        <div class="text-center mt-4">
+            <span class="text-sm text-gray-500">
+                Wyświetlono {{ results.messages|length }} z {{ results.total_count }} wyników
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% elif query %}
+<div class="text-center py-8 text-gray-500">
+    <p>Brak wyników dla "{{ query }}"</p>
+</div>
+{% endif %}
