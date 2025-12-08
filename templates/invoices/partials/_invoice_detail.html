@@ -1,0 +1,111 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main info -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Invoice items -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Pozycje faktury</h2>
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Lp.</th>
+                                <th>Opis</th>
+                                <th class="text-right">Ilość (h)</th>
+                                <th class="text-right">Cena jedn.</th>
+                                <th class="text-right">Wartość</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in invoice.items.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.description }}</td>
+                                <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                                <td class="text-right">{{ item.unit_price|floatformat:2 }} zł</td>
+                                <td class="text-right font-medium">{{ item.total_price|floatformat:2 }} zł</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        {% if invoice.notes %}
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Uwagi</h2>
+                <p>{{ invoice.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Summary sidebar -->
+    <div class="space-y-6">
+        <!-- Status -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Status</h2>
+                <div class="flex items-center gap-2">
+                    {% if invoice.status == 'PAID' %}
+                    <span class="badge badge-success badge-lg">Opłacona</span>
+                    {% elif invoice.status == 'OVERDUE' %}
+                    <span class="badge badge-error badge-lg">Zaległa</span>
+                    {% elif invoice.status == 'SENT' %}
+                    <span class="badge badge-info badge-lg">Wysłana</span>
+                    {% else %}
+                    <span class="badge badge-ghost badge-lg">{{ invoice.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Daty</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Data wystawienia:</span>
+                        <span class="font-medium">{{ invoice.issue_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Termin płatności:</span>
+                        <span class="font-medium">{{ invoice.due_date|date:"d.m.Y" }}</span>
+                    </div>
+                    {% if invoice.paid_date %}
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Data płatności:</span>
+                        <span class="font-medium text-success">{{ invoice.paid_date|date:"d.m.Y" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h2 class="card-title">Podsumowanie</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Suma netto:</span>
+                        <span>{{ invoice.net_amount|floatformat:2 }} zł</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">VAT (23%):</span>
+                        <span>{{ invoice.vat_amount|floatformat:2 }} zł</span>
+                    </div>
+                    <div class="divider my-2"></div>
+                    <div class="flex justify-between text-lg">
+                        <span class="font-bold">Do zapłaty:</span>
+                        <span class="font-bold text-primary">{{ invoice.total_amount|floatformat:2 }} zł</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

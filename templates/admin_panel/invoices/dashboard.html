@@ -1,0 +1,155 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Panel fakturowania - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold">Panel fakturowania</h1>
+            <p class="text-base-content/70">Statystyki i zarzadzanie fakturami</p>
+        </div>
+
+        <div x-data="{ month: '' }" class="flex gap-2 items-end">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Generuj faktury za miesiac</span>
+                </label>
+                <input type="month"
+                       class="input input-bordered"
+                       x-model="month"
+                       name="month_year">
+            </div>
+            <button class="btn btn-primary"
+                    hx-post="{% url 'admin_invoices:trigger_billing' %}"
+                    hx-target="#billing-result"
+                    hx-include="[name='month_year']"
+                    :disabled="!month">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                Generuj
+            </button>
+        </div>
+    </div>
+
+    <div id="billing-result"></div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-primary">
+                <i data-lucide="file-text" class="w-8 h-8"></i>
+            </div>
+            <div class="stat-title">Wszystkie faktury</div>
+            <div class="stat-value text-primary">{{ total_invoices }}</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-warning">
+                <i data-lucide="clock" class="w-8 h-8"></i>
+            </div>
+            <div class="stat-title">Oczekujace</div>
+            <div class="stat-value text-warning">{{ pending_count }}</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-success">
+                <i data-lucide="check-circle" class="w-8 h-8"></i>
+            </div>
+            <div class="stat-title">Oplacone</div>
+            <div class="stat-value text-success">{{ paid_count }}</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-error">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <div class="stat-title">Zalegle</div>
+            <div class="stat-value text-error">{{ overdue_count }}</div>
+        </div>
+    </div>
+
+    <!-- Amount Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card bg-warning/10 border border-warning/30">
+            <div class="card-body">
+                <h3 class="card-title text-warning">
+                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                    Do zaplaty
+                </h3>
+                <p class="text-3xl font-bold text-warning">{{ total_outstanding|floatformat:2 }} zl</p>
+            </div>
+        </div>
+
+        <div class="card bg-success/10 border border-success/30">
+            <div class="card-body">
+                <h3 class="card-title text-success">
+                    <i data-lucide="banknote" class="w-5 h-5"></i>
+                    Oplacone
+                </h3>
+                <p class="text-3xl font-bold text-success">{{ total_paid|floatformat:2 }} zl</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Invoices -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div class="flex items-center justify-between">
+                <h2 class="card-title">Ostatnie faktury</h2>
+                <a href="{% url 'admin_invoices:list' %}" class="btn btn-ghost btn-sm">
+                    Zobacz wszystkie
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>Numer</th>
+                            <th>Uczen</th>
+                            <th>Kwota</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in recent_invoices %}
+                        <tr>
+                            <td class="font-medium">{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.student.get_full_name }}</td>
+                            <td class="font-bold">{{ invoice.total_amount|floatformat:2 }} zl</td>
+                            <td>
+                                {% if invoice.status == 'PAID' %}
+                                <span class="badge badge-success">Oplacona</span>
+                                {% elif invoice.status == 'OVERDUE' %}
+                                <span class="badge badge-error">Zalegla</span>
+                                {% elif invoice.status == 'SENT' %}
+                                <span class="badge badge-info">Wyslana</span>
+                                {% else %}
+                                <span class="badge">{{ invoice.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ invoice.created_at|date:"d.m.Y" }}</td>
+                            <td>
+                                <a href="{% url 'admin_invoices:detail' invoice.id %}"
+                                   class="btn btn-sm btn-ghost">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-base-content/50 py-8">
+                                Brak faktur
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
