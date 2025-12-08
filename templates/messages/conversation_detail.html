@@ -1,0 +1,87 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ conversation.subject|default:"Konwersacja" }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'messages:list' %}" class="btn btn-ghost btn-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+            </a>
+
+            <div class="flex items-center gap-3">
+                <!-- Avatars -->
+                <div class="flex -space-x-2">
+                    {% for participant in conversation.participants.all|slice:":3" %}
+                    {% if participant.user != request.user %}
+                    <div class="avatar placeholder">
+                        <div class="w-10 h-10 rounded-full ring-2 ring-base-100 {% if participant.user.avatar %}{% else %}bg-neutral text-neutral-content{% endif %}">
+                            {% if participant.user.avatar %}
+                            <img src="{{ participant.user.avatar.url }}" alt="{{ participant.user.get_full_name }}">
+                            {% else %}
+                            <span class="text-sm font-bold">
+                                {{ participant.user.first_name.0 }}{{ participant.user.last_name.0 }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <h1 class="font-semibold">
+                        {% if conversation.subject %}
+                            {{ conversation.subject }}
+                        {% else %}
+                            {% for p in conversation.participants.all %}
+                                {% if p.user != request.user %}
+                                    {{ p.user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </h1>
+                    {% if conversation.is_group_chat %}
+                    <p class="text-sm text-gray-500">
+                        {{ conversation.participants.count }} uczestników
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-sm">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                </svg>
+            </label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10">
+                <li>
+                    <button hx-post="{% url 'messages:archive' conversation.id %}"
+                            hx-swap="none">
+                        Archiwizuj
+                    </button>
+                </li>
+                <li>
+                    <button hx-post="{% url 'messages:mute' conversation.id %}"
+                            hx-vals='{"mute": "true"}'
+                            hx-swap="none">
+                        Wycisz powiadomienia
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Messages Thread -->
+    <div class="card bg-base-100 shadow">
+        {% include "messages/partials/_message_thread.html" %}
+    </div>
+</div>
+{% endblock %}

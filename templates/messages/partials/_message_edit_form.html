@@ -1,0 +1,37 @@
+<div class="flex items-start gap-2 group" id="message-{{ message.id }}">
+    <div class="avatar placeholder">
+        <div class="w-8 h-8 rounded-full bg-neutral text-neutral-content">
+            <span class="text-xs font-bold">
+                {{ message.sender.first_name.0 }}{{ message.sender.last_name.0 }}
+            </span>
+        </div>
+    </div>
+
+    <div class="flex-1 max-w-[70%]">
+        <form hx-post="{% url 'messages:edit' message.id %}"
+              hx-target="#message-{{ message.id }}"
+              hx-swap="outerHTML"
+              class="space-y-2">
+            {% csrf_token %}
+
+            <textarea name="content"
+                      class="textarea textarea-bordered w-full resize-none"
+                      rows="3"
+                      autofocus>{{ form.content.value }}</textarea>
+
+            <div class="flex justify-end gap-2">
+                <button type="button"
+                        class="btn btn-ghost btn-sm"
+                        hx-get="{% url 'messages:detail' message.conversation.id %}"
+                        hx-target="#message-thread"
+                        hx-select="#message-thread"
+                        hx-swap="outerHTML">
+                    Anuluj
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Zapisz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

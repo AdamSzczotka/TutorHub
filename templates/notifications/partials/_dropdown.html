@@ -1,0 +1,55 @@
+<div class="dropdown dropdown-end"
+     hx-get="{% url 'notifications:unread_count' %}"
+     hx-trigger="every 30s"
+     hx-target="#notification-badge"
+     hx-swap="innerHTML">
+
+    <label tabindex="0" class="btn btn-ghost btn-circle">
+        <div class="indicator">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span id="notification-badge">
+                {% include "notifications/partials/_badge.html" with count=unread_count %}
+            </span>
+        </div>
+    </label>
+
+    <div tabindex="0" class="dropdown-content card card-compact w-96 bg-base-100 shadow-xl z-50">
+        <div class="card-body">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold">Powiadomienia</h3>
+                {% if unread_count > 0 %}
+                <button class="btn btn-ghost btn-xs"
+                        hx-post="{% url 'notifications:mark_all_read' %}"
+                        hx-swap="none">
+                    Oznacz wszystkie
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="divide-y max-h-96 overflow-y-auto">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    {% include "notifications/partials/_notification_item.html" %}
+                    {% endfor %}
+                {% else %}
+                <div class="py-8 text-center text-gray-500">
+                    <svg class="mx-auto h-8 w-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <p class="text-sm">Brak nowych powiadomień</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if notifications %}
+            <div class="card-actions justify-center pt-2 border-t">
+                <a href="{% url 'notifications:list' %}" class="btn btn-ghost btn-sm">
+                    Zobacz wszystkie
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
