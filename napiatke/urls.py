@@ -13,6 +13,8 @@ urlpatterns = [
     path('panel/rooms/', include('apps.rooms.urls')),
     path('panel/lessons/', include('apps.lessons.urls')),
     path('panel/attendance/', include('apps.attendance.urls')),
+    path('panel/messages/', include('apps.messages.urls')),
+    path('panel/notifications/', include('apps.notifications.urls')),
     path('panel/', include('apps.core.urls')),
     path('', include('apps.landing.urls')),
 ]
