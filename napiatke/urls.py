@@ -19,6 +19,9 @@ urlpatterns = [
     path('panel/notifications/', include('apps.notifications.urls')),
     path('panel/', include('apps.core.urls')),
     path('invoices/', include('apps.invoices.urls')),
+    path('tutor/', include('apps.tutors.urls')),
+    path('student/', include('apps.students.urls')),
+    path('parent/', include('apps.parents.urls')),
     path('', include('apps.landing.urls')),
 ]
 
