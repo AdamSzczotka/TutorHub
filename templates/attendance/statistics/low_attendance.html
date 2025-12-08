@@ -1,0 +1,28 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Uczniowie z niska frekwencja</h1>
+            <p class="text-base-content/70">Uczniowie z frekwencja ponizej {{ threshold }}%</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <select class="select select-bordered select-sm"
+                    hx-get="{% url 'attendance:low_attendance' %}"
+                    hx-target="#low-attendance-list"
+                    hx-swap="innerHTML"
+                    name="threshold">
+                <option value="80" {% if threshold == 80 %}selected{% endif %}>< 80%</option>
+                <option value="70" {% if threshold == 70 %}selected{% endif %}>< 70%</option>
+                <option value="60" {% if threshold == 60 %}selected{% endif %}>< 60%</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="low-attendance-list">
+        {% include "attendance/statistics/partials/_low_attendance_list.html" %}
+    </div>
+</div>
+{% endblock %}

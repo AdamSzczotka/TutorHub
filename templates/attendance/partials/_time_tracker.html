@@ -1,0 +1,66 @@
+<div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+        <h3 class="card-title text-base flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Śledzenie czasu
+        </h3>
+
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <!-- Check-in -->
+            <div>
+                <div class="text-sm font-medium text-base-content/70 mb-2">Wejście</div>
+                <div id="checkin-display-{{ student_id }}">
+                    {% if lesson_student.check_in_time %}
+                        <span class="badge badge-success">
+                            {{ lesson_student.check_in_time|time:"H:i:s" }}
+                        </span>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline w-full"
+                                hx-post="{% url 'attendance:check_in' lesson_id student_id %}"
+                                hx-target="#checkin-display-{{ student_id }}"
+                                hx-swap="innerHTML">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                            </svg>
+                            Wejście
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Check-out -->
+            <div>
+                <div class="text-sm font-medium text-base-content/70 mb-2">Wyjście</div>
+                <div id="checkout-display-{{ student_id }}">
+                    {% if lesson_student.check_out_time %}
+                        <span class="badge badge-success">
+                            {{ lesson_student.check_out_time|time:"H:i:s" }}
+                        </span>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline w-full"
+                                {% if not lesson_student.check_in_time %}disabled{% endif %}
+                                hx-post="{% url 'attendance:check_out' lesson_id student_id %}"
+                                hx-target="#checkout-display-{{ student_id }}"
+                                hx-swap="innerHTML">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            Wyjście
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Duration -->
+        {% if lesson_student.check_in_time and lesson_student.check_out_time %}
+        <div class="mt-4 pt-4 border-t text-center">
+            <div class="text-sm text-base-content/70">
+                Czas trwania: <strong>{{ duration_minutes|default:"--" }} min</strong>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>

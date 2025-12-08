@@ -1,0 +1,33 @@
+<form hx-post="{% url 'attendance:resolve_alert' alert.id %}"
+      hx-target="#alert-list"
+      hx-swap="innerHTML"
+      class="space-y-4">
+    {% csrf_token %}
+
+    <div class="text-sm text-base-content/70">
+        Uczen: <strong>{{ alert.student.get_full_name }}</strong><br>
+        Frekwencja: <strong class="text-error">{{ alert.attendance_rate }}%</strong>
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Opis rozwiazania *</span>
+        </label>
+        <textarea name="resolution"
+                  class="textarea textarea-bordered w-full"
+                  rows="4"
+                  placeholder="Opisz podjete dzialania lub rozwiazanie problemu..."
+                  required></textarea>
+    </div>
+
+    <div class="modal-action">
+        <button type="button"
+                class="btn btn-ghost"
+                onclick="document.getElementById('resolve-modal').close()">
+            Anuluj
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Rozwiaz
+        </button>
+    </div>
+</form>

@@ -13,9 +13,10 @@ class LessonForm(forms.ModelForm):
 
     students = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(role='student', is_active=True),
-        required=False,
+        required=True,
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'checkbox checkbox-sm'}),
         label='Uczniowie',
+        error_messages={'required': 'Musisz wybrac przynajmniej jednego ucznia.'},
     )
 
     class Meta:
@@ -112,6 +113,17 @@ class LessonForm(forms.ModelForm):
         room = cleaned_data.get('room')
         is_group_lesson = cleaned_data.get('is_group_lesson')
         max_participants = cleaned_data.get('max_participants')
+        students = cleaned_data.get('students')
+
+        # Validate required tutor
+        if not tutor:
+            raise forms.ValidationError('Musisz wybrac korepetytora.')
+
+        # Validate at least one student
+        if not students or len(students) == 0:
+            raise forms.ValidationError(
+                'Musisz wybrac przynajmniej jednego ucznia.'
+            )
 
         if start_time and end_time and start_time >= end_time:
             raise forms.ValidationError(

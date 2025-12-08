@@ -1,0 +1,115 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Eksport frekwencji</h1>
+            <p class="text-base-content/70">Eksportuj dane frekwencji do pliku CSV</p>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Parametry eksportu</h2>
+
+            <div x-data="{
+                startDate: new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0],
+                endDate: new Date().toISOString().split('T')[0],
+                studentId: '',
+                subjectId: ''
+            }">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Data rozpoczecia</span>
+                        </label>
+                        <input type="date"
+                               class="input input-bordered w-full"
+                               x-model="startDate"
+                               :max="endDate">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Data zakonczenia</span>
+                        </label>
+                        <input type="date"
+                               class="input input-bordered w-full"
+                               x-model="endDate"
+                               :min="startDate">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Uczen (opcjonalnie)</span>
+                        </label>
+                        <select class="select select-bordered w-full" x-model="studentId">
+                            <option value="">Wszyscy uczniowie</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Przedmiot (opcjonalnie)</span>
+                        </label>
+                        <select class="select select-bordered w-full" x-model="subjectId">
+                            <option value="">Wszystkie przedmioty</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a class="btn btn-primary"
+                       :href="`{% url 'attendance:export_csv' %}?start_date=${startDate}&end_date=${endDate}&student_id=${studentId}&subject_id=${subjectId}`"
+                       download>
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Pobierz CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Reports Section -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Raporty miesieczne (PDF)</h2>
+            <p class="text-base-content/70 mb-4">Wygeneruj i wyslij raporty PDF do wszystkich rodzicow</p>
+
+            <form hx-post="{% url 'attendance:bulk_generate_reports' %}"
+                  hx-target="#report-result"
+                  hx-swap="innerHTML"
+                  class="flex items-end gap-4">
+                {% csrf_token %}
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Miesiac</span>
+                    </label>
+                    <input type="month"
+                           name="month"
+                           class="input input-bordered"
+                           value="{{ previous_month }}">
+                </div>
+                <button type="submit" class="btn btn-secondary">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Generuj raporty
+                </button>
+            </form>
+            <div id="report-result" class="mt-4"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

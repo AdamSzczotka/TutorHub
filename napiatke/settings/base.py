@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'apps.subjects',
     'apps.rooms',
     'apps.lessons',
+    'apps.attendance',
     'apps.messages',
     'apps.notifications',
     'apps.landing',
@@ -131,7 +132,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Login settings
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'accounts:user-list'
+LOGIN_REDIRECT_URL = 'accounts:login-redirect'
 LOGOUT_REDIRECT_URL = 'landing:home'
 
 

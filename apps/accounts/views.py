@@ -788,20 +788,37 @@ class ParentContactUpdateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin,
 # =============================================================================
 
 
+class LoginRedirectView(LoginRequiredMixin, View):
+    """Redirect user based on role after login."""
+
+    def get(self, request):
+        """Redirect to appropriate dashboard based on user role."""
+        user = request.user
+
+        if user.is_admin:
+            return redirect('admin_panel:dashboard')
+        elif user.is_tutor:
+            return redirect('lessons:calendar')
+        elif user.is_student:
+            return redirect('lessons:calendar')
+        else:
+            return redirect('landing:home')
+
+
 class LogoutView(View):
     """Custom logout view."""
 
     def get(self, request):
-        """Log out the user and redirect to login."""
+        """Log out the user and redirect to landing page."""
         logout(request)
         messages.success(request, 'Zostałeś wylogowany.')
-        return redirect('admin:login')
+        return redirect('landing:home')
 
     def post(self, request):
-        """Log out the user and redirect to login."""
+        """Log out the user and redirect to landing page."""
         logout(request)
         messages.success(request, 'Zostałeś wylogowany.')
-        return redirect('admin:login')
+        return redirect('landing:home')
 
 
 class UserAnalyticsDashboardView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, TemplateView):
