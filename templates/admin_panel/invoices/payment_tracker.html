@@ -1,0 +1,58 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Platnosc - {{ invoice.invoice_number }} - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center gap-4">
+        <a href="{% url 'admin_invoices:detail' invoice.id %}" class="btn btn-ghost btn-sm">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h1 class="text-3xl font-bold">Platnosc</h1>
+            <p class="text-base-content/70">{{ invoice.invoice_number }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                {% include "admin_panel/invoices/partials/_payment_tracker.html" %}
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Szczegoly faktury</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Uczen:</span>
+                        <span class="font-medium">{{ invoice.student.get_full_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Miesiac:</span>
+                        <span>{{ invoice.month_year }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Data wystawienia:</span>
+                        <span>{{ invoice.issue_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Netto:</span>
+                        <span>{{ invoice.net_amount|floatformat:2 }} zl</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">VAT (23%):</span>
+                        <span>{{ invoice.vat_amount|floatformat:2 }} zl</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Brutto:</span>
+                        <span class="text-primary">{{ invoice.total_amount|floatformat:2 }} zl</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

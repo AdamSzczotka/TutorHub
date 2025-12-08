@@ -1,0 +1,55 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Moje prosby o anulowanie{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Moje prosby o anulowanie</h1>
+            <p class="text-base-content/70">Historia Twoich prosb o anulowanie zajec</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats shadow w-full">
+        <div class="stat">
+            <div class="stat-title">W tym miesiacu</div>
+            <div class="stat-value">{{ stats.monthly_used }}/{{ stats.monthly_limit }}</div>
+            <div class="stat-desc">wykorzystanych anulowac</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Oczekujace</div>
+            <div class="stat-value text-warning">{{ stats.pending }}</div>
+            <div class="stat-desc">na rozpatrzenie</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Zaakceptowane</div>
+            <div class="stat-value text-success">{{ stats.approved }}</div>
+            <div class="stat-desc">lacznie</div>
+        </div>
+    </div>
+
+    <!-- Pending Makeups -->
+    {% if pending_makeups %}
+    <div class="alert alert-info">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+            <h3 class="font-bold">Masz {{ pending_makeups|length }} zajecia do odrobienia!</h3>
+            <ul class="text-sm mt-2">
+                {% for makeup in pending_makeups %}
+                <li>{{ makeup.original_lesson.title }} - pozostalo {{ makeup.days_remaining }} dni</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="requests-list">
+        {% include "cancellations/partials/_student_list.html" %}
+    </div>
+</div>
+{% endblock %}

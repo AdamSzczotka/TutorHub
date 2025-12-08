@@ -1,0 +1,73 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Wygeneruj fakturę - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="{% url 'admin_invoices:list' %}" class="btn btn-ghost btn-sm">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h1 class="text-3xl font-bold">Wygeneruj fakturę</h1>
+            <p class="text-base-content/70">Wybierz ucznia i miesiąc, aby wygenerować fakturę</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form -->
+        <div class="lg:col-span-1">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Parametry faktury</h2>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Uczeń</span>
+                        </label>
+                        <select id="student_id"
+                                name="student_id"
+                                class="select select-bordered w-full"
+                                hx-get="{% url 'admin_invoices:calculate' %}"
+                                hx-trigger="change"
+                                hx-target="#calculated-items"
+                                hx-include="#month_year">
+                            <option value="">Wybierz ucznia...</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Miesiąc rozliczeniowy</span>
+                        </label>
+                        <input type="month"
+                               id="month_year"
+                               name="month_year"
+                               class="input input-bordered w-full"
+                               hx-get="{% url 'admin_invoices:calculate' %}"
+                               hx-trigger="change"
+                               hx-target="#calculated-items"
+                               hx-include="#student_id">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculated items -->
+        <div class="lg:col-span-2">
+            <div id="calculated-items">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body py-12 text-center text-base-content/50">
+                        <i data-lucide="calculator" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                        <p>Wybierz ucznia i miesiąc, aby zobaczyć podgląd faktury</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

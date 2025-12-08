@@ -1,0 +1,64 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Faktury - Na Piątkę{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold">Faktury</h1>
+            <p class="text-base-content/70">Zarządzaj fakturami uczniów</p>
+        </div>
+        <a href="{% url 'admin_invoices:create' %}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Wygeneruj fakturę
+        </a>
+    </div>
+
+    <!-- Search and filters -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form hx-get="{% url 'admin_invoices:list' %}"
+                  hx-trigger="input changed delay:300ms from:#search-input, change from:.filter-select"
+                  hx-target="#invoice-table"
+                  hx-swap="innerHTML"
+                  hx-push-url="true">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="form-control flex-1">
+                        <input type="text"
+                               id="search-input"
+                               name="search"
+                               placeholder="Szukaj po nazwisku ucznia..."
+                               class="input input-bordered w-full"
+                               value="{{ request.GET.search }}">
+                    </div>
+
+                    <select name="status" class="select select-bordered filter-select">
+                        <option value="">Wszystkie statusy</option>
+                        {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="month"
+                           name="month_year"
+                           class="input input-bordered filter-select"
+                           value="{{ request.GET.month_year }}">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice table -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div id="invoice-table">
+                {% include "admin_panel/invoices/partials/_invoice_list.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Anulowanie odrzucone</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+        <h1 style="color: #ef4444; margin-top: 0;">Anulowanie odrzucone</h1>
+
+        <p>Czesc {{ student_name }},</p>
+
+        <p>Niestety, Twoja prosba o anulowanie zajec zostala <strong>odrzucona</strong>.</p>
+
+        <div style="background-color: #fff; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #ef4444;">
+            <p style="margin: 0;"><strong>Zajecia:</strong> {{ lesson_title }}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Data:</strong> {{ lesson_date|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        <p><strong>Powod odrzucenia:</strong></p>
+        <p style="background-color: #fff; padding: 10px; border-radius: 4px;">{{ admin_notes }}</p>
+
+        <p>Prosimy o stawienie sie na zajeciach zgodnie z planem. W razie pytan skontaktuj sie z nami.</p>
+
+        <p>Pozdrawiamy,<br>Zespol Na Piatke</p>
+    </div>
+</body>
+</html>

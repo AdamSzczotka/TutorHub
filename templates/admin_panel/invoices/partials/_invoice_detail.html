@@ -1,0 +1,141 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main info -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Invoice items -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Pozycje faktury</h2>
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Lp.</th>
+                                <th>Opis</th>
+                                <th class="text-right">Ilość (h)</th>
+                                <th class="text-right">Cena jedn.</th>
+                                <th class="text-right">Wartość</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in invoice.items.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.description }}</td>
+                                <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                                <td class="text-right">{{ item.unit_price|floatformat:2 }} zł</td>
+                                <td class="text-right font-medium">{{ item.total_price|floatformat:2 }} zł</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        {% if invoice.notes %}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Uwagi</h2>
+                <p>{{ invoice.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Status update -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Status</h2>
+                <form hx-post="{% url 'admin_invoices:update_status' invoice.id %}"
+                      hx-target="#status-result"
+                      hx-swap="innerHTML">
+                    {% csrf_token %}
+                    <div class="form-control">
+                        <select name="status" class="select select-bordered w-full">
+                            {% for value, label in statuses %}
+                            <option value="{{ value }}" {% if invoice.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-control mt-2">
+                        <label class="label">
+                            <span class="label-text">Data płatności</span>
+                        </label>
+                        <input type="date"
+                               name="paid_date"
+                               class="input input-bordered w-full"
+                               value="{{ invoice.paid_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mt-4">
+                        Zaktualizuj status
+                    </button>
+                </form>
+                <div id="status-result" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Daty</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Data wystawienia:</span>
+                        <span class="font-medium">{{ invoice.issue_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Termin płatności:</span>
+                        <span class="font-medium">{{ invoice.due_date|date:"d.m.Y" }}</span>
+                    </div>
+                    {% if invoice.paid_date %}
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Data płatności:</span>
+                        <span class="font-medium text-success">{{ invoice.paid_date|date:"d.m.Y" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Podsumowanie</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">Suma netto:</span>
+                        <span>{{ invoice.net_amount|floatformat:2 }} zł</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/70">VAT (23%):</span>
+                        <span>{{ invoice.vat_amount|floatformat:2 }} zł</span>
+                    </div>
+                    <div class="divider my-2"></div>
+                    <div class="flex justify-between text-lg">
+                        <span class="font-bold">Do zapłaty:</span>
+                        <span class="font-bold text-primary">{{ invoice.total_amount|floatformat:2 }} zł</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student info -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Uczeń</h2>
+                <div class="space-y-2">
+                    <div class="font-medium">{{ invoice.student.get_full_name }}</div>
+                    <div class="text-base-content/70">{{ invoice.student.email }}</div>
+                    {% if invoice.student.phone %}
+                    <div class="text-base-content/70">{{ invoice.student.phone }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

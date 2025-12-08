@@ -1,0 +1,141 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Statystyki zajec zastepczych{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Statystyki zajec zastepczych</h1>
+            <p class="text-base-content/70">Przeglad wykorzystania zajec zastepczych</p>
+        </div>
+
+        <a href="{% url 'cancellations:admin_makeup_list' %}" class="btn btn-outline">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Powrot do listy
+        </a>
+    </div>
+
+    <!-- Main Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-primary">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="stat-title">Oczekujace</div>
+            <div class="stat-value text-primary">{{ stats.pending }}</div>
+            <div class="stat-desc">Do umowienia</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-info">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div class="stat-title">Zaplanowane</div>
+            <div class="stat-value text-info">{{ stats.scheduled }}</div>
+            <div class="stat-desc">Czekaja na realizacje</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-success">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="stat-title">Odrobione</div>
+            <div class="stat-value text-success">{{ stats.completed }}</div>
+            <div class="stat-desc">Zrealizowane</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-figure text-error">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <div class="stat-title">Wygasle</div>
+            <div class="stat-value text-error">{{ stats.expired }}</div>
+            <div class="stat-desc">Niewykorzystane</div>
+        </div>
+    </div>
+
+    <!-- Utilization Rate -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Wskaznik wykorzystania</h2>
+
+            <div class="flex items-center gap-8 mt-4">
+                <div class="radial-progress text-primary" style="--value:{{ stats.utilization_rate }}; --size:8rem; --thickness:1rem;">
+                    {{ stats.utilization_rate }}%
+                </div>
+
+                <div class="space-y-4 flex-1">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm text-base-content/70">Odrobione vs Wygasle</span>
+                            <span class="text-sm font-medium">{{ stats.completed }} / {{ stats.expired }}</span>
+                        </div>
+                        <progress class="progress progress-success w-full" value="{{ stats.completed }}" max="{{ stats.completed|add:stats.expired }}"></progress>
+                    </div>
+
+                    <div class="text-sm text-base-content/70">
+                        {% if stats.utilization_rate >= 80 %}
+                        <span class="text-success font-medium">Swietny wynik!</span>
+                        Uczniowie dobrze wykorzystuja mozliwosc odrabiania zajec.
+                        {% elif stats.utilization_rate >= 50 %}
+                        <span class="text-warning font-medium">Przecietny wynik.</span>
+                        Warto przypominac uczniom o terminach odrabiania.
+                        {% else %}
+                        <span class="text-error font-medium">Niski wskaznik.</span>
+                        Rozważ wysyłanie częstszych przypomnień.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Podsumowanie</h2>
+
+            <div class="overflow-x-auto mt-4">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td class="font-medium">Lacznie zajec zastepczych</td>
+                            <td class="text-right">{{ stats.total }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Aktywne (oczekujace + zaplanowane)</td>
+                            <td class="text-right text-primary">{{ stats.pending|add:stats.scheduled }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Zamkniete (odrobione + wygasle)</td>
+                            <td class="text-right">{{ stats.completed|add:stats.expired }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Wskaznik sukcesu</td>
+                            <td class="text-right {% if stats.utilization_rate >= 70 %}text-success{% elif stats.utilization_rate >= 40 %}text-warning{% else %}text-error{% endif %}">
+                                {{ stats.utilization_rate }}%
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Zajecia do odrobienia{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Zajecia do odrobienia</h1>
+            <p class="text-base-content/70">Zarzadzaj swoimi zajeciami zastepczymi</p>
+        </div>
+
+        {% if expiring_count > 0 %}
+        <span class="badge badge-warning badge-lg gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            {{ expiring_count }} wkrotce wygasaja
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="tabs tabs-boxed">
+        <a class="tab {% if current_status == 'pending' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:makeup_list' %}?status=pending"
+           hx-target="#makeup-list"
+           hx-swap="innerHTML">
+            Do odrobienia
+        </a>
+        <a class="tab {% if current_status == 'scheduled' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:makeup_list' %}?status=scheduled"
+           hx-target="#makeup-list"
+           hx-swap="innerHTML">
+            Zaplanowane
+        </a>
+        <a class="tab {% if current_status == 'completed' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:makeup_list' %}?status=completed"
+           hx-target="#makeup-list"
+           hx-swap="innerHTML">
+            Odrobione
+        </a>
+        <a class="tab {% if current_status == 'expired' %}tab-active{% endif %}"
+           hx-get="{% url 'cancellations:makeup_list' %}?status=expired"
+           hx-target="#makeup-list"
+           hx-swap="innerHTML">
+            Wygasle
+        </a>
+    </div>
+
+    <div id="makeup-list"
+         hx-get="{% url 'cancellations:makeup_list' %}?status={{ current_status }}"
+         hx-trigger="makeupScheduled from:body"
+         hx-swap="innerHTML">
+        {% include "cancellations/makeup/partials/_list.html" %}
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<dialog id="reschedule-modal" class="modal">
+    <div class="modal-box max-w-4xl max-h-[90vh]">
+        <div id="reschedule-modal-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}

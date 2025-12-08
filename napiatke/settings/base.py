@@ -90,6 +90,8 @@ INSTALLED_APPS = [
     'apps.attendance',
     'apps.messages',
     'apps.notifications',
+    'apps.cancellations',
+    'apps.invoices',
     'apps.landing',
     'apps.admin_panel',
 ]
@@ -192,6 +194,20 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat Schedule
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'monthly-billing': {
+        'task': 'apps.invoices.tasks.monthly_billing_task',
+        'schedule': crontab(day_of_month=25, hour=0, minute=0),
+    },
+    'check-overdue-invoices': {
+        'task': 'apps.invoices.tasks.check_overdue_invoices_task',
+        'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
+    },
+}
 
 
 # Email

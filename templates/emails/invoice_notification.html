@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #3B82F6; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">Faktura {{ invoice.invoice_number }}</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">{{ month_name }}</p>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <p>Dzien dobry,</p>
+
+            <p>W zalaczeniu przesylamy fakture za korepetycje dla <strong>{{ student_name }}</strong>.</p>
+
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Numer faktury:</strong> {{ invoice.invoice_number }}</p>
+                <p style="margin: 5px 0;"><strong>Kwota do zaplaty:</strong> {{ invoice.total_amount|floatformat:2 }} zl</p>
+                <p style="margin: 5px 0;"><strong>Termin platnosci:</strong> {{ invoice.due_date|date:"d.m.Y" }}</p>
+            </div>
+
+            <p>Prosimy o terminowa platnosc na podany na fakturze numer konta.</p>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Pozdrawiamy,<br>
+                Zespol "Na Piatke"
+            </p>
+        </div>
+    </div>
+</body>
+</html>

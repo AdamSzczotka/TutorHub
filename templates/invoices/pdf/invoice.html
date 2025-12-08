@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Faktura {{ invoice.invoice_number }}</title>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1 class="title">FAKTURA VAT</h1>
+        <div class="invoice-number">Nr {{ invoice.invoice_number }}</div>
+        <div style="margin-top: 10px; font-size: 9pt;">
+            Data wystawienia: {{ invoice.issue_date|date:"d.m.Y" }}<br>
+            Termin płatności: {{ invoice.due_date|date:"d.m.Y" }}
+        </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="parties">
+        <!-- Seller -->
+        <div class="party">
+            <div class="party-title">Sprzedawca:</div>
+            <div class="party-info">
+                <strong>{{ company.name }}</strong><br>
+                {{ company.address }}<br>
+                {{ company.postal_code }} {{ company.city }}<br>
+                NIP: {{ company.nip }}<br>
+                {% if company.regon %}REGON: {{ company.regon }}<br>{% endif %}
+                Tel: {{ company.phone }}<br>
+                Email: {{ company.email }}
+            </div>
+        </div>
+
+        <!-- Buyer -->
+        <div class="party">
+            <div class="party-title">Nabywca:</div>
+            <div class="party-info">
+                {% if invoice.student.student_profile and invoice.student.student_profile.parent_name %}
+                <strong>{{ invoice.student.student_profile.parent_name }}</strong><br>
+                {% else %}
+                <strong>{{ invoice.student.get_full_name }}</strong><br>
+                {% endif %}
+                {% if invoice.student.student_profile and invoice.student.student_profile.parent_email %}
+                {{ invoice.student.student_profile.parent_email }}
+                {% else %}
+                {{ invoice.student.email }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%;">Lp.</th>
+                <th style="width: 40%;">Nazwa usługi</th>
+                <th style="width: 12%;" class="text-right">Ilość (h)</th>
+                <th style="width: 15%;" class="text-right">Cena netto</th>
+                <th style="width: 15%;" class="text-right">Wartość netto</th>
+                <th style="width: 8%;" class="text-right">VAT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.description }}</td>
+                <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                <td class="text-right">{{ item.unit_price|floatformat:2 }} zł</td>
+                <td class="text-right">{{ item.total_price|floatformat:2 }} zł</td>
+                <td class="text-right">23%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Summary -->
+    <div class="summary">
+        <div class="summary-row">
+            <span class="summary-label">Suma netto:</span>
+            <span class="summary-value">{{ invoice.net_amount|floatformat:2 }} zł</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">VAT (23%):</span>
+            <span class="summary-value">{{ invoice.vat_amount|floatformat:2 }} zł</span>
+        </div>
+        <div class="summary-row summary-total">
+            <span class="summary-label">RAZEM BRUTTO:</span>
+            <span class="summary-value">{{ invoice.total_amount|floatformat:2 }} zł</span>
+        </div>
+    </div>
+
+    <!-- Amount in Words -->
+    <div class="amount-words">
+        <strong>Słownie:</strong> {{ amount_in_words }}
+    </div>
+
+    <!-- Payment Info -->
+    <div class="payment-info">
+        <div class="payment-title">Forma płatności: Przelew bankowy</div>
+        <div>Numer konta: {{ company.bank_account }}</div>
+        <div>Bank: {{ company.bank_name }}</div>
+        <div style="margin-top: 10px;">
+            <strong>Tytuł przelewu:</strong> {{ invoice.invoice_number }}
+        </div>
+    </div>
+
+    {% if invoice.notes %}
+    <div style="margin-top: 20px;">
+        <strong>Uwagi:</strong><br>
+        {{ invoice.notes }}
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        {{ company.name }} | {{ company.address }}, {{ company.postal_code }} {{ company.city }} |
+        NIP: {{ company.nip }} | Tel: {{ company.phone }} | Email: {{ company.email }}
+    </div>
+</body>
+</html>

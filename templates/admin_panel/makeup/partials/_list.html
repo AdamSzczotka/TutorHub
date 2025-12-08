@@ -1,0 +1,104 @@
+{% if makeup_lessons %}
+<div class="space-y-4">
+    {% for lesson in makeup_lessons %}
+    <div class="card bg-base-100 shadow relative overflow-hidden">
+        <!-- Progress Bar -->
+        {% if lesson.countdown.variant != 'expired' and lesson.status == 'pending' %}
+        <div class="absolute top-0 left-0 right-0 h-1 bg-base-300">
+            <div class="h-full {% if lesson.countdown.variant == 'urgent' %}bg-warning{% else %}bg-primary{% endif %}"
+                 style="width: {{ lesson.countdown.progress }}%"></div>
+        </div>
+        {% endif %}
+
+        <div class="card-body pt-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <h3 class="card-title text-lg">{{ lesson.original_lesson.title }}</h3>
+                    <div class="flex items-center gap-4 text-sm text-base-content/70">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            {{ lesson.student.get_full_name }}
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {{ lesson.original_lesson.start_time|date:"d.m.Y, H:i" }}
+                        </div>
+                    </div>
+                </div>
+
+                {% if lesson.status == 'pending' %}
+                <span class="badge badge-primary">Do odrobienia</span>
+                {% elif lesson.status == 'scheduled' %}
+                <span class="badge badge-info">Zaplanowane</span>
+                {% elif lesson.status == 'completed' %}
+                <span class="badge badge-success">Odrobione</span>
+                {% else %}
+                <span class="badge badge-error">Wygaslo</span>
+                {% endif %}
+            </div>
+
+            <!-- Details -->
+            <div class="bg-base-200 rounded-lg p-4 mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-base-content/70">Data wygasniecia:</span>
+                    <div class="font-medium">{{ lesson.expires_at|date:"d.m.Y, H:i" }}</div>
+                </div>
+                {% if lesson.status == 'pending' %}
+                <div>
+                    <span class="text-base-content/70">Pozostalo:</span>
+                    <div class="font-medium {% if lesson.countdown.variant == 'urgent' %}text-warning{% else %}text-primary{% endif %}">
+                        {{ lesson.countdown.text }}
+                    </div>
+                </div>
+                {% endif %}
+                {% if lesson.new_lesson %}
+                <div class="col-span-2">
+                    <span class="text-base-content/70">Nowy termin:</span>
+                    <div class="font-medium text-success">{{ lesson.new_lesson.start_time|date:"d.m.Y, H:i" }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if lesson.notes %}
+            <div class="mt-4 text-sm">
+                <span class="font-medium">Notatki:</span>
+                <div class="text-base-content/70 mt-1">{{ lesson.notes|truncatewords:30 }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            {% if lesson.status == 'pending' or lesson.status == 'expired' %}
+            <div class="card-actions justify-end mt-4 pt-4 border-t">
+                <button class="btn btn-sm btn-outline"
+                        hx-get="{% url 'cancellations:extend_deadline_form' lesson.id %}"
+                        hx-target="#extend-modal-content"
+                        onclick="document.getElementById('extend-modal').showModal()">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Przedluz termin
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card bg-base-100 shadow">
+    <div class="card-body py-12 text-center text-base-content/50">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Brak zajec zastepczych
+    </div>
+</div>
+{% endif %}
