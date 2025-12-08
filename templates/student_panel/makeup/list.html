@@ -1,0 +1,121 @@
+{% extends "student_panel/base.html" %}
+
+{% block title %}Odrobienia - Panel Ucznia{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold">Zajecia do odrobienia</h1>
+        <p class="text-gray-600">Zaplanuj zajecia zastercze</p>
+    </div>
+
+    {% if expiring_soon_count > 0 %}
+    <div class="alert alert-error">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+            <strong>Uwaga!</strong> {{ expiring_soon_count }} zajec wygasa w ciagu najblizszych 7 dni.
+            Zaplanuj je jak najszybciej!
+        </div>
+    </div>
+    {% endif %}
+
+    {% if makeup_lessons %}
+    <div class="space-y-4">
+        {% for makeup in makeup_lessons %}
+        <div class="card bg-base-100 shadow {% if makeup.is_expiring_soon %}border-2 border-warning{% endif %}">
+            <div class="card-body">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h3 class="card-title text-lg">{{ makeup.original_lesson.title }}</h3>
+                        <p class="text-sm text-gray-600">
+                            Przedmiot: {{ makeup.original_lesson.subject.name }}
+                        </p>
+                    </div>
+
+                    {% if makeup.is_expired %}
+                        <span class="badge badge-error">Wygaslo</span>
+                    {% elif makeup.is_expiring_soon %}
+                        <span class="badge badge-warning">Pilne</span>
+                    {% else %}
+                        <span class="badge badge-ghost">Do odrobienia</span>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+                    <div>
+                        <div class="text-gray-600">Pierwotny termin</div>
+                        <div class="font-medium">{{ makeup.original_lesson.start_time|date:"j M Y, H:i" }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600">Korepetytor</div>
+                        <div class="font-medium">{{ makeup.original_lesson.tutor.get_full_name }}</div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-600">
+                            {% if makeup.is_expired %}
+                                Zajecia wygasly
+                            {% else %}
+                                Pozostalo {{ makeup.days_left }} dni (do {{ makeup.expires_at|date:"j M" }})
+                            {% endif %}
+                        </span>
+                        <span class="font-medium {% if makeup.is_expiring_soon %}text-error{% endif %}">
+                            {{ makeup.days_left }}/30 dni
+                        </span>
+                    </div>
+                    <progress class="progress {% if makeup.is_expiring_soon %}progress-error{% else %}progress-primary{% endif %} w-full"
+                              value="{{ makeup.progress|floatformat:0 }}"
+                              max="100"></progress>
+                </div>
+
+                {% if makeup.reason %}
+                <div class="bg-base-200 rounded-lg p-3 mt-4 text-sm">
+                    <div class="text-gray-600 mb-1">Powod anulowania:</div>
+                    <div>{{ makeup.reason }}</div>
+                </div>
+                {% endif %}
+
+                {% if not makeup.is_expired %}
+                <div class="flex items-center gap-2 mt-4">
+                    <a href="{% url 'messages:compose' %}" class="btn btn-primary flex-1">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Umow termin
+                    </a>
+
+                    {% if makeup.days_left <= 7 %}
+                    <a href="{% url 'messages:compose' %}" class="btn btn-outline flex-1">
+                        Popros o przedluzenie
+                    </a>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="alert mt-4">
+                    <span class="text-sm">
+                        Te zajecia wygasly. Skontaktuj sie z administracja jesli potrzebujesz dodatkowych informacji.
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card bg-base-100 shadow">
+        <div class="card-body py-12 text-center text-gray-500">
+            <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-lg font-medium">Brak zajec do odrobienia</p>
+            <p class="text-sm mt-1">Swietnie! Nie masz zadnych zaleglych zajec.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

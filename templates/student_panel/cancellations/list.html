@@ -1,0 +1,155 @@
+{% extends "student_panel/base.html" %}
+
+{% block title %}Anulowanie zajec - Panel Ucznia{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold">Anulowanie zajec</h1>
+        <p class="text-gray-600">Zloz wniosek o anulowanie zajec</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form -->
+        <div class="lg:col-span-2">
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title">Nowy wniosek</h2>
+
+                    <!-- Monthly Limit Info -->
+                    {% if limit_info %}
+                    <div class="alert alert-info mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Wykorzystano {{ limit_info.used }} z {{ limit_info.limit }} dostepnych anulowac w tym miesiacu</span>
+                    </div>
+                    {% endif %}
+
+                    {% if limit_info.remaining <= 0 %}
+                    <div class="alert alert-error mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>Osiagnieto miesieczny limit anulowan. Skontaktuj sie z administracja w wyjatkowych sytuacjach.</span>
+                    </div>
+                    {% endif %}
+
+                    <form hx-post="{% url 'students:cancellation-create' %}"
+                          hx-target="#form-result"
+                          hx-swap="innerHTML"
+                          class="space-y-4">
+                        {% csrf_token %}
+
+                        <div id="form-result"></div>
+
+                        <!-- Lesson Selection -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Wybierz zajecia do anulowania *</span>
+                            </label>
+                            <select name="lesson"
+                                    class="select select-bordered w-full"
+                                    required
+                                    {% if limit_info.remaining <= 0 %}disabled{% endif %}>
+                                <option value="">Wybierz zajecia</option>
+                                {% for ls in upcoming_lessons %}
+                                    {% with lesson=ls.lesson %}
+                                    <option value="{{ lesson.id }}"
+                                            {% if preselected_lesson_id == lesson.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ lesson.title }} - {{ lesson.start_time|date:"j M, H:i" }}
+                                    </option>
+                                    {% endwith %}
+                                {% empty %}
+                                    <option value="" disabled>Brak zajec mozliwych do anulowania</option>
+                                {% endfor %}
+                            </select>
+                            <label class="label">
+                                <span class="label-text-alt">Mozesz anulowac zajecia minimum 24 godziny przed ich rozpoczeciem</span>
+                            </label>
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Powod anulowania *</span>
+                            </label>
+                            <textarea name="reason"
+                                      class="textarea textarea-bordered w-full"
+                                      rows="4"
+                                      placeholder="Opisz dlaczego chcesz anulowac zajecia..."
+                                      minlength="10"
+                                      required
+                                      {% if limit_info.remaining <= 0 %}disabled{% endif %}></textarea>
+                            <label class="label">
+                                <span class="label-text-alt">Podaj krotki powod anulowania (minimum 10 znakow)</span>
+                            </label>
+                        </div>
+
+                        <!-- Info Alert -->
+                        <div class="alert">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div>
+                                <strong>Pamietaj:</strong> Po zaakceptowaniu anulowania przez administracje,
+                                zajecia zostana dodane do puli zajec do odrobienia. Bedziesz mial 30 dni
+                                na umowienie sie na zajecia zastercze.
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end gap-2">
+                            <button type="reset" class="btn btn-ghost">Wyczysc</button>
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    {% if limit_info.remaining <= 0 %}disabled{% endif %}>
+                                Wyslij wniosek
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Requests -->
+        <div>
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Ostatnie wnioski</h2>
+
+                    {% if requests %}
+                    <div class="space-y-3 mt-2">
+                        {% for req in requests %}
+                        <div class="border rounded-lg p-3 text-sm">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="font-medium truncate">{{ req.lesson.title }}</div>
+                                {% if req.status == 'PENDING' %}
+                                    <span class="badge badge-warning badge-sm">Oczekuje</span>
+                                {% elif req.status == 'APPROVED' %}
+                                    <span class="badge badge-success badge-sm">Zaakceptowany</span>
+                                {% else %}
+                                    <span class="badge badge-error badge-sm">Odrzucony</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ req.created_at|date:"j M Y, H:i" }}
+                            </div>
+                            {% if req.admin_notes %}
+                            <div class="text-xs text-gray-600 mt-1 truncate">
+                                {{ req.admin_notes }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-gray-500 mt-2">Brak wnioskow o anulowanie</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

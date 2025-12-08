@@ -1,0 +1,82 @@
+{% extends "student_panel/base.html" %}
+{% load static %}
+
+{% block title %}Kalendarz - Panel Ucznia{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Kalendarz</h1>
+            <p class="text-gray-600">Twoje zajecia i harmonogram</p>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Lesson Detail Modal -->
+<dialog id="lesson-modal" class="modal">
+    <div class="modal-box max-w-md">
+        <div id="lesson-modal-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pl',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        buttonText: {
+            today: 'Dzis',
+            month: 'Miesiac',
+            week: 'Tydzien',
+            day: 'Dzien',
+            list: 'Lista'
+        },
+        events: '{% url "students:calendar-events" %}',
+        eventClick: function(info) {
+            htmx.ajax('GET', '{% url "students:lesson-detail" 0 %}'.replace('0', info.event.id), {
+                target: '#lesson-modal-content'
+            });
+            document.getElementById('lesson-modal').showModal();
+        },
+        eventDidMount: function(info) {
+            // Add tooltip
+            info.el.title = info.event.extendedProps.subject + ' - ' + info.event.extendedProps.tutor;
+        },
+        nowIndicator: true,
+        slotMinTime: '07:00:00',
+        slotMaxTime: '21:00:00',
+        allDaySlot: false,
+        weekNumbers: true,
+        navLinks: true,
+        dayMaxEvents: true,
+        height: 'auto'
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}
