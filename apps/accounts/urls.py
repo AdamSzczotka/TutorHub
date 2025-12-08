@@ -13,10 +13,11 @@ urlpatterns = [
         'login/',
         auth_views.LoginView.as_view(
             template_name='accounts/login.html',
-            next_page='/panel/',
+            redirect_authenticated_user=True,
         ),
         name='login',
     ),
+    path('login/redirect/', views.LoginRedirectView.as_view(), name='login-redirect'),
 
     # Password Reset
     path(

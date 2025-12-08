@@ -1,0 +1,43 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'attendance:overview' %}" class="btn btn-ghost btn-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Powrot
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold">Statystyki frekwencji</h1>
+                <p class="text-base-content/70">{{ student.get_full_name }}</p>
+            </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="flex gap-2"
+             x-data="{
+                 startDate: '{{ start_date|date:'Y-m-d' }}',
+                 endDate: '{{ end_date|date:'Y-m-d' }}'
+             }">
+            <input type="date"
+                   class="input input-bordered input-sm"
+                   x-model="startDate"
+                   :max="endDate"
+                   @change="htmx.ajax('GET', '?start_date=' + startDate + '&end_date=' + endDate, {target: '#stats-content', swap: 'innerHTML'})">
+            <input type="date"
+                   class="input input-bordered input-sm"
+                   x-model="endDate"
+                   :min="startDate"
+                   @change="htmx.ajax('GET', '?start_date=' + startDate + '&end_date=' + endDate, {target: '#stats-content', swap: 'innerHTML'})">
+        </div>
+    </div>
+
+    <div id="stats-content">
+        {% include "attendance/statistics/partials/_stats_content.html" %}
+    </div>
+</div>
+{% endblock %}

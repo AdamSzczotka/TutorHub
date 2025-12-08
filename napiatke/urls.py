@@ -14,6 +14,7 @@ urlpatterns = [
     path('panel/lessons/', include('apps.lessons.urls')),
     path('panel/cancellations/', include('apps.cancellations.urls')),
     path('panel/invoices/', include('apps.invoices.admin_urls', namespace='admin_invoices')),
+    path('panel/attendance/', include('apps.attendance.urls')),
     path('panel/', include('apps.core.urls')),
     path('invoices/', include('apps.invoices.urls')),
     path('', include('apps.landing.urls')),

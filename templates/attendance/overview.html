@@ -1,0 +1,68 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">Frekwencja uczniow</h1>
+            <p class="text-base-content/70">Przegladaj frekwencje wszystkich uczniow</p>
+        </div>
+
+        <!-- Month Filter -->
+        <div class="flex items-center gap-2">
+            <select id="month-filter"
+                    class="select select-bordered"
+                    hx-get="{% url 'attendance:overview' %}"
+                    hx-target="#students-table"
+                    hx-swap="innerHTML"
+                    hx-include="this"
+                    name="month">
+                {% for m in months %}
+                <option value="{{ m.value }}" {% if m.value == selected_month %}selected{% endif %}>
+                    {{ m.label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <a href="{% url 'attendance:export' %}" class="btn btn-outline btn-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Eksport
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-title">Uczniowie</div>
+            <div class="stat-value text-primary">{{ summary.total_students }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-title">Srednia frekwencja</div>
+            <div class="stat-value {% if summary.avg_rate >= 80 %}text-success{% else %}text-error{% endif %}">
+                {{ summary.avg_rate }}%
+            </div>
+        </div>
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-title">Powyzej 80%</div>
+            <div class="stat-value text-success">{{ summary.above_threshold }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-box shadow">
+            <div class="stat-title">Ponizej 80%</div>
+            <div class="stat-value text-error">{{ summary.below_threshold }}</div>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <div id="students-table">
+                {% include "attendance/partials/_overview_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

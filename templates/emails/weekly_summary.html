@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #3B82F6; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">Podsumowanie tygodnia</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">{{ week_start }} - {{ week_end }}</p>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <p>{{ parent_name }},</p>
+
+            <p>Oto podsumowanie frekwencji ucznia <strong>{{ student_name }}</strong> w mijajacym tygodniu:</p>
+
+            <!-- Statistics -->
+            <table style="width: 100%; margin: 20px 0; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 15px; background: #f9fafb; border-radius: 8px 0 0 8px;">
+                        <div style="font-size: 28px; font-weight: bold; color: #3B82F6;">{{ total_lessons }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Zajecia</div>
+                    </td>
+                    <td style="padding: 15px; background: #f9fafb;">
+                        <div style="font-size: 28px; font-weight: bold; color: {% if attendance_rate >= 80 %}#10B981{% else %}#EF4444{% endif %};">
+                            {{ attendance_rate }}%
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">Frekwencja</div>
+                    </td>
+                    <td style="padding: 15px; background: #f9fafb;">
+                        <div style="font-size: 28px; font-weight: bold; color: #10B981;">{{ present_count }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Obecnosci</div>
+                    </td>
+                    <td style="padding: 15px; background: #f9fafb; border-radius: 0 8px 8px 0;">
+                        <div style="font-size: 28px; font-weight: bold; color: #EF4444;">{{ absent_count }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Nieobecnosci</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Lessons table -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="background: #f3f4f6;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb;">Data</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb;">Przedmiot</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">{{ lesson.date }}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">{{ lesson.subject }}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+                            <span style="color: {% if lesson.status == 'Obecny' %}#10B981{% elif lesson.status == 'Spozniony' %}#F59E0B{% elif lesson.status == 'Nieobecny' %}#EF4444{% else %}#3B82F6{% endif %};">
+                                {{ lesson.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Pozdrawiamy,<br>
+                Zespol "Na Piatke"
+            </p>
+        </div>
+    </div>
+</body>
+</html>

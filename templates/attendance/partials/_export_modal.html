@@ -1,0 +1,70 @@
+<div x-data="{
+    startDate: new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    studentId: '',
+    subjectId: ''
+}">
+    <h3 class="font-bold text-lg mb-4">Eksport frekwencji do CSV</h3>
+    <p class="text-base-content/70 mb-4">Wybierz zakres dat dla eksportu danych</p>
+
+    <div class="space-y-4">
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Data rozpoczecia</span>
+            </label>
+            <input type="date"
+                   class="input input-bordered w-full"
+                   x-model="startDate"
+                   :max="endDate">
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Data zakonczenia</span>
+            </label>
+            <input type="date"
+                   class="input input-bordered w-full"
+                   x-model="endDate"
+                   :min="startDate">
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Uczen (opcjonalnie)</span>
+            </label>
+            <select class="select select-bordered w-full" x-model="studentId">
+                <option value="">Wszyscy uczniowie</option>
+                {% for student in students %}
+                <option value="{{ student.id }}">{{ student.get_full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Przedmiot (opcjonalnie)</span>
+            </label>
+            <select class="select select-bordered w-full" x-model="subjectId">
+                <option value="">Wszystkie przedmioty</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="modal-action">
+        <button class="btn btn-ghost" onclick="document.getElementById('export-modal').close()">
+            Anuluj
+        </button>
+        <a class="btn btn-primary"
+           :href="`{% url 'attendance:export_csv' %}?start_date=${startDate}&end_date=${endDate}&student_id=${studentId}&subject_id=${subjectId}`"
+           download>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Eksportuj
+        </a>
+    </div>
+</div>

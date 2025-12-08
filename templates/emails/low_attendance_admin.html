@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #EF4444; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">Alert: Niska frekwencja</h1>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <p>{{ admin_name }},</p>
+
+            <p>System wykryl ucznia z frekwencja ponizej {{ threshold }}%:</p>
+
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Uczen:</strong> {{ student_name }}</p>
+                <p style="margin: 5px 0;"><strong>Klasa:</strong> {{ student_class }}</p>
+                <p style="margin: 5px 0;"><strong>Frekwencja:</strong> <span style="color: #EF4444; font-weight: bold;">{{ attendance_rate }}%</span></p>
+            </div>
+
+            <h3 style="color: #374151;">Szczegoly:</h3>
+            <ul style="color: #6b7280;">
+                <li>Laczna liczba lekcji: {{ total_lessons }}</li>
+                <li>Obecny: {{ present_count }}</li>
+                <li>Nieobecny: {{ absent_count }}</li>
+                <li>Spozniony: {{ late_count }}</li>
+            </ul>
+
+            <p>Zalecamy kontakt z rodzicem ucznia w celu omowienia sytuacji.</p>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Pozdrawiamy,<br>
+                System "Na Piatke"
+            </p>
+        </div>
+    </div>
+</body>
+</html>
