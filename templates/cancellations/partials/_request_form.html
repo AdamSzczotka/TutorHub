@@ -1,0 +1,100 @@
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">Anulowanie zajec</h2>
+
+        <!-- Lesson Details -->
+        <div class="bg-base-200 rounded-lg p-4 space-y-2">
+            <div class="flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="font-medium">{{ lesson.title }}</span>
+            </div>
+            <div class="text-sm text-base-content/70">
+                {{ lesson.start_time|date:"l, d F Y, H:i" }}
+            </div>
+            {% if lesson.subject %}
+            <div class="text-sm text-base-content/70">
+                Przedmiot: {{ lesson.subject.name }}
+            </div>
+            {% endif %}
+            {% if lesson.tutor %}
+            <div class="text-sm text-base-content/70">
+                Korepetytor: {{ lesson.tutor.get_full_name }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if not can_cancel %}
+        <!-- 24h Warning -->
+        <div class="alert alert-error">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <h3 class="font-bold">Nie mozna anulowac</h3>
+                <p class="text-sm">
+                    Nie mozna anulowac zajec krocej niz 24 godziny przed rozpoczeciem.
+                    Pozostalo tylko {{ hours_until }}h. Skontaktuj sie z administratorem.
+                </p>
+            </div>
+        </div>
+
+        <div class="card-actions justify-end">
+            <button class="btn btn-outline" onclick="history.back()">Zamknij</button>
+        </div>
+
+        {% else %}
+        <!-- Can Cancel -->
+        <div class="alert alert-info">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="text-sm">
+                    Zajecia rozpoczna sie za {{ hours_until }} godzin. Po akceptacji przez
+                    administratora zajecia trafia do systemu odrabiania (30 dni na umowienie).
+                </p>
+            </div>
+        </div>
+
+        <form hx-post="{% url 'cancellations:create' lesson.id %}"
+              hx-target="#form-result"
+              hx-swap="innerHTML"
+              class="space-y-4">
+            {% csrf_token %}
+
+            <div id="form-result"></div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Powod anulowania *</span>
+                </label>
+                <textarea name="reason"
+                          class="textarea textarea-bordered w-full"
+                          rows="4"
+                          placeholder="Opisz powod anulowania zajec (min. 10 znakow)..."
+                          minlength="10"
+                          required></textarea>
+                <label class="label">
+                    <span class="label-text-alt">
+                        Podaj szczegolowy powod - pomoze to administratorowi podjac decyzje
+                    </span>
+                </label>
+            </div>
+
+            <div class="card-actions justify-end">
+                <button type="button" class="btn btn-outline" onclick="history.back()">
+                    Anuluj
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Wyslij prosbe
+                </button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
