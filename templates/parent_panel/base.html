@@ -96,11 +96,24 @@
                         <li class="menu-title">
                             <span>{{ request.user.get_full_name }}</span>
                         </li>
+                        <li><a href="{% url 'accounts:profile' %}">Profil</a></li>
                         <li><a href="{% url 'parents:dashboard' %}">Dashboard</a></li>
-                        <li><a href="{% url 'accounts:logout' %}">Wyloguj</a></li>
+                        <li><a href="{% url 'notifications:preferences' %}">Powiadomienia</a></li>
+                        <li class="divider"></li>
+                        <li>
+                            <form action="{% url 'accounts:logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left">Wyloguj</button>
+                            </form>
+                        </li>
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="px-6 pt-4">
+            {% include "notifications/partials/_announcement_banner.html" %}
         </div>
 
         <!-- Main content -->
