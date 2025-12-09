@@ -412,34 +412,42 @@ class Command(BaseCommand):
         self.stdout.write(f'    Created {len(students_data)} students with profiles')
 
         # ==================== PARENT ACCOUNTS ====================
-        # Create parent accounts that can log in
+        # Create parent accounts with role='parent' and link to children
+        from apps.accounts.models import ParentAccess
+
+        # Map parent email to their children (matching parent_email in StudentProfile)
         parents_data = [
             {
                 'email': 'ewa.kowalczyk@rodzic.pl',
                 'first_name': 'Ewa',
                 'last_name': 'Kowalczyk',
                 'phone': '+48601234567',
+                'children_emails': ['michal.kowalczyk@student.pl', 'jakub.grabowski@student.pl'],
             },
             {
                 'email': 'piotr.zielinski@rodzic.pl',
                 'first_name': 'Piotr',
                 'last_name': 'Zieliński',
                 'phone': '+48602345678',
+                'children_emails': ['julia.zielinska@student.pl'],
             },
             {
                 'email': 'agnieszka.wojciechowska@rodzic.pl',
                 'first_name': 'Agnieszka',
                 'last_name': 'Wojciechowska',
                 'phone': '+48603456789',
+                'children_emails': ['kacper.wojciechowski@student.pl'],
             },
             {
                 'email': 'robert.kaminski@rodzic.pl',
                 'first_name': 'Robert',
                 'last_name': 'Kamiński',
                 'phone': '+48604567890',
+                'children_emails': ['zofia.kaminska@student.pl'],
             },
         ]
 
+        parents = []
         for data in parents_data:
             parent, created = User.objects.get_or_create(
                 email=data['email'],
@@ -447,7 +455,7 @@ class Command(BaseCommand):
                     'first_name': data['first_name'],
                     'last_name': data['last_name'],
                     'phone': data['phone'],
-                    'role': 'student',  # Parents use student role but link via parent_email
+                    'role': 'parent',  # Proper parent role
                     'is_profile_completed': True,
                     'first_login': False,
                 },
@@ -456,7 +464,27 @@ class Command(BaseCommand):
                 parent.set_password('demo123')
                 parent.save()
 
-        self.stdout.write(f'    Created {len(parents_data)} parent accounts')
+                # Create ParentAccess links to children
+                for child_email in data.get('children_emails', []):
+                    child = User.objects.filter(email=child_email).first()
+                    if child:
+                        ParentAccess.objects.get_or_create(
+                            parent=parent,
+                            student=child,
+                            defaults={
+                                'access_level': 'full',
+                                'is_active': True,
+                                'can_view_lessons': True,
+                                'can_view_attendance': True,
+                                'can_view_grades': True,
+                                'can_view_invoices': True,
+                                'can_message_tutors': True,
+                            }
+                        )
+
+            parents.append(parent)
+
+        self.stdout.write(f'    Created {len(parents_data)} parent accounts with links to children')
 
         # ==================== LESSONS ====================
         rooms = list(Room.objects.filter(is_active=True))
