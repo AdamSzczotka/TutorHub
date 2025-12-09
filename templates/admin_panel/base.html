@@ -100,6 +100,17 @@
             lucide.createIcons();
         }
     });
+
+    // Close modal on specific HTMX triggers
+    document.body.addEventListener('announcementCreated', function() {
+        document.getElementById('modal').close();
+    });
+    document.body.addEventListener('announcementDeleted', function() {
+        document.getElementById('modal').close();
+    });
+    document.body.addEventListener('modalClose', function() {
+        document.getElementById('modal').close();
+    });
 </script>
 </body>
 </html>

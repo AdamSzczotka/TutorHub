@@ -134,19 +134,26 @@
     </li>
 
     {% if request.user.is_admin %}
-    {# ===== Invoices - admin only (placeholder) ===== #}
+    {# ===== Invoices - admin only ===== #}
     <li>
-        <a href="#">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Faktury
-        </a>
+        <details {% if 'invoices' in request.path %}open{% endif %}>
+            <summary>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Faktury
+            </summary>
+            <ul>
+                <li><a href="{% url 'admin_invoices:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' and 'invoices' in request.path %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{% url 'admin_invoices:list' %}" class="{% if request.resolver_match.url_name == 'list' and 'invoices' in request.path %}active{% endif %}">Lista faktur</a></li>
+                <li><a href="{% url 'admin_invoices:create' %}" class="{% if request.resolver_match.url_name == 'create' and 'invoices' in request.path %}active{% endif %}">Nowa faktura</a></li>
+            </ul>
+        </details>
     </li>
 
-    {# ===== Reports - admin only (placeholder) ===== #}
+    {# ===== Reports - admin only ===== #}
     <li>
-        <a href="#">
+        <a href="{% url 'attendance:export' %}" class="{% if 'export' in request.path and 'attendance' in request.path %}active{% endif %}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
