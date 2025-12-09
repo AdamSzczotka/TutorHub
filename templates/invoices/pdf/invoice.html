@@ -16,41 +16,43 @@
     </div>
 
     <!-- Parties -->
-    <div class="parties">
-        <!-- Seller -->
-        <div class="party">
-            <div class="party-title">Sprzedawca:</div>
-            <div class="party-info">
-                <strong>{{ company.name }}</strong><br>
-                {{ company.address }}<br>
-                {{ company.postal_code }} {{ company.city }}<br>
-                NIP: {{ company.nip }}<br>
-                {% if company.regon %}REGON: {{ company.regon }}<br>{% endif %}
-                Tel: {{ company.phone }}<br>
-                Email: {{ company.email }}
-            </div>
-        </div>
+    <table class="parties-table">
+        <tr>
+            <!-- Seller -->
+            <td>
+                <div class="party-title">Sprzedawca:</div>
+                <div class="party-info">
+                    <strong>{{ company.name }}</strong><br>
+                    {{ company.address }}<br>
+                    {{ company.postal_code }} {{ company.city }}<br>
+                    NIP: {{ company.nip }}<br>
+                    {% if company.regon %}REGON: {{ company.regon }}<br>{% endif %}
+                    Tel: {{ company.phone }}<br>
+                    Email: {{ company.email }}
+                </div>
+            </td>
 
-        <!-- Buyer -->
-        <div class="party">
-            <div class="party-title">Nabywca:</div>
-            <div class="party-info">
-                {% if invoice.student.student_profile and invoice.student.student_profile.parent_name %}
-                <strong>{{ invoice.student.student_profile.parent_name }}</strong><br>
-                {% else %}
-                <strong>{{ invoice.student.get_full_name }}</strong><br>
-                {% endif %}
-                {% if invoice.student.student_profile and invoice.student.student_profile.parent_email %}
-                {{ invoice.student.student_profile.parent_email }}
-                {% else %}
-                {{ invoice.student.email }}
-                {% endif %}
-            </div>
-        </div>
-    </div>
+            <!-- Buyer -->
+            <td>
+                <div class="party-title">Nabywca:</div>
+                <div class="party-info">
+                    {% if invoice.student.student_profile and invoice.student.student_profile.parent_name %}
+                    <strong>{{ invoice.student.student_profile.parent_name }}</strong><br>
+                    {% else %}
+                    <strong>{{ invoice.student.get_full_name }}</strong><br>
+                    {% endif %}
+                    {% if invoice.student.student_profile and invoice.student.student_profile.parent_email %}
+                    {{ invoice.student.student_profile.parent_email }}
+                    {% else %}
+                    {{ invoice.student.email }}
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <!-- Items Table -->
-    <table>
+    <table class="items">
         <thead>
             <tr>
                 <th style="width: 5%;">Lp.</th>
@@ -77,18 +79,20 @@
 
     <!-- Summary -->
     <div class="summary">
-        <div class="summary-row">
-            <span class="summary-label">Suma netto:</span>
-            <span class="summary-value">{{ invoice.net_amount|floatformat:2 }} zł</span>
-        </div>
-        <div class="summary-row">
-            <span class="summary-label">VAT (23%):</span>
-            <span class="summary-value">{{ invoice.vat_amount|floatformat:2 }} zł</span>
-        </div>
-        <div class="summary-row summary-total">
-            <span class="summary-label">RAZEM BRUTTO:</span>
-            <span class="summary-value">{{ invoice.total_amount|floatformat:2 }} zł</span>
-        </div>
+        <table class="summary-table">
+            <tr>
+                <td class="label">Suma netto:</td>
+                <td class="value">{{ invoice.net_amount|floatformat:2 }} zł</td>
+            </tr>
+            <tr>
+                <td class="label">VAT (23%):</td>
+                <td class="value">{{ invoice.vat_amount|floatformat:2 }} zł</td>
+            </tr>
+            <tr class="summary-total">
+                <td class="label">RAZEM BRUTTO:</td>
+                <td class="value">{{ invoice.total_amount|floatformat:2 }} zł</td>
+            </tr>
+        </table>
     </div>
 
     <!-- Amount in Words -->

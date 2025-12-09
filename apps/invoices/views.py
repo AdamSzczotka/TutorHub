@@ -72,6 +72,8 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
     """Download invoice PDF."""
 
     def get(self, request, pk):
+        import traceback
+
         invoice = get_object_or_404(Invoice, id=pk)
 
         # Permission check
@@ -81,17 +83,21 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
         # Get invoice with relations for PDF generation
         invoice = invoice_service.get_by_id(pk)
 
-        # Generate PDF
-        pdf_buffer = pdf_service.generate_pdf(invoice)
+        try:
+            # Generate PDF
+            pdf_buffer = pdf_service.generate_pdf(invoice)
 
-        filename = f"{invoice.invoice_number.replace('/', '-')}.pdf"
+            filename = f"{invoice.invoice_number.replace('/', '-')}.pdf"
 
-        return FileResponse(
-            pdf_buffer,
-            as_attachment=True,
-            filename=filename,
-            content_type='application/pdf',
-        )
+            return FileResponse(
+                pdf_buffer,
+                as_attachment=True,
+                filename=filename,
+                content_type='application/pdf',
+            )
+        except Exception as e:
+            error_msg = f"Błąd generowania PDF: {str(e)}\n\n{traceback.format_exc()}"
+            return HttpResponse(f"<pre>{error_msg}</pre>", status=500)
 
 
 # Admin Views
@@ -288,9 +294,9 @@ class AdminBillingDashboardView(LoginRequiredMixin, AdminRequiredMixin, Template
             status=InvoiceStatus.OVERDUE
         ).count()
 
-        # Total amounts
+        # Total amounts - include GENERATED, SENT, and OVERDUE for outstanding
         context['total_outstanding'] = Invoice.objects.filter(
-            status__in=[InvoiceStatus.SENT, InvoiceStatus.OVERDUE]
+            status__in=[InvoiceStatus.GENERATED, InvoiceStatus.SENT, InvoiceStatus.OVERDUE]
         ).aggregate(total=Sum('total_amount'))['total'] or 0
 
         context['total_paid'] = Invoice.objects.filter(
@@ -317,16 +323,40 @@ class TriggerMonthlyBillingView(LoginRequiredMixin, AdminRequiredMixin, View):
                 status=400
             )
 
-        # Queue task
-        from .tasks import monthly_billing_task
-        monthly_billing_task.delay(month_year)
+        try:
+            # Generate invoices synchronously
+            from .services import billing_service
+            results = billing_service.generate_monthly_invoices(month_year)
 
-        return HttpResponse(
-            f'''<div class="alert alert-success">
-                Generowanie faktur dla {month_year} zostało zaplanowane.
-                Sprawdź status w zakładce "Faktury".
-            </div>'''
-        )
+            success_count = len(results.get('success', []))
+            failed_count = len(results.get('failed', []))
+            skipped_count = len(results.get('skipped', []))
+
+            if success_count > 0:
+                msg = f'Wygenerowano {success_count} faktur za {month_year}.'
+                if skipped_count > 0:
+                    msg += f' Pominięto: {skipped_count}.'
+                if failed_count > 0:
+                    msg += f' Błędy: {failed_count}.'
+                return HttpResponse(f'<div class="alert alert-success">{msg}</div>')
+            elif skipped_count > 0:
+                return HttpResponse(
+                    f'''<div class="alert alert-warning">
+                        Wszystkie faktury za {month_year} już istnieją lub brak lekcji ({skipped_count} pominiętych).
+                    </div>'''
+                )
+            else:
+                return HttpResponse(
+                    f'''<div class="alert alert-info">
+                        Brak aktywnych uczniów do zafakturowania za {month_year}.
+                    </div>'''
+                )
+        except Exception as e:
+            import traceback
+            return HttpResponse(
+                f'<div class="alert alert-error">Błąd: {str(e)}</div>',
+                status=500
+            )
 
 
 class PaymentTrackerView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):

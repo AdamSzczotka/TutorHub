@@ -1,61 +1,249 @@
+import os
 from io import BytesIO
 from pathlib import Path
+from decimal import Decimal
 
 from django.conf import settings
-from django.template.loader import render_to_string
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm, mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 from .company_config import COMPANY_DETAILS
 from .utils import amount_to_words, format_currency
 
 
 class InvoicePDFService:
-    """Service for generating invoice PDFs."""
+    """Service for generating invoice PDFs using ReportLab."""
 
-    def _get_weasyprint(self):
-        """Lazy import WeasyPrint to avoid import errors when GTK is not installed."""
-        try:
-            from weasyprint import CSS, HTML
-            from weasyprint.text.fonts import FontConfiguration
-            return CSS, HTML, FontConfiguration
-        except (ImportError, OSError) as e:
-            raise ImportError(
-                "WeasyPrint is not available. Please install GTK libraries. "
-                "See: https://doc.courtbouillon.org/weasyprint/stable/first_steps.html"
-            ) from e
+    _fonts_registered = False
+
+    @classmethod
+    def _register_fonts(cls):
+        """Register DejaVu fonts for Polish characters support."""
+        if cls._fonts_registered:
+            return
+
+        font_path = os.path.join(settings.BASE_DIR, 'static', 'fonts')
+        dejavu_path = os.path.join(font_path, 'DejaVuSans.ttf')
+        dejavu_bold_path = os.path.join(font_path, 'DejaVuSans-Bold.ttf')
+
+        if os.path.exists(dejavu_path):
+            pdfmetrics.registerFont(TTFont('DejaVuSans', dejavu_path))
+
+        if os.path.exists(dejavu_bold_path):
+            pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', dejavu_bold_path))
+
+        cls._fonts_registered = True
+
+    def _get_styles(self):
+        """Get paragraph styles for PDF."""
+        styles = getSampleStyleSheet()
+
+        styles.add(ParagraphStyle(
+            name='InvoiceTitle',
+            fontName='DejaVuSans-Bold',
+            fontSize=20,
+            spaceAfter=6,
+            textColor=colors.HexColor('#1F2937'),
+        ))
+
+        styles.add(ParagraphStyle(
+            name='InvoiceSubtitle',
+            fontName='DejaVuSans',
+            fontSize=10,
+            textColor=colors.HexColor('#6B7280'),
+        ))
+
+        styles.add(ParagraphStyle(
+            name='SectionTitle',
+            fontName='DejaVuSans-Bold',
+            fontSize=11,
+            spaceBefore=12,
+            spaceAfter=6,
+            textColor=colors.HexColor('#1F2937'),
+        ))
+
+        styles.add(ParagraphStyle(
+            name='Normal_PL',
+            fontName='DejaVuSans',
+            fontSize=9,
+            leading=14,
+        ))
+
+        styles.add(ParagraphStyle(
+            name='Bold_PL',
+            fontName='DejaVuSans-Bold',
+            fontSize=9,
+            leading=14,
+        ))
+
+        styles.add(ParagraphStyle(
+            name='Small_PL',
+            fontName='DejaVuSans',
+            fontSize=8,
+            textColor=colors.HexColor('#6B7280'),
+        ))
+
+        return styles
 
     def generate_pdf(self, invoice) -> BytesIO:
-        """Generate PDF for invoice.
+        """Generate PDF for invoice using ReportLab.
 
         Args:
             invoice: Invoice instance with related items.
 
         Returns:
             BytesIO buffer with PDF data.
-
-        Raises:
-            ImportError: If WeasyPrint is not installed.
         """
-        CSS, HTML, FontConfiguration = self._get_weasyprint()
+        # Register fonts
+        self._register_fonts()
 
-        # Prepare context
-        context = {
-            'invoice': invoice,
-            'company': COMPANY_DETAILS,
-            'amount_in_words': amount_to_words(invoice.total_amount),
-            'format_currency': format_currency,
-        }
-
-        # Render HTML
-        html_content = render_to_string('invoices/pdf/invoice.html', context)
-
-        # CSS styling
-        css = CSS(string=self._get_styles())
-
-        # Generate PDF
-        font_config = FontConfiguration()
-        html = HTML(string=html_content)
+        # Create PDF buffer
         pdf_buffer = BytesIO()
-        html.write_pdf(pdf_buffer, stylesheets=[css], font_config=font_config)
+
+        # Create document
+        doc = SimpleDocTemplate(
+            pdf_buffer,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm,
+        )
+
+        # Get styles
+        styles = self._get_styles()
+
+        # Build content
+        elements = []
+
+        # Header
+        elements.append(Paragraph('FAKTURA VAT', styles['InvoiceTitle']))
+        elements.append(Paragraph(f'Nr {invoice.invoice_number}', styles['InvoiceSubtitle']))
+        elements.append(Spacer(1, 6))
+        elements.append(Paragraph(
+            f'Data wystawienia: {invoice.issue_date.strftime("%d.%m.%Y")}<br/>'
+            f'Termin płatności: {invoice.due_date.strftime("%d.%m.%Y")}',
+            styles['Normal_PL']
+        ))
+        elements.append(Spacer(1, 20))
+
+        # Parties table (Seller / Buyer)
+        company = COMPANY_DETAILS
+        seller_info = f'''<b>{company["name"]}</b><br/>
+{company["address"]}<br/>
+{company["postal_code"]} {company["city"]}<br/>
+NIP: {company["nip"]}<br/>
+Tel: {company["phone"]}<br/>
+Email: {company["email"]}'''
+
+        # Get buyer info
+        student = invoice.student
+        if hasattr(student, 'student_profile') and student.student_profile and student.student_profile.parent_name:
+            buyer_name = student.student_profile.parent_name
+            buyer_email = student.student_profile.parent_email or student.email
+        else:
+            buyer_name = student.get_full_name()
+            buyer_email = student.email
+
+        buyer_info = f'<b>{buyer_name}</b><br/>{buyer_email}'
+
+        parties_data = [
+            [Paragraph('<b>Sprzedawca:</b>', styles['SectionTitle']),
+             Paragraph('<b>Nabywca:</b>', styles['SectionTitle'])],
+            [Paragraph(seller_info, styles['Normal_PL']),
+             Paragraph(buyer_info, styles['Normal_PL'])],
+        ]
+
+        parties_table = Table(parties_data, colWidths=[8*cm, 8*cm])
+        parties_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(parties_table)
+        elements.append(Spacer(1, 20))
+
+        # Items table
+        items_data = [
+            ['Lp.', 'Nazwa usługi', 'Ilość (h)', 'Cena netto', 'Wartość netto', 'VAT'],
+        ]
+
+        for i, item in enumerate(invoice.items.all(), 1):
+            items_data.append([
+                str(i),
+                item.description,
+                f'{item.quantity:.2f}',
+                f'{item.unit_price:.2f} zł',
+                f'{item.total_price:.2f} zł',
+                '23%',
+            ])
+
+        items_table = Table(items_data, colWidths=[1*cm, 6*cm, 2*cm, 2.5*cm, 2.5*cm, 1.5*cm])
+        items_table.setStyle(TableStyle([
+            # Header
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'DejaVuSans-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
+            # Body
+            ('FONTNAME', (0, 1), (-1, -1), 'DejaVuSans'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+            # Grid
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor('#E5E7EB')),
+        ]))
+        elements.append(items_table)
+        elements.append(Spacer(1, 20))
+
+        # Summary
+        summary_data = [
+            ['Suma netto:', f'{invoice.net_amount:.2f} zł'],
+            ['VAT (23%):', f'{invoice.vat_amount:.2f} zł'],
+            ['RAZEM BRUTTO:', f'{invoice.total_amount:.2f} zł'],
+        ]
+
+        summary_table = Table(summary_data, colWidths=[12*cm, 4*cm])
+        summary_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'DejaVuSans'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('FONTNAME', (0, 2), (-1, 2), 'DejaVuSans-Bold'),
+            ('FONTSIZE', (0, 2), (-1, 2), 12),
+            ('LINEABOVE', (0, 2), (-1, 2), 1, colors.HexColor('#1F2937')),
+            ('TOPPADDING', (0, 2), (-1, 2), 8),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 15))
+
+        # Amount in words
+        elements.append(Paragraph(
+            f'<b>Słownie:</b> {amount_to_words(invoice.total_amount)}',
+            styles['Normal_PL']
+        ))
+        elements.append(Spacer(1, 20))
+
+        # Payment info
+        elements.append(Paragraph('<b>Forma płatności: Przelew bankowy</b>', styles['Normal_PL']))
+        elements.append(Paragraph(f'Numer konta: {company["bank_account"]}', styles['Normal_PL']))
+        elements.append(Paragraph(f'Bank: {company["bank_name"]}', styles['Normal_PL']))
+        elements.append(Paragraph(f'<b>Tytuł przelewu:</b> {invoice.invoice_number}', styles['Normal_PL']))
+
+        # Notes
+        if invoice.notes:
+            elements.append(Spacer(1, 15))
+            elements.append(Paragraph(f'<b>Uwagi:</b> {invoice.notes}', styles['Normal_PL']))
+
+        # Build PDF
+        doc.build(elements)
         pdf_buffer.seek(0)
 
         return pdf_buffer
@@ -124,133 +312,6 @@ class InvoicePDFService:
         )
 
         return f"https://{bucket}.s3.amazonaws.com/{key}"
-
-    def _get_styles(self) -> str:
-        """Get CSS styles for PDF.
-
-        Returns:
-            CSS string.
-        """
-        return '''
-            @page {
-                size: A4;
-                margin: 2cm;
-            }
-            body {
-                font-family: 'DejaVu Sans', sans-serif;
-                font-size: 10pt;
-                line-height: 1.4;
-                color: #333;
-            }
-            .header {
-                border-bottom: 2px solid #3B82F6;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-            }
-            .title {
-                font-size: 24pt;
-                font-weight: bold;
-                color: #1F2937;
-                margin: 0;
-            }
-            .invoice-number {
-                font-size: 12pt;
-                color: #6B7280;
-                margin-top: 5px;
-            }
-            .parties {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 30px;
-            }
-            .party {
-                width: 45%;
-            }
-            .party-title {
-                font-size: 11pt;
-                font-weight: bold;
-                color: #1F2937;
-                margin-bottom: 8px;
-                border-bottom: 1px solid #E5E7EB;
-                padding-bottom: 5px;
-            }
-            .party-info {
-                font-size: 9pt;
-                line-height: 1.6;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-            }
-            th {
-                background-color: #3B82F6;
-                color: white;
-                padding: 10px 8px;
-                text-align: left;
-                font-size: 9pt;
-                font-weight: bold;
-            }
-            td {
-                padding: 10px 8px;
-                border-bottom: 1px solid #E5E7EB;
-                font-size: 9pt;
-            }
-            .text-right {
-                text-align: right;
-            }
-            .summary {
-                margin-top: 20px;
-                text-align: right;
-            }
-            .summary-row {
-                display: flex;
-                justify-content: flex-end;
-                margin-bottom: 5px;
-            }
-            .summary-label {
-                width: 150px;
-                text-align: left;
-            }
-            .summary-value {
-                width: 120px;
-                text-align: right;
-                font-weight: bold;
-            }
-            .summary-total {
-                border-top: 2px solid #1F2937;
-                padding-top: 10px;
-                margin-top: 10px;
-                font-size: 14pt;
-            }
-            .amount-words {
-                background-color: #F9FAFB;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 5px;
-            }
-            .payment-info {
-                margin-top: 30px;
-                padding: 15px;
-                background-color: #EFF6FF;
-                border-radius: 5px;
-            }
-            .payment-title {
-                font-weight: bold;
-                margin-bottom: 10px;
-            }
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                text-align: center;
-                font-size: 8pt;
-                color: #9CA3AF;
-                border-top: 1px solid #E5E7EB;
-                padding-top: 10px;
-            }
-        '''
 
 
 pdf_service = InvoicePDFService()
