@@ -93,12 +93,17 @@ class CreateConversationView(LoginRequiredMixin, View):
             participant_ids = [p.id for p in form.cleaned_data['participants']]
             subject = form.cleaned_data.get('subject', '')
             initial_message = form.cleaned_data.get('initial_message', '')
-            is_group = len(participant_ids) > 1
+
+            # Odfiltruj twórcę z listy uczestników przy sprawdzaniu czy to grupa
+            other_participants = [
+                pid for pid in participant_ids if str(pid) != str(request.user.id)
+            ]
+            is_group = len(other_participants) > 1
 
             conversation, is_new = MessagingService.create_conversation(
                 creator=request.user,
                 participant_ids=participant_ids,
-                subject=subject,
+                subject=subject if is_group else '',  # Temat tylko dla grup
                 is_group_chat=is_group,
                 initial_message=initial_message if initial_message else None,
             )

@@ -36,10 +36,15 @@ class MessagingService:
         Returns:
             Krotka (konwersacja, czy_nowa).
         """
+        # Odfiltruj twórcę z listy uczestników (jeśli się tam znalazł)
+        other_participants = [
+            pid for pid in participant_ids if str(pid) != str(creator.id)
+        ]
+
         # Dla konwersacji 1-1 sprawdź czy już istnieje
-        if not is_group_chat and len(participant_ids) == 1:
+        if len(other_participants) == 1:
             existing = cls._find_existing_direct_conversation(
-                creator.id, participant_ids[0]
+                creator.id, other_participants[0]
             )
             if existing:
                 return existing, False
@@ -75,21 +80,36 @@ class MessagingService:
 
     @classmethod
     def _find_existing_direct_conversation(cls, user1_id, user2_id):
-        """Znajduje istniejącą konwersację 1-1."""
-        conversations = (
-            Conversation.objects.filter(
-                is_group_chat=False,
-                participants__user_id=user1_id,
-            )
-            .filter(
-                participants__user_id=user2_id,
-            )
-            .annotate(participant_count=Count('participants'))
-            .filter(participant_count=2)
-            .first()
-        )
+        """Znajduje istniejącą konwersację 1-1 między dwoma użytkownikami."""
+        # Znajdź konwersacje gdzie OBAJ użytkownicy są aktywnymi uczestnikami
+        # i gdzie jest dokładnie 2 uczestników
 
-        return conversations
+        # Subquery: konwersacje user1
+        user1_conv_ids = ConversationParticipant.objects.filter(
+            user_id=user1_id,
+            left_at__isnull=True,
+        ).values_list('conversation_id', flat=True)
+
+        # Subquery: konwersacje user2
+        user2_conv_ids = ConversationParticipant.objects.filter(
+            user_id=user2_id,
+            left_at__isnull=True,
+        ).values_list('conversation_id', flat=True)
+
+        # Znajdź konwersacje gdzie są obaj
+        common_conv_ids = set(user1_conv_ids) & set(user2_conv_ids)
+
+        # Dla każdej wspólnej konwersacji sprawdź czy ma dokładnie 2 uczestników
+        for conv_id in common_conv_ids:
+            participant_count = ConversationParticipant.objects.filter(
+                conversation_id=conv_id,
+                left_at__isnull=True,
+            ).count()
+
+            if participant_count == 2:
+                return Conversation.objects.get(id=conv_id)
+
+        return None
 
     @classmethod
     @transaction.atomic
