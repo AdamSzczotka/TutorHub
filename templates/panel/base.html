@@ -60,6 +60,8 @@
             {% include "tutor_panel/partials/_sidebar.html" %}
         {% elif request.user.is_student %}
             {% include "student_panel/partials/_sidebar.html" %}
+        {% elif request.user.is_parent %}
+            {% include "parent_panel/partials/_sidebar.html" %}
         {% else %}
             {% include "admin_panel/partials/_sidebar.html" %}
         {% endif %}
