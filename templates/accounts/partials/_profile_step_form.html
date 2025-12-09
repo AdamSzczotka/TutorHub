@@ -1,4 +1,4 @@
-<div class="card bg-base-100 border border-base-300">
+<div id="step-form-content" class="card bg-base-100 border border-base-300">
     <div class="card-body">
         <h3 class="card-title text-lg">
             {% if step %}{{ step.title }}{% else %}Uzupełnij dane{% endif %}
@@ -6,7 +6,7 @@
 
         <form method="post"
               hx-post="{% url 'accounts:profile-step' step_id %}"
-              hx-target="#wizard-progress"
+              hx-target="#step-form-content"
               hx-swap="outerHTML"
               class="space-y-4">
             {% csrf_token %}
