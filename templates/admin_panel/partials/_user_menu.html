@@ -12,8 +12,11 @@
         <li class="menu-title">
             <span>{{ user.get_full_name }}</span>
         </li>
-        <li><a href="#">Profil</a></li>
+        <li><a href="{% url 'accounts:profile' %}">Profil</a></li>
+        {% if user.is_admin %}
         <li><a href="{% url 'admin_panel:settings' %}">Ustawienia</a></li>
+        {% endif %}
+        <li><a href="{% url 'notifications:preferences' %}">Powiadomienia</a></li>
         <li class="divider"></li>
         <li>
             <form action="{% url 'accounts:logout' %}" method="post">
