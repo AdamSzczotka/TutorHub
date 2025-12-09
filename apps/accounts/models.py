@@ -19,6 +19,7 @@ class UserRole(models.TextChoices):
     ADMIN = 'admin', 'Administrator'
     TUTOR = 'tutor', 'Korepetytor'
     STUDENT = 'student', 'Uczeń'
+    PARENT = 'parent', 'Rodzic'
 
 
 class User(AbstractUser):
@@ -80,6 +81,11 @@ class User(AbstractUser):
     def is_student(self):
         """Check if user is student."""
         return self.role == UserRole.STUDENT
+
+    @property
+    def is_parent(self):
+        """Check if user is parent."""
+        return self.role == UserRole.PARENT
 
 
 class UserCreationLog(models.Model):

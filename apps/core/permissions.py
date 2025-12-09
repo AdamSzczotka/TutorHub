@@ -86,6 +86,12 @@ ROLE_PERMISSIONS: dict[str, list[Permission]] = {
         Permission.ROOM_READ,
         Permission.SUBJECT_READ,
     ],
+    'parent': [
+        Permission.LESSON_READ,  # Children's lessons
+        Permission.INVOICE_READ,  # Children's invoices
+        Permission.ROOM_READ,
+        Permission.SUBJECT_READ,
+    ],
 }
 
 
