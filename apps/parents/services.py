@@ -6,7 +6,7 @@ from typing import Any
 from django.db.models import Count, Q
 from django.utils import timezone
 
-from apps.accounts.models import User
+from apps.accounts.models import ParentAccess, User
 from apps.lessons.models import LessonStudent
 from apps.students.models import StudentProfile
 
@@ -19,40 +19,48 @@ class ParentDashboardService:
         """Get list of children for parent."""
         children = []
 
-        # If parent is a student themselves
-        if parent_user.is_student:
-            try:
-                profile = parent_user.student_profile
-                children.append(
-                    {
-                        'id': parent_user.id,
-                        'name': parent_user.first_name,
-                        'surname': parent_user.last_name,
-                        'class_name': profile.class_name,
-                        'parent_email': profile.parent_email,
-                        'parent_phone': profile.parent_phone,
-                    }
-                )
-            except StudentProfile.DoesNotExist:
-                pass
+        # Admin can see all students
+        if parent_user.is_admin:
+            students = User.objects.filter(
+                role='student', is_active=True
+            ).select_related('student_profile')[:10]  # Limit for admin
 
-        # Find students where parent_email matches
-        linked_students = User.objects.filter(
-            role='student', student_profile__parent_email=parent_user.email
-        ).select_related('student_profile')
+            for student in students:
+                try:
+                    profile = student.student_profile
+                    class_name = profile.class_name
+                except StudentProfile.DoesNotExist:
+                    class_name = ''
 
-        for student in linked_students:
-            if student.id != parent_user.id:  # Avoid duplicates
-                children.append(
-                    {
-                        'id': student.id,
-                        'name': student.first_name,
-                        'surname': student.last_name,
-                        'class_name': student.student_profile.class_name,
-                        'parent_email': student.student_profile.parent_email,
-                        'parent_phone': student.student_profile.parent_phone,
-                    }
-                )
+                children.append({
+                    'id': student.id,
+                    'name': student.first_name,
+                    'surname': student.last_name,
+                    'class_name': class_name,
+                })
+            return children
+
+        # For parents with role='parent', use ParentAccess
+        if parent_user.is_parent:
+            parent_access_list = ParentAccess.objects.filter(
+                parent=parent_user,
+                is_active=True,
+            ).select_related('student', 'student__student_profile')
+
+            for access in parent_access_list:
+                student = access.student
+                try:
+                    profile = student.student_profile
+                    class_name = profile.class_name
+                except StudentProfile.DoesNotExist:
+                    class_name = ''
+
+                children.append({
+                    'id': student.id,
+                    'name': student.first_name,
+                    'surname': student.last_name,
+                    'class_name': class_name,
+                })
 
         return children
 
@@ -163,9 +171,13 @@ class ParentDashboardService:
 
     @classmethod
     def get_pending_invoices(cls, student):
-        """Get pending invoices for student (placeholder)."""
-        # Invoices module not implemented yet
-        return []
+        """Get pending invoices for student."""
+        from apps.invoices.models import Invoice, InvoiceStatus
+
+        return Invoice.objects.filter(
+            student=student,
+            status__in=[InvoiceStatus.GENERATED, InvoiceStatus.SENT, InvoiceStatus.OVERDUE],
+        ).order_by('-issue_date')[:5]
 
     @classmethod
     def _calculate_achievements(cls, student) -> int:
@@ -237,23 +249,62 @@ class ParentAttendanceService:
 
 
 class ParentInvoiceService:
-    """Service for parent invoice operations (placeholder)."""
+    """Service for parent invoice operations."""
 
     @classmethod
     def get_invoices(cls, student):
-        """Get all invoices for student (placeholder)."""
-        return []
+        """Get all invoices for student."""
+        from apps.invoices.models import Invoice
+
+        return Invoice.objects.filter(
+            student=student
+        ).order_by('-issue_date')
 
     @classmethod
     def get_invoice_summary(cls, student) -> dict[str, Any]:
-        """Get invoice summary for student (placeholder)."""
+        """Get invoice summary for student."""
+        from decimal import Decimal
+
+        from django.db.models import Sum
+
+        from apps.invoices.models import Invoice, InvoiceStatus
+
+        year_start = timezone.now().replace(month=1, day=1)
+
+        # Year totals
+        year_invoices = Invoice.objects.filter(
+            student=student,
+            issue_date__gte=year_start,
+        )
+        year_total = year_invoices.aggregate(
+            total=Sum('total_amount')
+        )['total'] or Decimal('0')
+
+        # Pending invoices
+        pending_invoices = Invoice.objects.filter(
+            student=student,
+            status__in=[InvoiceStatus.GENERATED, InvoiceStatus.SENT],
+        )
+        pending_total = pending_invoices.aggregate(
+            total=Sum('total_amount')
+        )['total'] or Decimal('0')
+
+        # Overdue invoices
+        overdue_invoices = Invoice.objects.filter(
+            student=student,
+            status=InvoiceStatus.OVERDUE,
+        )
+        overdue_total = overdue_invoices.aggregate(
+            total=Sum('total_amount')
+        )['total'] or Decimal('0')
+
         return {
-            'year_total': 0,
-            'year_invoices_count': 0,
-            'pending_total': 0,
-            'pending_count': 0,
-            'overdue_total': 0,
-            'overdue_count': 0,
+            'year_total': year_total,
+            'year_invoices_count': year_invoices.count(),
+            'pending_total': pending_total,
+            'pending_count': pending_invoices.count(),
+            'overdue_total': overdue_total,
+            'overdue_count': overdue_invoices.count(),
         }
 
 
