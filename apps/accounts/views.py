@@ -802,6 +802,8 @@ class LoginRedirectView(LoginRequiredMixin, View):
             return redirect('tutor:dashboard')
         elif user.is_student:
             return redirect('students:dashboard')
+        elif user.is_parent:
+            return redirect('parents:dashboard')
         else:
             return redirect('landing:home')
 
@@ -824,6 +826,8 @@ class ProfileRedirectView(LoginRequiredMixin, View):
             return redirect('tutor:dashboard')
         elif user.is_student:
             return redirect('students:dashboard')
+        elif user.is_parent:
+            return redirect('parents:dashboard')
         else:
             return redirect('landing:home')
 
@@ -942,6 +946,8 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
 
         if step_id == 'basic-info':
             return UserProfileForm
+        elif step_id == 'password-changed':
+            return PasswordChangeForm
         elif step_id == 'parent-info' and user.is_student:
             return StudentProfileForm
         elif step_id == 'academic-info' and user.is_student:
@@ -965,6 +971,9 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
 
         if step_id == 'basic-info':
             kwargs['instance'] = user
+        elif step_id == 'password-changed':
+            # PasswordChangeForm is not a ModelForm, no instance needed
+            pass
         elif step_id in ('parent-info', 'academic-info') and user.is_student:
             profile, _ = StudentProfile.objects.get_or_create(user=user)
             kwargs['instance'] = profile
@@ -986,31 +995,76 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         context['completion'] = completion
         return context
 
+    def form_invalid(self, form):
+        """Handle form validation errors - return 200 for HTMX to swap."""
+        if self.request.htmx:
+            return render(
+                self.request,
+                self.partial_template_name,
+                self.get_context_data(form=form),
+            )
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         """Handle form submission."""
-        form.save()
+        step_id = self.kwargs.get('step_id')
+        user = self.request.user
+
+        if step_id == 'password-changed':
+            # Handle password change
+            user.set_password(form.cleaned_data['new_password'])
+            user.first_login = False
+            user.save(update_fields=['password', 'first_login'])
+            # Re-authenticate user to keep them logged in
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(self.request, user)
+        else:
+            form.save()
 
         # Check if profile is now complete
-        completion = ProfileCompletionService(self.request.user)
+        completion = ProfileCompletionService(user)
         if completion.percentage == 100:
-            self.request.user.is_profile_completed = True
-            self.request.user.save(update_fields=['is_profile_completed'])
+            user.is_profile_completed = True
+            user.save(update_fields=['is_profile_completed'])
 
             # Update creation log
             UserCreationLog.objects.filter(
-                created_user=self.request.user
+                created_user=user
             ).update(profile_completed_at=timezone.now())
 
             messages.success(self.request, 'Profil został uzupełniony!')
 
+            if self.request.htmx:
+                # Redirect to appropriate dashboard
+                from django.http import HttpResponse
+                redirect_url = self._get_dashboard_url(user)
+                response = HttpResponse()
+                response['HX-Redirect'] = redirect_url
+                return response
+
+            return redirect(self._get_dashboard_url(user))
+
         if self.request.htmx:
-            return render(
+            # Return success response with updated progress and cleared form
+            response = render(
                 self.request,
-                'accounts/partials/_wizard_progress.html',
+                'accounts/partials/_profile_step_success.html',
                 {'completion': completion, 'steps': completion.steps},
             )
+            return response
 
         return redirect('accounts:profile-wizard')
+
+    def _get_dashboard_url(self, user) -> str:
+        """Get dashboard URL based on user role."""
+        from django.urls import reverse
+        if user.is_admin:
+            return reverse('admin_portal:dashboard')
+        elif user.is_tutor:
+            return reverse('tutors:dashboard')
+        elif user.is_student:
+            return reverse('students:dashboard')
+        return reverse('accounts:profile-wizard')
 
 
 # =============================================================================

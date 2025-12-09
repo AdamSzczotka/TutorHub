@@ -44,6 +44,7 @@ class AdminUserCreationForm(forms.ModelForm):
         choices=[
             ('student', 'Uczeń'),
             ('tutor', 'Korepetytor'),
+            ('parent', 'Rodzic'),
             ('admin', 'Administrator'),
         ],
         widget=forms.Select(attrs={'class': 'select select-bordered w-full'}),
