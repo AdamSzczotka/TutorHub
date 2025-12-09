@@ -244,8 +244,10 @@ class AnnouncementService:
 
         # Filtruj po roli użytkownika
         if user.is_authenticated:
+            # Filter announcements: show if target_roles is empty OR user's role is in list
+            # Use icontains for string search in JSON array (works with SQLite)
             queryset = queryset.filter(
-                Q(target_roles=[]) | Q(target_roles__contains=user.role)
+                Q(target_roles=[]) | Q(target_roles__icontains=user.role)
             )
 
         return queryset.order_by('-is_pinned', '-publish_at')
