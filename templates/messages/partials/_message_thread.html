@@ -4,12 +4,23 @@
     <!-- Messages -->
     <div id="message-thread"
          class="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200/50"
-         x-data="{ scrollToBottom() { this.$el.scrollTop = this.$el.scrollHeight } }"
+         x-data="{
+             scrollToBottom() { this.$el.scrollTop = this.$el.scrollHeight },
+             wasAtBottom: true,
+             checkScroll() {
+                 this.wasAtBottom = (this.$el.scrollHeight - this.$el.scrollTop - this.$el.clientHeight) < 50;
+             },
+             maybeScroll() {
+                 if (this.wasAtBottom) this.scrollToBottom();
+             }
+         }"
          x-init="scrollToBottom()"
-         hx-trigger="messageSent from:body"
+         @scroll="checkScroll()"
+         hx-trigger="every 5s, messageSent from:body"
          hx-get="{% url 'messages:detail' conversation.id %}"
          hx-select="#message-thread"
-         hx-swap="outerHTML">
+         hx-swap="outerHTML settle:0ms"
+         hx-on::after-swap="$el.__x.$data.maybeScroll()">
 
         {% regroup messages_list by created_at.date as messages_by_date %}
         {% for date_group in messages_by_date %}
