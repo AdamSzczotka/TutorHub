@@ -175,7 +175,38 @@ class MessagingService:
             user=sender,
         )
 
+        # Wyślij powiadomienia do pozostałych uczestników
+        cls._notify_new_message(conversation, message, sender)
+
         return message
+
+    @classmethod
+    def _notify_new_message(cls, conversation, message, sender):
+        """Wysyła powiadomienia o nowej wiadomości do uczestników."""
+        from apps.notifications.models import Notification, NotificationType
+
+        # Pobierz uczestników konwersacji (oprócz nadawcy)
+        participants = ConversationParticipant.objects.filter(
+            conversation=conversation,
+            left_at__isnull=True,
+            is_muted=False,  # Nie wysyłaj do wyciszonych
+        ).exclude(user=sender).select_related('user')
+
+        sender_name = sender.get_full_name() or sender.email
+
+        # Skróć treść wiadomości do preview
+        preview = message.content[:100] + '...' if len(message.content) > 100 else message.content
+
+        for participant in participants:
+            Notification.objects.create(
+                user=participant.user,
+                type=NotificationType.MESSAGE,
+                title=f'Nowa wiadomość od {sender_name}',
+                message=preview,
+                related_entity_type='conversation',
+                related_entity_id=str(conversation.id),
+                action_url=f'/messages/{conversation.id}/',
+            )
 
     @classmethod
     def get_user_conversations(cls, user, include_archived: bool = False):
