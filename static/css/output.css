@@ -5724,6 +5724,10 @@ html:has(.drawer-toggle:checked) {
   max-height: 90vh;
 }
 
+.max-h-80 {
+  max-height: 20rem;
+}
+
 .min-h-full {
   min-height: 100%;
 }
@@ -6596,6 +6600,14 @@ html:has(.drawer-toggle:checked) {
 
 .bg-white\/80 {
   background-color: rgb(255 255 255 / 0.8);
+}
+
+.bg-info\/20 {
+  background-color: var(--fallback-in,oklch(var(--in)/0.2));
+}
+
+.bg-warning\/20 {
+  background-color: var(--fallback-wa,oklch(var(--wa)/0.2));
 }
 
 .bg-gradient-to-b {
