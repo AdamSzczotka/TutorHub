@@ -31,14 +31,14 @@
     </span>
 </div>
 
+<div id="review-form-messages"></div>
+
 <form hx-post="{% url 'cancellations:review' cancellation.id %}"
-      hx-target="#requests-list"
+      hx-target="#review-form-messages"
       hx-swap="innerHTML"
-      x-data="{ action: '' }"
+      hx-on::after-request="if(event.detail.successful && event.detail.xhr.status === 200) { document.getElementById('review-modal').close(); }"
       class="space-y-4">
     {% csrf_token %}
-
-    <input type="hidden" name="action" x-model="action">
 
     <div class="form-control">
         <label class="label">
@@ -57,8 +57,9 @@
             Anuluj
         </button>
         <button type="submit"
-                class="btn btn-error gap-2"
-                @click="action = 'REJECT'">
+                name="action"
+                value="REJECT"
+                class="btn btn-error gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M6 18L18 6M6 6l12 12"/>
@@ -66,8 +67,9 @@
             Odrzuc
         </button>
         <button type="submit"
-                class="btn btn-success gap-2"
-                @click="action = 'APPROVE'">
+                name="action"
+                value="APPROVE"
+                class="btn btn-success gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M5 13l4 4L19 7"/>

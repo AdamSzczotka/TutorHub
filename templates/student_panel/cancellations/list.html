@@ -125,9 +125,9 @@
                         <div class="border rounded-lg p-3 text-sm">
                             <div class="flex items-center justify-between mb-1">
                                 <div class="font-medium truncate">{{ req.lesson.title }}</div>
-                                {% if req.status == 'PENDING' %}
+                                {% if req.status == 'pending' %}
                                     <span class="badge badge-warning badge-sm">Oczekuje</span>
-                                {% elif req.status == 'APPROVED' %}
+                                {% elif req.status == 'approved' %}
                                     <span class="badge badge-success badge-sm">Zaakceptowany</span>
                                 {% else %}
                                     <span class="badge badge-error badge-sm">Odrzucony</span>
