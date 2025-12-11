@@ -193,7 +193,8 @@ class CancellationService:
                     f'{request.student.get_full_name()} prosi o anulowanie '
                     f'zajec "{request.lesson.title}"'
                 ),
-                data={'cancellation_request_id': request.id},
+                related_entity_type='cancellation_request',
+                related_entity_id=str(request.id),
                 action_url='/panel/cancellations/',
             )
 
@@ -203,16 +204,14 @@ class CancellationService:
 
         Notification.objects.create(
             user=request.student,
-            type=NotificationType.LESSON_CANCELLED,
+            type=NotificationType.CANCELLATION,
             title='Anulowanie zaakceptowane',
             message=(
                 f'Twoja prosba o anulowanie zajec "{request.lesson.title}" '
                 f'zostala zaakceptowana. Masz 30 dni na umowienie zajec zastepczych.'
             ),
-            data={
-                'cancellation_request_id': request.id,
-                'makeup_lesson_id': makeup.id,
-            },
+            related_entity_type='makeup_lesson',
+            related_entity_id=str(makeup.id),
         )
 
     def _notify_student_rejected(self, request):
@@ -227,7 +226,8 @@ class CancellationService:
                 f'Twoja prosba o anulowanie zajec "{request.lesson.title}" '
                 f'zostala odrzucona. Powod: {request.admin_notes}'
             ),
-            data={'cancellation_request_id': request.id},
+            related_entity_type='cancellation_request',
+            related_entity_id=str(request.id),
         )
 
 
@@ -392,13 +392,14 @@ class MakeupLessonService:
 
         Notification.objects.create(
             user=makeup_lesson.student,
-            type=NotificationType.LESSON_RESCHEDULED,
+            type=NotificationType.CANCELLATION,
             title='Zajecia zastepcze umowione',
             message=(
                 f'Zajecia zastepcze zostaly zaplanowane na '
                 f'{makeup_lesson.new_lesson.start_time.strftime("%d.%m.%Y, %H:%M")}'
             ),
-            data={'makeup_lesson_id': makeup_lesson.id},
+            related_entity_type='makeup_lesson',
+            related_entity_id=str(makeup_lesson.id),
         )
 
     def _notify_deadline_extended(self, makeup_lesson, old_expires, new_expires, reason):
@@ -414,7 +415,8 @@ class MakeupLessonService:
                 f'zostal przedluzony do {new_expires.strftime("%d.%m.%Y, %H:%M")}. '
                 f'Powod: {reason}'
             ),
-            data={'makeup_lesson_id': makeup_lesson.id},
+            related_entity_type='makeup_lesson',
+            related_entity_id=str(makeup_lesson.id),
         )
 
 
@@ -447,7 +449,8 @@ class MakeupExpirationService:
                     f'Termin odrobienia zajec "{lesson.original_lesson.title}" wygasl. '
                     f'Skontaktuj sie z administratorem w sprawie przedluzenia.'
                 ),
-                data={'makeup_lesson_id': lesson.id},
+                related_entity_type='makeup_lesson',
+                related_entity_id=str(lesson.id),
             )
 
             count += 1
@@ -489,7 +492,8 @@ class MakeupExpirationService:
                     f'Zostalo tylko {days_left} dni na umowienie zajec zastepczych '
                     f'za "{lesson.original_lesson.title}". Umow termin jak najszybciej!'
                 ),
-                data={'makeup_lesson_id': lesson.id},
+                related_entity_type='makeup_lesson',
+                related_entity_id=str(lesson.id),
             )
 
             count += 1
