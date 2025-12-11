@@ -56,6 +56,8 @@
                 {% endif %}
                 <li><a href="{% url 'lessons:list' %}" class="{% if request.resolver_match.url_name == 'list' and 'lessons' in request.path %}active{% endif %}">Lista zajec</a></li>
                 {% if request.user.is_admin %}
+                <li><a href="{% url 'cancellations:admin_queue' %}" class="{% if 'cancellations' in request.path and 'queue' in request.path %}active{% endif %}">Odwolania zajec</a></li>
+                <li><a href="{% url 'cancellations:admin_makeup_list' %}" class="{% if 'cancellations' in request.path and 'makeup' in request.path %}active{% endif %}">Odrabianie zajec</a></li>
                 <li><a href="{% url 'rooms:list' %}">Sale</a></li>
                 <li><a href="{% url 'subjects:list' %}">Przedmioty</a></li>
                 <li><a href="{% url 'subjects:level-list' %}">Poziomy</a></li>
