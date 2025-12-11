@@ -1009,15 +1009,14 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         """Handle form submission."""
         step_id = self.kwargs.get('step_id')
         user = self.request.user
+        password_changed = False
 
         if step_id == 'password-changed':
             # Handle password change
             user.set_password(form.cleaned_data['new_password'])
             user.first_login = False
             user.save(update_fields=['password', 'first_login'])
-            # Re-authenticate user to keep them logged in
-            from django.contrib.auth import update_session_auth_hash
-            update_session_auth_hash(self.request, user)
+            password_changed = True
         else:
             form.save()
 
@@ -1032,6 +1031,11 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
                 created_user=user
             ).update(profile_completed_at=timezone.now())
 
+            # Re-authenticate user AFTER all saves to keep session valid
+            if password_changed:
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(self.request, user)
+
             messages.success(self.request, 'Profil został uzupełniony!')
 
             if self.request.htmx:
@@ -1043,6 +1047,11 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
                 return response
 
             return redirect(self._get_dashboard_url(user))
+
+        # Re-authenticate user if password changed but profile not complete yet
+        if password_changed:
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(self.request, user)
 
         if self.request.htmx:
             # Return success response with updated progress and cleared form
