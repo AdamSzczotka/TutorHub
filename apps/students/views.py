@@ -234,7 +234,7 @@ class MakeupLessonsListView(
             makeup.days_left = max(0, days_left)
             makeup.progress = min(100, max(0, ((30 - days_left) / 30) * 100))
             makeup.is_expiring_soon = 0 < days_left <= 7
-            makeup.is_expired = days_left < 0
+            makeup.has_expired = days_left < 0
             makeup_list.append(makeup)
 
         context['makeup_lessons'] = makeup_list

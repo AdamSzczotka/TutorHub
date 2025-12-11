@@ -35,7 +35,7 @@
                         </p>
                     </div>
 
-                    {% if makeup.is_expired %}
+                    {% if makeup.has_expired %}
                         <span class="badge badge-error">Wygaslo</span>
                     {% elif makeup.is_expiring_soon %}
                         <span class="badge badge-warning">Pilne</span>
@@ -58,7 +58,7 @@
                 <div class="mt-4">
                     <div class="flex items-center justify-between text-sm mb-2">
                         <span class="text-gray-600">
-                            {% if makeup.is_expired %}
+                            {% if makeup.has_expired %}
                                 Zajecia wygasly
                             {% else %}
                                 Pozostalo {{ makeup.days_left }} dni (do {{ makeup.expires_at|date:"j M" }})
@@ -80,9 +80,9 @@
                 </div>
                 {% endif %}
 
-                {% if not makeup.is_expired %}
+                {% if not makeup.has_expired %}
                 <div class="flex items-center gap-2 mt-4">
-                    <a href="{% url 'messages:compose' %}" class="btn btn-primary flex-1">
+                    <a href="{% url 'cancellations:reschedule_form' makeup.id %}" class="btn btn-primary flex-1">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
@@ -90,7 +90,7 @@
                     </a>
 
                     {% if makeup.days_left <= 7 %}
-                    <a href="{% url 'messages:compose' %}" class="btn btn-outline flex-1">
+                    <a href="{% url 'messages:create' %}" class="btn btn-outline flex-1">
                         Popros o przedluzenie
                     </a>
                     {% endif %}
