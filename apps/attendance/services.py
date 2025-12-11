@@ -17,12 +17,14 @@ from apps.lessons.models import AttendanceStatus, Lesson, LessonStudent
 from .models import AttendanceAlert, AttendanceReport
 
 # WeasyPrint is optional - PDF generation will fail if not installed
+# Note: WeasyPrint requires GTK/Pango system libraries which may not be available on Windows
 try:
     from weasyprint import CSS, HTML
     from weasyprint.text.fonts import FontConfiguration
 
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
+    # OSError is raised when GTK libraries are not available
     WEASYPRINT_AVAILABLE = False
     CSS = None
     HTML = None
