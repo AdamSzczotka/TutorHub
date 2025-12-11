@@ -47,7 +47,7 @@ class NotificationDropdownView(LoginRequiredMixin, View):
         unread_count = NotificationService.get_unread_count(request.user)
 
         html = render_to_string(
-            'notifications/partials/_dropdown.html',
+            'notifications/partials/_dropdown_content.html',
             {
                 'notifications': notifications,
                 'unread_count': unread_count,
