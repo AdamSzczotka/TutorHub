@@ -1035,14 +1035,16 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             if password_changed:
                 from django.contrib.auth import update_session_auth_hash
                 update_session_auth_hash(self.request, user)
+                # Ensure session is saved after auth hash update
+                self.request.session.save()
 
             messages.success(self.request, 'Profil został uzupełniony!')
 
             if self.request.htmx:
-                # Redirect to appropriate dashboard
+                # Use HX-Redirect for full page navigation
                 from django.http import HttpResponse
                 redirect_url = self._get_dashboard_url(user)
-                response = HttpResponse()
+                response = HttpResponse(status=200)
                 response['HX-Redirect'] = redirect_url
                 return response
 
@@ -1052,6 +1054,8 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         if password_changed:
             from django.contrib.auth import update_session_auth_hash
             update_session_auth_hash(self.request, user)
+            # Ensure session is saved after auth hash update
+            self.request.session.save()
 
         if self.request.htmx:
             # Return success response with updated progress and cleared form
@@ -1068,9 +1072,9 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         """Get dashboard URL based on user role."""
         from django.urls import reverse
         if user.is_admin:
-            return reverse('admin_portal:dashboard')
+            return reverse('admin_panel:dashboard')
         elif user.is_tutor:
-            return reverse('tutors:dashboard')
+            return reverse('tutor:dashboard')
         elif user.is_student:
             return reverse('students:dashboard')
         return reverse('accounts:profile-wizard')

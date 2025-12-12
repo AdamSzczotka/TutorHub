@@ -43,9 +43,9 @@
                 <script>
                     setTimeout(function() {
                         {% if request.user.is_admin %}
-                            window.location.href = "{% url 'admin_portal:dashboard' %}";
+                            window.location.href = "{% url 'admin_panel:dashboard' %}";
                         {% elif request.user.is_tutor %}
-                            window.location.href = "{% url 'tutors:dashboard' %}";
+                            window.location.href = "{% url 'tutor:dashboard' %}";
                         {% elif request.user.is_student %}
                             window.location.href = "{% url 'students:dashboard' %}";
                         {% else %}
