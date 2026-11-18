@@ -20,7 +20,6 @@ No e-mails are sent and no Celery tasks are queued.
 
 import random
 from datetime import date, datetime, time, timedelta
-from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -120,7 +119,7 @@ class Command(BaseCommand):
 
     def stamp(self, obj, when, *fields):
         """Override auto_now(_add) timestamps."""
-        type(obj).objects.filter(pk=obj.pk).update(**{f: when for f in fields})
+        type(obj).objects.filter(pk=obj.pk).update(**dict.fromkeys(fields, when))
 
     # -------------------------------------------------------------------- steps
     def _reset(self):
@@ -311,7 +310,10 @@ class Command(BaseCommand):
 
     def _conversations(self):
         from apps.messages.models import (
-            Conversation, ConversationParticipant, Message, MessageReadReceipt,
+            Conversation,
+            ConversationParticipant,
+            Message,
+            MessageReadReceipt,
         )
 
         d = self.day
