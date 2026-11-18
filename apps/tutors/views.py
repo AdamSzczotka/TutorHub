@@ -73,6 +73,8 @@ class TutorCalendarEventsView(LoginRequiredMixin, TutorRequiredMixin, View):
         tutor = request.user
         start = request.GET.get('start')
         end = request.GET.get('end')
+        if not start or not end:
+            return JsonResponse({'error': 'start and end are required'}, status=400)
 
         lessons = Lesson.objects.filter(
             tutor=tutor,

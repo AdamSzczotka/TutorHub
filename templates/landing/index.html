@@ -1030,11 +1030,11 @@
     // Initialize map if coordinates available
     {% if school_info.latitude and school_info.longitude %}
     document.addEventListener('DOMContentLoaded', function() {
-        const map = L.map('map').setView([{{ school_info.latitude }}, {{ school_info.longitude }}], 15);
+        const map = L.map('map').setView([{{ school_info.latitude|stringformat:"f" }}, {{ school_info.longitude|stringformat:"f" }}], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
-        L.marker([{{ school_info.latitude }}, {{ school_info.longitude }}]).addTo(map)
+        L.marker([{{ school_info.latitude|stringformat:"f" }}, {{ school_info.longitude|stringformat:"f" }}]).addTo(map)
             .bindPopup('<strong>Na Piątkę</strong><br>{{ school_info.address|escapejs }}')
             .openPopup();
     });

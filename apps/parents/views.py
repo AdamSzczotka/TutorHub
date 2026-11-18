@@ -205,6 +205,8 @@ class ParentCalendarEventsView(LoginRequiredMixin, ParentAccessMixin, View):
 
         start = request.GET.get('start')
         end = request.GET.get('end')
+        if not start or not end:
+            return JsonResponse({'error': 'start and end are required'}, status=400)
 
         from datetime import datetime
 

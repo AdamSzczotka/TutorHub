@@ -1466,7 +1466,7 @@ class UserActivityDetailView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, 
 
     model = UserActivity
     template_name = 'admin_panel/users/activity/user_activity.html'
-    partial_template_name = 'admin_panel/users/activity/partials/_user_activity_table.html'
+    partial_template_name = 'admin_panel/users/activity/partials/_activity_table.html'
     context_object_name = 'activities'
     paginate_by = 30
 
@@ -1710,6 +1710,10 @@ class VerificationStatusView(LoginRequiredMixin, HTMXMixin, TemplateView):
             verification_type=UserVerification.VerificationType.PHONE,
         ).order_by('-created_at').first()
 
+        context['verifications'] = [
+            ('Email', context['email_verification']),
+            ('Telefon', context['phone_verification']),
+        ]
         return context
 
 

@@ -2,6 +2,7 @@
 
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -112,7 +113,7 @@ urlpatterns = [
     path('relationships/create/', views.UserRelationshipCreateView.as_view(), name='relationship-create'),
     path('relationships/<int:pk>/edit/', views.UserRelationshipUpdateView.as_view(), name='relationship-update'),
     path('relationships/<int:pk>/delete/', views.UserRelationshipDeleteView.as_view(), name='relationship-delete'),
-    path('my-students/', views.TutorStudentsView.as_view(), name='my-students'),
+    path('my-students/', RedirectView.as_view(pattern_name='tutor:students'), name='my-students'),
 
     # ==========================================================================
     # Task 039: User Activity Tracking

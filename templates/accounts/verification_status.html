@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Status weryfikacji - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Status weryfikacji</h1>
+    <div class="card bg-base-100 shadow">
+        <div class="card-body space-y-4">
+            {% for label, v in verifications %}
+            <div class="flex justify-between items-center">
+                <span class="font-medium">{{ label }}</span>
+                {% if v %}
+                <span class="badge {% if v.status == 'verified' %}badge-success{% elif v.status == 'pending' %}badge-warning{% else %}badge-ghost{% endif %}">
+                    {{ v.get_status_display }}
+                </span>
+                {% else %}
+                <span class="badge badge-ghost">Brak</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
