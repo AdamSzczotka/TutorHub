@@ -2,12 +2,22 @@
 <!DOCTYPE html>
 <html lang="pl" class="scroll-smooth" data-theme="napiatke">
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KT8MHVL3');</script>
+    <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <title>{% block title %}{{ school_info.name|default:'Na Piątkę' }} - {{ school_info.tagline|default:'Centrum korepetycji' }}{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}{{ school_info.description|default:'Centrum korepetycji Na Piątkę. Profesjonalne korepetycje z matematyki, języka angielskiego i niemieckiego. Indywidualne podejście, doświadczeni nauczyciele.' }}{% endblock %}">
+
+    <!-- Canonical URL for SEO -->
+    <link rel="canonical" href="https://tutorhub.adamszczotka-pokaz.pl{{ request.path }}">
 
     <!-- Favicon -->
     {% if school_info.favicon %}
@@ -86,6 +96,10 @@
 </head>
 <body class="antialiased bg-white"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KT8MHVL3"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
     <!-- Header -->
     <header class="fixed inset-x-0 top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 shadow-sm">
@@ -124,7 +138,7 @@
                             Zaloguj się
                         </a>
                     {% endif %}
-                    <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand px-4 py-2 font-medium text-white shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ml-2">
+                    <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand px-4 py-2 font-medium text-white shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ml-2" data-event="cta_click" data-location="header">
                         Umów lekcję
                     </a>
                 </nav>
@@ -160,7 +174,7 @@
                             Zaloguj się
                         </a>
                     {% endif %}
-                    <a href="#kontakt" class="block px-3 py-2 mt-2 rounded-full bg-brand text-white text-center font-medium">Umów lekcję</a>
+                    <a href="#kontakt" class="block px-3 py-2 mt-2 rounded-full bg-brand text-white text-center font-medium" data-event="cta_click" data-location="mobile">Umów lekcję</a>
                 </div>
             </div>
         </div>
@@ -399,6 +413,90 @@
             const yearEl = document.getElementById('year');
             if (yearEl) yearEl.textContent = new Date().getFullYear();
         });
+    </script>
+
+    <!-- GA4 Event Tracking -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure dataLayer exists
+        window.dataLayer = window.dataLayer || [];
+
+        // 1. CTA Clicks - buttons with data-event="cta_click"
+        document.querySelectorAll('[data-event="cta_click"]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                dataLayer.push({
+                    'event': 'cta_click',
+                    'button_text': this.textContent.trim(),
+                    'button_location': this.dataset.location || 'unknown'
+                });
+            });
+        });
+
+        // 2. Contact clicks (tel/email)
+        document.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(function(link) {
+            link.addEventListener('click', function() {
+                dataLayer.push({
+                    'event': 'contact_click',
+                    'contact_type': this.href.startsWith('tel:') ? 'phone' : 'email'
+                });
+            });
+        });
+
+        // 3. Section views with Intersection Observer
+        var sections = ['o-nas', 'przedmioty', 'pakiety', 'opinie', 'faq', 'kontakt'];
+        var sectionObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    dataLayer.push({
+                        'event': 'section_view',
+                        'section_name': entry.target.id
+                    });
+                    sectionObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        sections.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) sectionObserver.observe(el);
+        });
+
+        // 4. Modal opens
+        document.querySelectorAll('[data-modal-target]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                dataLayer.push({
+                    'event': 'modal_open',
+                    'modal_name': this.dataset.modalTarget.replace('#modal-', '')
+                });
+            });
+        });
+
+        // 5. FAQ expands
+        document.querySelectorAll('details').forEach(function(detail) {
+            detail.addEventListener('toggle', function() {
+                if (this.open) {
+                    var summary = this.querySelector('summary');
+                    dataLayer.push({
+                        'event': 'faq_expand',
+                        'faq_question': summary ? summary.textContent.trim() : 'unknown'
+                    });
+                }
+            });
+        });
+    });
+
+    // 6. Form submit (HTMX) - listen globally
+    document.body.addEventListener('htmx:beforeRequest', function(e) {
+        var form = e.detail.elt;
+        if (form && form.id === 'contact-form') {
+            var subjectEl = form.querySelector('[name="subject"]');
+            dataLayer.push({
+                'event': 'form_submit',
+                'form_name': 'contact',
+                'form_subject': subjectEl ? subjectEl.value : 'unknown'
+            });
+        }
+    });
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -23,7 +23,7 @@
                 {{ hero.subtitle|default:"Zajęcia stacjonarne. Indywidualnie lub w małych grupach do 4 osób, 60 minut." }}
             </p>
             <div class="mt-6 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
-                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-white text-brand px-5 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 w-full sm:w-auto">
+                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-white text-brand px-5 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 w-full sm:w-auto" data-event="cta_click" data-location="hero">
                     Umów lekcję próbną
                 </a>
                 {% if school_info.phone %}
@@ -526,7 +526,7 @@
 
             <!-- Call to action -->
             <div class="mt-8 text-center">
-                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all">
+                <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all" data-event="cta_click" data-location="pakiety">
                     <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
@@ -752,7 +752,7 @@
                             <p class="text-slate-600">Skontaktuj się z nami – chętnie odpowiemy na wszystkie pytania</p>
                         </div>
                     </div>
-                    <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all">
+                    <a href="#kontakt" class="inline-flex items-center justify-center rounded-full bg-brand text-white px-6 py-3 font-medium shadow-soft hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 transition-all" data-event="cta_click" data-location="faq">
                         Skontaktuj się z nami
                     </a>
                 </div>

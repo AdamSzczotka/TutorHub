@@ -44,7 +44,7 @@ def send_welcome_email_task(self, user_id: int, temp_password: str) -> bool:
             html_message = render_to_string('emails/welcome.html', {
                 'user': user,
                 'temp_password': temp_password,
-                'login_url': f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/login/",
+                'login_url': f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/accounts/login/",
             })
         except Exception:
             html_message = None

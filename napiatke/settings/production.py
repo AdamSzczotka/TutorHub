@@ -6,7 +6,12 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')  # noqa: F405
+# Handle ALLOWED_HOSTS as string or list (Supervisor passes as string)
+_allowed_hosts_str = env.str('ALLOWED_HOSTS', default='')  # noqa: F405
+if _allowed_hosts_str == '*':
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_str.split(',') if h.strip()]
 
 # Database
 DATABASES = {
@@ -52,3 +57,6 @@ if SENTRY_DSN:
         dsn=SENTRY_DSN,
         traces_sample_rate=0.1,
     )
+
+
+SITE_URL = 'https://tutorhub.adamszczotka-pokaz.pl'

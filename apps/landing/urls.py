@@ -12,6 +12,10 @@ urlpatterns = [
     path('kontakt/', views.ContactFormView.as_view(), name='contact'),
     path('polityka-prywatnosci/', views.PrivacyPolicyView.as_view(), name='privacy_policy'),
 
+    # SEO
+    path('robots.txt', views.RobotsTxtView.as_view(), name='robots_txt'),
+    path('sitemap.xml', views.SitemapXmlView.as_view(), name='sitemap_xml'),
+
     # ==========================================================================
     # CMS Admin Panel
     # ==========================================================================
