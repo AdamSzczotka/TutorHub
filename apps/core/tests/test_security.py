@@ -254,3 +254,96 @@ def test_invitation_requires_matching_email(client, world):
     client.post(reverse('accounts:accept-parent-invitation', args=['tok123']))
     access.refresh_from_db()
     assert access.invitation_accepted_at is None
+
+
+# Student cannot change parent contact data (alerts/invoices recipient)
+def test_student_cannot_edit_parent_email(client, world):
+    from apps.students.models import StudentProfile
+
+    student = world['student']
+    StudentProfile.objects.update_or_create(
+        user=student, defaults={'parent_email': 'mama@t.pl', 'class_name': '1A'}
+    )
+    login(client, student)
+    for step in ('parent-info', 'academic-info'):
+        client.post(
+            reverse('accounts:profile-step', args=[step]),
+            {'parent_email': 'evil@t.pl', 'class_name': '2B', 'learning_goals': 'x'},
+            HTTP_HX_REQUEST='true',
+        )
+    profile = StudentProfile.objects.get(user=student)
+    assert profile.parent_email == 'mama@t.pl'
+    assert profile.class_name == '2B'  # allowed field still editable
+
+
+# Messaging rules
+def _recipient_ids(client, user):
+    from apps.messages.forms import ConversationForm
+
+    return set(ConversationForm(user=user).fields['participants'].queryset.values_list('id', flat=True))
+
+
+def test_student_can_message_only_own_tutors(client, world):
+    w = world
+    assert _recipient_ids(client, w['other_student']) == {w['tutor_b'].id}
+    assert _recipient_ids(client, w['student']) == set()  # no lessons yet
+
+
+def test_parent_can_message_admin_and_childs_tutors(client, world):
+    w = world
+    LessonStudent.objects.create(lesson=w['lesson_b'], student=w['student'])
+    assert _recipient_ids(client, w['parent']) == {w['admin'].id, w['tutor_b'].id}
+
+
+def test_tutor_recipients(client, world):
+    w = world
+    LessonStudent.objects.create(lesson=w['lesson_b'], student=w['student'])
+    assert _recipient_ids(client, w['tutor_b']) == {
+        w['admin'].id, w['student'].id, w['other_student'].id, w['parent'].id,
+    }
+
+
+def test_student_cannot_post_conversation_to_other_user(client, world):
+    w = world
+    login(client, w['other_student'])
+    resp = client.post(reverse('messages:create'), {'participants': [w['student'].id]})
+    assert resp.status_code != 204
+    resp = client.post(reverse('messages:create'), {'participants': [w['tutor_b'].id]})
+    assert resp.status_code == 204
+
+
+# Passwords never go through the Celery broker
+def test_password_emails_carry_no_password(client, world, monkeypatch, mailoutbox):
+    from apps.accounts import views as account_views
+
+    sent = []
+    monkeypatch.setattr(
+        account_views.send_password_reset_email_task, 'delay',
+        lambda *a, **kw: sent.append((a, kw)),
+    )
+    login(client, world['admin'])
+    client.post(reverse('accounts:user-reset-password', args=[world['student'].pk]))
+    assert sent == [((), {'user_id': world['student'].id})]
+    world['student'].refresh_from_db()
+    assert not world['student'].has_usable_password()
+
+
+def test_set_password_link_flow(client, world, mailoutbox):
+    from apps.accounts.tasks import send_password_reset_email_task
+
+    user = world['student']
+    user.set_unusable_password()
+    user.first_login = True
+    user.save()
+    send_password_reset_email_task.run(user.id)
+    body = mailoutbox[-1].body
+    link = next(line for line in body.splitlines() if '/password-reset-confirm/' in line).strip()
+    path = link.split('://', 1)[-1].split('/', 1)[-1]
+    resp = client.get('/' + path, follow=True)
+    resp = client.post(resp.redirect_chain[-1][0], {
+        'new_password1': 'Calkiem-nowe-haslo-9', 'new_password2': 'Calkiem-nowe-haslo-9',
+    })
+    assert resp.status_code == 302
+    user.refresh_from_db()
+    assert user.check_password('Calkiem-nowe-haslo-9')
+    assert user.first_login is False

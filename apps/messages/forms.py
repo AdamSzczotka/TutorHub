@@ -47,10 +47,15 @@ class ConversationForm(forms.Form):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            # Wyklucz bieżącego użytkownika z listy uczestników
-            self.fields['participants'].queryset = User.objects.filter(
-                is_active=True
-            ).exclude(id=user.id)
+            # Tylko odbiorcy dozwoleni dla roli (patrz permissions.py);
+            # walidacja pola odrzuca też ID spoza listy wysłane ręcznie.
+            from .permissions import allowed_recipients
+
+            self.fields['participants'].queryset = allowed_recipients(user).order_by(
+                'last_name', 'first_name'
+            )
+        else:
+            self.fields['participants'].queryset = User.objects.none()
 
 
 class MessageForm(forms.Form):

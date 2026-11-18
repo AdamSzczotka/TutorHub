@@ -10,8 +10,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.base import ContentFile
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth import views as auth_views
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -43,11 +44,11 @@ from .forms import (
     PasswordChangeForm,
     StudentProfileForm,
     TutorProfileForm,
+    StudentSelfProfileForm,
     TutorSelfProfileForm,
     UserEditForm,
     UserProfileForm,
     UserRelationshipForm,
-    generate_temp_password,
 )
 from .models import (
     NotificationPreference,
@@ -114,13 +115,10 @@ class UserCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateVi
 
     def form_valid(self, form):
         """Handle valid form submission."""
-        user, temp_password = form.save(created_by=self.request.user)
+        user, _temp_password = form.save(created_by=self.request.user)
 
-        # Send welcome email (async with Celery)
-        send_welcome_email_task.delay(
-            user_id=user.id,
-            temp_password=temp_password,
-        )
+        # Welcome email carries a one-time set-password link, never the password.
+        send_welcome_email_task.delay(user_id=user.id)
 
         # Log action
         AuditLog.objects.create(
@@ -354,17 +352,12 @@ class PasswordResetView(LoginRequiredMixin, AdminRequiredMixin, View):
         """Reset password."""
         user = get_object_or_404(User, pk=pk)
 
-        # Generate new temp password
-        temp_password = generate_temp_password()
-        user.set_password(temp_password)
+        # Invalidate the old password; the user sets a new one via one-time link.
+        user.set_unusable_password()
         user.first_login = True
         user.save(update_fields=['password', 'first_login'])
 
-        # Send email with new password
-        send_password_reset_email_task.delay(
-            user_id=user.id,
-            temp_password=temp_password,
-        )
+        send_password_reset_email_task.delay(user_id=user.id)
 
         # Log action
         AuditLog.objects.create(
@@ -577,11 +570,10 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
 
         elif action == 'send_password_reset':
             for user in users:
-                temp_password = generate_temp_password()
-                user.set_password(temp_password)
+                user.set_unusable_password()
                 user.first_login = True
                 user.save(update_fields=['password', 'first_login'])
-                send_password_reset_email_task.delay(user.id, temp_password)
+                send_password_reset_email_task.delay(user.id)
             messages.success(request, f'Wysłano reset hasła do {count} użytkowników.')
 
         elif action == 'export':
@@ -952,14 +944,12 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             return UserProfileForm
         elif step_id == 'password-changed':
             return PasswordChangeForm
-        elif step_id == 'parent-info' and user.is_student:
-            return StudentProfileForm
         elif step_id == 'academic-info' and user.is_student:
-            return StudentProfileForm
+            return StudentSelfProfileForm
         elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
             return TutorSelfProfileForm
 
-        return UserProfileForm
+        raise Http404('Nieznany krok profilu.')
 
     def get_template_names(self):
         """Return template based on request type."""
@@ -977,7 +967,7 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             kwargs['instance'] = user
         elif step_id == 'password-changed':
             kwargs['user'] = user
-        elif step_id in ('parent-info', 'academic-info') and user.is_student:
+        elif step_id == 'academic-info' and user.is_student:
             profile, _ = StudentProfile.objects.get_or_create(user=user)
             kwargs['instance'] = profile
         elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
@@ -1990,3 +1980,18 @@ class ChildDetailView(LoginRequiredMixin, HTMXMixin, DetailView):
             context['attendance_summary'] = {}
 
         return context
+
+
+class SetPasswordConfirmView(auth_views.PasswordResetConfirmView):
+    """Password set/reset via one-time link; completes the first-login step."""
+
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('accounts:password_reset_complete')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.user
+        if user.first_login:
+            user.first_login = False
+            user.save(update_fields=['first_login'])
+        return response

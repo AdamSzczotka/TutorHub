@@ -84,7 +84,11 @@ class CreateConversationView(LoginRequiredMixin, View):
 
     def get(self, request):
         """Wyświetla formularz tworzenia konwersacji."""
-        form = ConversationForm(user=request.user)
+        initial = {}
+        recipient = request.GET.get('recipient')
+        if recipient and recipient.isdigit():
+            initial['participants'] = [int(recipient)]
+        form = ConversationForm(user=request.user, initial=initial)
         return HttpResponse(
             render_to_string(
                 'messages/partials/_conversation_form.html',

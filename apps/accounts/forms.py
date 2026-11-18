@@ -309,6 +309,14 @@ class TutorProfileForm(forms.ModelForm):
         }
 
 
+class StudentSelfProfileForm(StudentProfileForm):
+    """Self-service student form. Parent contact data (where alerts and invoices
+    go) and admin notes are managed by the school only."""
+
+    class Meta(StudentProfileForm.Meta):
+        fields = ['class_name', 'current_level', 'learning_goals']
+
+
 class TutorSelfProfileForm(TutorProfileForm):
     """Self-service tutor profile form. hourly_rate drives billing, so only admins edit it."""
 

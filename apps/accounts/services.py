@@ -61,18 +61,8 @@ class ProfileCompletionService:
 
         if self.user.is_student:
             profile = getattr(self.user, 'student_profile', None)
+            # Parent contact data is filled in by the school (admin), not the student.
             base_steps.extend([
-                ProfileStep(
-                    id='parent-info',
-                    title='Dane rodzica/opiekuna',
-                    required_fields=['parent_name', 'parent_email', 'parent_phone'],
-                    is_complete=bool(
-                        profile
-                        and profile.parent_name
-                        and profile.parent_email
-                        and profile.parent_phone
-                    ),
-                ),
                 ProfileStep(
                     id='academic-info',
                     title='Informacje szkolne',
@@ -299,7 +289,7 @@ class UserImportService:
 
                 # Send email
                 if send_emails:
-                    send_welcome_email_task.delay(user.id, temp_password)
+                    send_welcome_email_task.delay(user.id)
 
                 results.append({
                     'email': user.email,
