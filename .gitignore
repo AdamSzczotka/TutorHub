@@ -213,3 +213,5 @@ CLAUDE.md
 
 # Node
 node_modules/
+# User uploads and generated files (invoices, avatars, attachments)
+/media/

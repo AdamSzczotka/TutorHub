@@ -96,10 +96,16 @@ class CancellationService:
         request.admin_notes = notes
         request.save()
 
-        # Update lesson status
-        from apps.lessons.models import LessonStatus
-        request.lesson.status = LessonStatus.CANCELLED
-        request.lesson.save()
+        # Remove only this student from the lesson. The whole lesson is cancelled
+        # only if nobody else attends it (group lessons go on for the others).
+        from apps.lessons.models import LessonStatus, LessonStudent
+
+        LessonStudent.objects.filter(
+            lesson=request.lesson, student=request.student
+        ).delete()
+        if not LessonStudent.objects.filter(lesson=request.lesson).exists():
+            request.lesson.status = LessonStatus.CANCELLED
+            request.lesson.save(update_fields=['status'])
 
         # Create makeup lesson with 30-day expiry
         expires_at = timezone.now() + timedelta(days=self.MAKEUP_EXPIRY_DAYS)

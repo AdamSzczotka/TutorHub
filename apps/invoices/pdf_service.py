@@ -27,15 +27,20 @@ class InvoicePDFService:
         if cls._fonts_registered:
             return
 
-        font_path = os.path.join(settings.BASE_DIR, 'static', 'fonts')
-        dejavu_path = os.path.join(font_path, 'DejaVuSans.ttf')
-        dejavu_bold_path = os.path.join(font_path, 'DejaVuSans-Bold.ttf')
-
-        if os.path.exists(dejavu_path):
-            pdfmetrics.registerFont(TTFont('DejaVuSans', dejavu_path))
-
-        if os.path.exists(dejavu_bold_path):
-            pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', dejavu_bold_path))
+        search_dirs = [
+            os.path.join(settings.BASE_DIR, 'static', 'fonts'),  # bundled
+            '/usr/share/fonts/truetype/dejavu',  # Debian/Ubuntu
+            '/usr/share/fonts/dejavu',  # Fedora/Alpine
+        ]
+        for name in ('DejaVuSans', 'DejaVuSans-Bold'):
+            path = next(
+                (p for d in search_dirs if os.path.exists(p := os.path.join(d, f'{name}.ttf'))),
+                None,
+            )
+            if path is None:
+                # Fail loudly: without these fonts every invoice PDF breaks.
+                raise RuntimeError(f'Font {name}.ttf not found in {search_dirs}')
+            pdfmetrics.registerFont(TTFont(name, path))
 
         cls._fonts_registered = True
 
@@ -47,6 +52,7 @@ class InvoicePDFService:
             name='InvoiceTitle',
             fontName='DejaVuSans-Bold',
             fontSize=20,
+            leading=26,
             spaceAfter=6,
             textColor=colors.HexColor('#1F2937'),
         ))
@@ -183,7 +189,7 @@ Email: {company["email"]}'''
                 '23%',
             ])
 
-        items_table = Table(items_data, colWidths=[1*cm, 6*cm, 2*cm, 2.5*cm, 2.5*cm, 1.5*cm])
+        items_table = Table(items_data, colWidths=[1*cm, 5.6*cm, 1.9*cm, 2.6*cm, 3*cm, 1.6*cm])
         items_table.setStyle(TableStyle([
             # Header
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),

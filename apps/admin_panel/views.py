@@ -16,6 +16,35 @@ from apps.core.models import SystemSetting
 from apps.lessons.models import Lesson
 
 
+def dashboard_stats() -> dict:
+    """Stat cards shared by the dashboard and its HTMX refresh endpoint."""
+    from django.db.models import Sum
+
+    from apps.invoices.models import Invoice, InvoiceStatus
+
+    today = timezone.localdate()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=7)
+
+    return {
+        'total_users': User.objects.filter(is_active=True).count(),
+        'total_tutors': User.objects.filter(role='tutor', is_active=True).count(),
+        'total_students': User.objects.filter(role='student', is_active=True).count(),
+        'lessons_this_week': Lesson.objects.filter(
+            start_time__date__gte=week_start,
+            start_time__date__lt=week_end,
+        ).exclude(status='cancelled').count(),
+        'pending_invoices': Invoice.objects.filter(
+            status__in=[InvoiceStatus.GENERATED, InvoiceStatus.SENT, InvoiceStatus.OVERDUE]
+        ).count(),
+        'monthly_revenue': Invoice.objects.filter(
+            status=InvoiceStatus.PAID,
+            paid_date__year=today.year,
+            paid_date__month=today.month,
+        ).aggregate(total=Sum('total_amount'))['total'] or 0,
+    }
+
+
 class DashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     """Admin dashboard view with statistics and recent activity."""
 
@@ -25,20 +54,7 @@ class DashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         """Add dashboard statistics to context."""
         context = super().get_context_data(**kwargs)
         now = timezone.now()
-        week_ago = now - timedelta(days=7)
-
-        # Quick stats
-        context['stats'] = {
-            'total_users': User.objects.filter(is_active=True).count(),
-            'total_tutors': User.objects.filter(role='tutor', is_active=True).count(),
-            'total_students': User.objects.filter(role='student', is_active=True).count(),
-            'lessons_this_week': Lesson.objects.filter(
-                start_time__gte=week_ago,
-                status__in=['scheduled', 'completed']
-            ).count(),
-            'pending_invoices': 0,
-            'monthly_revenue': 0,
-        }
+        context['stats'] = dashboard_stats()
 
         # Recent activity
         context['recent_users'] = User.objects.order_by('-date_joined')[:5]
@@ -59,22 +75,7 @@ class StatsView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, TemplateView)
     def get_context_data(self, **kwargs):
         """Add statistics to context."""
         context = super().get_context_data(**kwargs)
-        now = timezone.now()
-        week_ago = now - timedelta(days=7)
-        month_ago = now - timedelta(days=30)
-
-        context['stats'] = {
-            'total_users': User.objects.filter(is_active=True).count(),
-            'total_tutors': User.objects.filter(role='tutor', is_active=True).count(),
-            'total_students': User.objects.filter(role='student', is_active=True).count(),
-            'lessons_this_week': Lesson.objects.filter(
-                start_time__gte=week_ago,
-                status__in=['scheduled', 'completed']
-            ).count(),
-            'pending_invoices': 0,
-            'monthly_revenue': 0,
-        }
-
+        context['stats'] = dashboard_stats()
         return context
 
 
