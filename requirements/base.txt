@@ -31,6 +31,7 @@ django-imagekit>=5.0
 
 # PDF
 WeasyPrint>=62.0
+reportlab>=4.2
 
 # Security
 django-cors-headers>=4.4
