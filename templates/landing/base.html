@@ -17,7 +17,7 @@
     <meta name="description" content="{% block meta_description %}{{ school_info.description|default:'Centrum korepetycji Na Piątkę. Profesjonalne korepetycje z matematyki, języka angielskiego i niemieckiego. Indywidualne podejście, doświadczeni nauczyciele.' }}{% endblock %}">
 
     <!-- Canonical URL for SEO -->
-    <link rel="canonical" href="https://tutorhub.adamszczotka-pokaz.pl{{ request.path }}">
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
 
     <!-- Favicon -->
     {% if school_info.favicon %}

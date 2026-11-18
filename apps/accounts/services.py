@@ -99,8 +99,8 @@ class ProfileCompletionService:
                 ProfileStep(
                     id='teaching-info',
                     title='Informacje o nauczaniu',
-                    required_fields=['bio', 'hourly_rate'],
-                    is_complete=bool(profile and profile.bio and profile.hourly_rate),
+                    required_fields=['bio'],
+                    is_complete=bool(profile and profile.bio),
                 ),
             ])
 

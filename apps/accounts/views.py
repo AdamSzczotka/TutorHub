@@ -12,7 +12,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import (
@@ -43,6 +43,7 @@ from .forms import (
     PasswordChangeForm,
     StudentProfileForm,
     TutorProfileForm,
+    TutorSelfProfileForm,
     UserEditForm,
     UserProfileForm,
     UserRelationshipForm,
@@ -398,14 +399,17 @@ class FirstLoginPasswordChangeView(LoginRequiredMixin, HTMXMixin, View):
     def get(self, request):
         """Show password change form."""
         if not request.user.first_login:
-            return redirect('accounts:user-list')
+            return redirect('accounts:login-redirect')
 
-        form = PasswordChangeForm()
+        form = PasswordChangeForm(user=request.user)
         return self.render_form(request, form)
 
     def post(self, request):
         """Handle password change."""
-        form = PasswordChangeForm(request.POST)
+        if not request.user.first_login:
+            return redirect('accounts:login-redirect')
+
+        form = PasswordChangeForm(request.POST, user=request.user)
 
         if form.is_valid():
             request.user.set_password(form.cleaned_data['new_password'])
@@ -418,7 +422,7 @@ class FirstLoginPasswordChangeView(LoginRequiredMixin, HTMXMixin, View):
             ).update(first_login_at=timezone.now())
 
             messages.success(request, 'Hasło zostało zmienione. Zaloguj się ponownie.')
-            return redirect('admin:login')
+            return redirect('accounts:login')
 
         return self.render_form(request, form)
 
@@ -953,7 +957,7 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         elif step_id == 'academic-info' and user.is_student:
             return StudentProfileForm
         elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
-            return TutorProfileForm
+            return TutorSelfProfileForm
 
         return UserProfileForm
 
@@ -972,8 +976,7 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         if step_id == 'basic-info':
             kwargs['instance'] = user
         elif step_id == 'password-changed':
-            # PasswordChangeForm is not a ModelForm, no instance needed
-            pass
+            kwargs['user'] = user
         elif step_id in ('parent-info', 'academic-info') and user.is_student:
             profile, _ = StudentProfile.objects.get_or_create(user=user)
             kwargs['instance'] = profile
@@ -1077,6 +1080,8 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             return reverse('tutor:dashboard')
         elif user.is_student:
             return reverse('students:dashboard')
+        elif user.is_parent:
+            return reverse('parents:dashboard')
         return reverse('accounts:profile-wizard')
 
 
@@ -1667,7 +1672,7 @@ class VerifyTokenView(View):
 
         if verification.is_expired:
             messages.error(request, 'Link weryfikacyjny wygasł. Poproś o nowy.')
-            return redirect('admin:login')
+            return redirect('accounts:login')
 
         if verification.verify(token):
             messages.success(request, 'Weryfikacja zakończona pomyślnie!')
@@ -1687,7 +1692,7 @@ class VerifyTokenView(View):
         else:
             messages.error(request, 'Nieprawidłowy link weryfikacyjny.')
 
-        return redirect('admin:login')
+        return redirect('accounts:login')
 
 
 class VerificationStatusView(LoginRequiredMixin, HTMXMixin, TemplateView):
@@ -1894,24 +1899,33 @@ class AcceptParentInvitationView(View):
             'student': access.student,
         })
 
+    INVITATION_VALID_DAYS = 14
+
     def post(self, request, token):
-        """Accept invitation."""
+        """Accept invitation (logged-in parent whose email matches the invite)."""
         access = get_object_or_404(
             ParentAccess,
             invitation_token=token,
             invitation_accepted_at__isnull=True,
         )
 
-        # Check if user is logged in or needs to create account
-        if request.user.is_authenticated:
-            parent = request.user
-        else:
-            # Check if account exists
-            parent = User.objects.filter(email=access.invited_email).first()
-            if not parent:
-                # Redirect to registration
-                messages.info(request, 'Utwórz konto, aby zaakceptować zaproszenie.')
-                return redirect('admin:login')
+        if not request.user.is_authenticated:
+            messages.info(request, 'Zaloguj się, aby zaakceptować zaproszenie.')
+            return redirect(f"{reverse('accounts:login')}?next={request.path}")
+
+        parent = request.user
+        if (
+            not parent.is_parent
+            or (parent.email or '').lower() != (access.invited_email or '').lower()
+        ):
+            messages.error(request, 'To zaproszenie zostało wysłane na inny adres email.')
+            return redirect('accounts:login-redirect')
+
+        if access.invitation_sent_at and (
+            timezone.now() - access.invitation_sent_at
+        ).days > self.INVITATION_VALID_DAYS:
+            messages.error(request, 'Zaproszenie wygasło. Poproś szkołę o nowe.')
+            return redirect('accounts:login-redirect')
 
         # Accept invitation
         access.accept_invitation(parent)

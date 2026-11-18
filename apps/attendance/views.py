@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from apps.accounts.models import User
+from apps.core.access import lesson_for_tutor, require_student_access
 from apps.core.mixins import AdminRequiredMixin, HTMXMixin, TutorRequiredMixin
 from apps.lessons.models import AttendanceStatus, Lesson
 from apps.subjects.models import Subject
@@ -120,7 +121,7 @@ class AttendanceMarkingView(LoginRequiredMixin, TutorRequiredMixin, HTMXMixin, T
             ).prefetch_related(
                 'lesson_students__student'
             ),
-            pk=lesson_id,
+            pk=lesson_for_tutor(self.request.user, lesson_id).pk,
         )
 
         context['lesson'] = lesson
@@ -134,6 +135,7 @@ class MarkAttendanceAPIView(LoginRequiredMixin, TutorRequiredMixin, View):
     """API endpoint for marking attendance."""
 
     def post(self, request, lesson_id):
+        lesson_for_tutor(request.user, lesson_id)
         try:
             data = json.loads(request.body)
             student_id = data.get('student_id')
@@ -161,6 +163,7 @@ class BulkMarkAttendanceView(LoginRequiredMixin, TutorRequiredMixin, View):
     """View for bulk marking attendance via HTMX."""
 
     def post(self, request, lesson_id):
+        lesson_for_tutor(request.user, lesson_id)
         records = []
 
         for key, value in request.POST.items():
@@ -192,10 +195,11 @@ class BulkMarkAttendanceView(LoginRequiredMixin, TutorRequiredMixin, View):
         return HttpResponse('Brak zmian do zapisania', status=400)
 
 
-class CheckInView(LoginRequiredMixin, View):
+class CheckInView(LoginRequiredMixin, TutorRequiredMixin, View):
     """Check-in endpoint."""
 
     def post(self, request, lesson_id, student_id):
+        lesson_for_tutor(request.user, lesson_id)
         try:
             lesson_student = attendance_service.check_in(
                 lesson_id=str(lesson_id),
@@ -217,10 +221,11 @@ class CheckInView(LoginRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class CheckOutView(LoginRequiredMixin, View):
+class CheckOutView(LoginRequiredMixin, TutorRequiredMixin, View):
     """Check-out endpoint."""
 
     def post(self, request, lesson_id, student_id):
+        lesson_for_tutor(request.user, lesson_id)
         try:
             lesson_student = attendance_service.check_out(
                 lesson_id=str(lesson_id),
@@ -251,6 +256,7 @@ class AttendanceHistoryView(LoginRequiredMixin, HTMXMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         student_id = self.kwargs.get('student_id')
+        require_student_access(self.request.user, student_id, 'can_view_attendance')
 
         # Get date range from query params
         start_date_str = self.request.GET.get('start_date')
@@ -292,6 +298,7 @@ class StudentStatisticsView(LoginRequiredMixin, HTMXMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         student_id = self.kwargs.get('student_id') or self.request.user.id
+        require_student_access(self.request.user, student_id, 'can_view_attendance')
 
         # Date range from query params
         start_date_str = self.request.GET.get('start_date')
@@ -331,6 +338,7 @@ class AttendanceChartDataView(LoginRequiredMixin, View):
     """API endpoint for chart data (JSON)."""
 
     def get(self, request, student_id):
+        require_student_access(request.user, student_id, 'can_view_attendance')
         student = get_object_or_404(User, id=student_id)
 
         weeks = int(request.GET.get('weeks', 8))
@@ -439,6 +447,7 @@ class GenerateReportView(LoginRequiredMixin, View):
     """Generate and download attendance report PDF."""
 
     def get(self, request, student_id):
+        require_student_access(request.user, student_id, 'can_view_attendance')
         student = get_object_or_404(User, id=student_id)
 
         # Get month from query params or use previous month

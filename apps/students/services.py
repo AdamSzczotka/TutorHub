@@ -334,6 +334,11 @@ class StudentCancellationService:
     @classmethod
     def can_cancel_lesson(cls, student, lesson) -> tuple[bool, str | None]:
         """Check if student can cancel a lesson."""
+        from apps.lessons.models import LessonStudent
+
+        if not LessonStudent.objects.filter(lesson=lesson, student=student).exists():
+            return False, 'Nie jesteś zapisany na te zajęcia'
+
         # Check 24h rule
         hours_until = (lesson.start_time - timezone.now()).total_seconds() / 3600
         if hours_until < cls.CANCELLATION_HOURS_BEFORE:

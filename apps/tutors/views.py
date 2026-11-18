@@ -9,7 +9,7 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from apps.core.mixins import HTMXMixin, TutorRequiredMixin
-from apps.lessons.models import Lesson, LessonStudent
+from apps.lessons.models import AttendanceStatus, Lesson, LessonStudent
 
 from .services import TutorDashboardService, TutorEarningsService
 
@@ -274,6 +274,8 @@ class TutorQuickAttendanceView(LoginRequiredMixin, TutorRequiredMixin, View):
             if key.startswith('attendance_'):
                 student_id = key.replace('attendance_', '')
                 status = value
+                if status not in AttendanceStatus.values:
+                    continue
 
                 LessonStudent.objects.filter(
                     lesson=lesson,

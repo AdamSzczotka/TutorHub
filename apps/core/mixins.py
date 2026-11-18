@@ -84,7 +84,10 @@ class ParentAccessMixin(AccessMixin):
     1. User is admin (can access all)
     2. User is the student themselves
     3. User has role='parent' and has ParentAccess to the student
+       (and, if ``parent_permission`` is set, that flag is enabled on it)
     """
+
+    parent_permission: str | None = None
 
     def get_student(self):
         """Get the student object for parent access validation."""
@@ -129,11 +132,14 @@ class ParentAccessMixin(AccessMixin):
 
         # Parent with role='parent' - check ParentAccess
         if user.is_parent:
-            return ParentAccess.objects.filter(
+            qs = ParentAccess.objects.filter(
                 parent=user,
                 student=student,
                 is_active=True,
-            ).exists()
+            )
+            if self.parent_permission:
+                qs = qs.filter(**{self.parent_permission: True})
+            return qs.exists()
 
         return False
 

@@ -75,8 +75,8 @@
 <script>
 function studentAssignment() {
     return {
-        students: {{ students_json|safe }},
-        selectedIds: {{ selected_students_json|safe }},
+        students: JSON.parse('{{ students_json|escapejs }}'),
+        selectedIds: JSON.parse('{{ selected_students_json|escapejs }}'),
         isGroupLesson: {{ is_group_lesson|yesno:'true,false' }},
         maxParticipants: {{ max_participants|default:0 }},
         searchQuery: '',
@@ -127,7 +127,7 @@ function studentAssignment() {
             if (!startTime || !endTime) return;
 
             for (const id of this.selectedIds) {
-                const response = await fetch(`/api/students/${id}/check-availability/`, {
+                const response = await fetch(`/panel/lessons/api/students/${id}/check-availability/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

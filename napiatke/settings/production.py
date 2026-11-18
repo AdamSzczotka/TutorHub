@@ -6,12 +6,17 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-# Handle ALLOWED_HOSTS as string or list (Supervisor passes as string)
-_allowed_hosts_str = env.str('ALLOWED_HOSTS', default='')  # noqa: F405
-if _allowed_hosts_str == '*':
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_str.split(',') if h.strip()]
+# Comma-separated list. '*' is rejected: it enables Host-header poisoning
+# of password-reset links.
+ALLOWED_HOSTS = [
+    h for h in env.list('ALLOWED_HOSTS', default=[]) if h and h != '*'  # noqa: F405
+]
+
+SITE_URL = env('SITE_URL', default='https://tutorhub.adamszczotka.dev')  # noqa: F405
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[SITE_URL])  # noqa: F405
+
+# nginx terminates TLS and sets X-Forwarded-Proto
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database
 DATABASES = {
@@ -19,7 +24,6 @@ DATABASES = {
 }
 
 # Security
-SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SECURE = True
@@ -29,8 +33,11 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Static files (STATICFILES_STORAGE was removed in Django 5.1)
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
 # Cache (Redis)
 CACHES = {
@@ -58,5 +65,3 @@ if SENTRY_DSN:
         traces_sample_rate=0.1,
     )
 
-
-SITE_URL = 'https://tutorhub.adamszczotka-pokaz.pl'

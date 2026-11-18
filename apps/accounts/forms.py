@@ -309,6 +309,13 @@ class TutorProfileForm(forms.ModelForm):
         }
 
 
+class TutorSelfProfileForm(TutorProfileForm):
+    """Self-service tutor profile form. hourly_rate drives billing, so only admins edit it."""
+
+    class Meta(TutorProfileForm.Meta):
+        fields = ['bio', 'education', 'experience_years']
+
+
 class UserEditForm(forms.ModelForm):
     """Form for admin to edit user details."""
 
@@ -344,8 +351,17 @@ class UserEditForm(forms.ModelForm):
 
 
 class PasswordChangeForm(forms.Form):
-    """Form for changing user password."""
+    """Form for changing user password.
 
+    Requires the current password unless the user is on first login
+    (temporary password just issued by an admin).
+    """
+
+    old_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full'}),
+        label='Obecne hasło',
+    )
     new_password = forms.CharField(
         min_length=8,
         widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full'}),
@@ -356,14 +372,33 @@ class PasswordChangeForm(forms.Form):
         label='Potwierdź hasło',
     )
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        if user is None or user.first_login:
+            del self.fields['old_password']
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data.get('old_password')
+        if not old_password or not self.user.check_password(old_password):
+            raise forms.ValidationError('Nieprawidłowe obecne hasło.')
+        return old_password
+
     def clean(self):
-        """Validate passwords match."""
+        """Validate passwords match and satisfy AUTH_PASSWORD_VALIDATORS."""
+        from django.contrib.auth import password_validation
+
         cleaned_data = super().clean()
         new_password = cleaned_data.get('new_password')
         confirm_password = cleaned_data.get('confirm_password')
 
         if new_password and confirm_password and new_password != confirm_password:
             self.add_error('confirm_password', 'Hasła nie są takie same.')
+        elif new_password:
+            try:
+                password_validation.validate_password(new_password, self.user)
+            except forms.ValidationError as e:
+                self.add_error('new_password', e)
 
         return cleaned_data
 

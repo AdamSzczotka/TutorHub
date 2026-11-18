@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Zaproszenie - Na Piatke{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto p-6">
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h1 class="card-title">Zaproszenie do panelu rodzica</h1>
+            <p>Otrzymałeś(-aś) dostęp do danych ucznia <strong>{{ student.get_full_name }}</strong>.</p>
+            {% if user.is_authenticated %}
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary w-full">Akceptuj zaproszenie</button>
+            </form>
+            {% else %}
+            <p class="text-sm text-base-content/70 mt-2">Zaloguj się na konto z adresem, na który przyszło zaproszenie.</p>
+            <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="btn btn-primary w-full mt-4">Zaloguj się</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

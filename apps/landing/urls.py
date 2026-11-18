@@ -2,6 +2,8 @@
 
 from django.urls import path
 
+from apps.core.ratelimit import limit_posts
+
 from . import views
 
 app_name = 'landing'
@@ -9,7 +11,7 @@ app_name = 'landing'
 urlpatterns = [
     # Public pages
     path('', views.LandingPageView.as_view(), name='home'),
-    path('kontakt/', views.ContactFormView.as_view(), name='contact'),
+    path('kontakt/', limit_posts('5/h', 'contact')(views.ContactFormView.as_view()), name='contact'),
     path('polityka-prywatnosci/', views.PrivacyPolicyView.as_view(), name='privacy_policy'),
 
     # SEO
