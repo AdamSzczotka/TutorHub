@@ -2,11 +2,24 @@
 Production settings for napiatke project.
 """
 
+from urllib.parse import urlparse
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')  # noqa: F405
+SITE_URL = env('SITE_URL', default='https://tutorhub.adamszczotka.dev')  # noqa: F405
+
+# Comma-separated list. '*' is ignored (it enables Host-header poisoning of
+# password-reset links); if nothing else is configured, fall back to the
+# SITE_URL host so the site keeps working when the env still says '*'.
+ALLOWED_HOSTS = [
+    h for h in env.list('ALLOWED_HOSTS', default=[]) if h and h != '*'  # noqa: F405
+] or [urlparse(SITE_URL).hostname]
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[SITE_URL])  # noqa: F405
+
+# nginx terminates TLS and sets X-Forwarded-Proto
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database
 DATABASES = {
@@ -14,7 +27,6 @@ DATABASES = {
 }
 
 # Security
-SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SECURE = True
@@ -24,8 +36,9 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Static files: served by nginx from STATIC_ROOT (collectstatic). Default
+# storage on purpose - a manifest storage turns any missing static file
+# into a 500 for the whole page.
 
 # Cache (Redis)
 CACHES = {
@@ -52,3 +65,4 @@ if SENTRY_DSN:
         dsn=SENTRY_DSN,
         traces_sample_rate=0.1,
     )
+

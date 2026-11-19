@@ -62,7 +62,7 @@
         <div class="credentials">
             <h3>Dane logowania:</h3>
             <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Hasło tymczasowe:</strong> {{ temp_password }}</p>
+            <p><a href="{{ set_password_url }}">Kliknij tutaj, aby ustawić swoje hasło</a> (link jednorazowy).</p>
         </div>
 
         <p><strong>Ważne:</strong> Po pierwszym zalogowaniu zostaniesz poproszony/a o zmianę hasła na własne.</p>

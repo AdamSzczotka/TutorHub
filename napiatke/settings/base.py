@@ -6,44 +6,6 @@ from pathlib import Path
 
 import environ
 
-# Exported settings for split settings pattern
-__all__ = [
-    'BASE_DIR',
-    'env',
-    'SECRET_KEY',
-    'DEBUG',
-    'ALLOWED_HOSTS',
-    'INSTALLED_APPS',
-    'MIDDLEWARE',
-    'ROOT_URLCONF',
-    'TEMPLATES',
-    'WSGI_APPLICATION',
-    'AUTH_USER_MODEL',
-    'AUTH_PASSWORD_VALIDATORS',
-    'LANGUAGE_CODE',
-    'TIME_ZONE',
-    'USE_I18N',
-    'USE_TZ',
-    'STATIC_URL',
-    'STATICFILES_DIRS',
-    'STATIC_ROOT',
-    'MEDIA_URL',
-    'MEDIA_ROOT',
-    'DEFAULT_AUTO_FIELD',
-    'CRISPY_ALLOWED_TEMPLATE_PACKS',
-    'CRISPY_TEMPLATE_PACK',
-    'CELERY_BROKER_URL',
-    'CELERY_RESULT_BACKEND',
-    'CELERY_ACCEPT_CONTENT',
-    'CELERY_TASK_SERIALIZER',
-    'CELERY_RESULT_SERIALIZER',
-    'CELERY_TIMEZONE',
-    'EMAIL_BACKEND',
-    'DEFAULT_FROM_EMAIL',
-    'SESSION_ENGINE',
-    'SESSION_COOKIE_AGE',
-    'SESSION_EXPIRE_AT_BROWSER_CLOSE',
-]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -202,6 +164,38 @@ CELERY_TIMEZONE = TIME_ZONE
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
+    # Lessons / attendance / reports
+    'send-lesson-reminders': {
+        'task': 'apps.lessons.tasks.send_lesson_reminders',
+        'schedule': crontab(hour=18, minute=0),
+    },
+    'check-attendance-alerts': {
+        'task': 'apps.attendance.tasks.check_attendance_alerts',
+        'schedule': crontab(hour=8, minute=0),
+    },
+    'generate-monthly-reports': {
+        'task': 'apps.attendance.tasks.generate_monthly_reports_task',
+        'schedule': crontab(day_of_month=1, hour=6, minute=0),
+        'args': (None,),  # previous month
+    },
+    'send-weekly-summaries': {
+        'task': 'apps.notifications.tasks.send_weekly_summaries_task',
+        'schedule': crontab(day_of_week=0, hour=18, minute=0),
+    },
+    # Makeup lessons (30-day window)
+    'expire-makeup-lessons': {
+        'task': 'apps.cancellations.tasks.expire_makeup_lessons',
+        'schedule': crontab(hour=0, minute=5),
+    },
+    'send-makeup-warnings': {
+        'task': 'apps.cancellations.tasks.send_makeup_expiration_warnings',
+        'schedule': crontab(hour=8, minute=15),
+    },
+    'cleanup-expired-notifications': {
+        'task': 'apps.notifications.tasks.cleanup_expired_notifications',
+        'schedule': crontab(hour=3, minute=0),
+    },
+    # Invoices
     'monthly-billing': {
         'task': 'apps.invoices.tasks.monthly_billing_task',
         'schedule': crontab(day_of_month=25, hour=0, minute=0),

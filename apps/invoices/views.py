@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,11 +8,14 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
+from apps.core.access import visible_invoices
 from apps.core.mixins import AdminRequiredMixin, HTMXMixin
 
 from .models import Invoice, InvoiceStatus
 from .pdf_service import pdf_service
 from .services import correction_service, invoice_service
+
+logger = logging.getLogger(__name__)
 
 
 class InvoiceListView(LoginRequiredMixin, HTMXMixin, ListView):
@@ -24,11 +28,7 @@ class InvoiceListView(LoginRequiredMixin, HTMXMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Invoice.objects.select_related('student')
-
-        # Students see only their invoices
-        if user.is_student:
-            queryset = queryset.filter(student=user)
+        queryset = visible_invoices(user, Invoice.objects.select_related('student'))
 
         # Filter by status
         status = self.request.GET.get('status')
@@ -62,23 +62,14 @@ class InvoiceDetailView(LoginRequiredMixin, HTMXMixin, DetailView):
             'student', 'student__student_profile'
         ).prefetch_related('items', 'items__lesson', 'items__lesson__subject')
 
-        if user.is_student:
-            queryset = queryset.filter(student=user)
-
-        return queryset
+        return visible_invoices(user, queryset)
 
 
 class DownloadInvoicePDFView(LoginRequiredMixin, View):
     """Download invoice PDF."""
 
     def get(self, request, pk):
-        import traceback
-
-        invoice = get_object_or_404(Invoice, id=pk)
-
-        # Permission check
-        if request.user.is_student and invoice.student != request.user:
-            return HttpResponse("Brak uprawnień", status=403)
+        get_object_or_404(visible_invoices(request.user, Invoice.objects.all()), id=pk)
 
         # Get invoice with relations for PDF generation
         invoice = invoice_service.get_by_id(pk)
@@ -95,9 +86,9 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
                 filename=filename,
                 content_type='application/pdf',
             )
-        except Exception as e:
-            error_msg = f"Błąd generowania PDF: {str(e)}\n\n{traceback.format_exc()}"
-            return HttpResponse(f"<pre>{error_msg}</pre>", status=500)
+        except Exception:
+            logger.exception('PDF generation failed for invoice %s', pk)
+            return HttpResponse('Błąd generowania PDF.', status=500)
 
 
 # Admin Views

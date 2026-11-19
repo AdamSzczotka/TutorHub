@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.html import escape
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
@@ -233,7 +234,10 @@ class ScheduleMakeupView(LoginRequiredMixin, View):
     """Schedule a makeup lesson."""
 
     def post(self, request, makeup_id):
-        makeup_lesson = get_object_or_404(MakeupLesson, id=makeup_id)
+        makeup_qs = MakeupLesson.objects.all()
+        if not request.user.is_admin:
+            makeup_qs = makeup_qs.filter(student=request.user)
+        makeup_lesson = get_object_or_404(makeup_qs, id=makeup_id)
         new_lesson_id = request.POST.get('new_lesson_id')
 
         if not new_lesson_id:
@@ -243,6 +247,11 @@ class ScheduleMakeupView(LoginRequiredMixin, View):
             )
 
         new_lesson = get_object_or_404(Lesson, id=new_lesson_id)
+        if new_lesson not in makeup_service.get_available_slots(makeup_lesson):
+            return HttpResponse(
+                '<div class="alert alert-error">Ten termin nie jest dostepny do odrabiania.</div>',
+                status=400,
+            )
 
         try:
             makeup_service.schedule_makeup(makeup_lesson, new_lesson, request.user)
@@ -256,7 +265,7 @@ class ScheduleMakeupView(LoginRequiredMixin, View):
 
         except Exception as e:
             return HttpResponse(
-                f'<div class="alert alert-error">{str(e)}</div>',
+                f'<div class="alert alert-error">{escape(str(e))}</div>',
                 status=400,
             )
 

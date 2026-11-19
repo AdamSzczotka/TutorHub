@@ -156,8 +156,9 @@
         <p class="text-base-content/70">Wykres tygodniowy obecnosci</p>
 
         {% if weekly_trend %}
+        {{ weekly_trend|json_script:"weekly-trend-data" }}
         <div class="h-64 flex items-end justify-between gap-2 mt-4"
-             x-data="{ data: {{ weekly_trend|safe }} }">
+             x-data="{ data: JSON.parse(document.getElementById('weekly-trend-data').textContent) }">
             <template x-for="(week, index) in data" :key="index">
                 <div class="flex-1 flex flex-col items-center gap-2">
                     <div class="text-xs font-medium" x-text="week.rate + '%'"></div>
@@ -167,7 +168,7 @@
                              'bg-warning': week.rate >= 80 && week.rate < 90,
                              'bg-error': week.rate < 80
                          }"
-                         :style="'height: ' + (week.rate) + '%'"
+                         :style="'height: ' + Math.round(week.rate * 1.8) + 'px'"
                          :title="week.week"></div>
                     <div class="text-xs text-base-content/70 -rotate-45 origin-top-left mt-2"
                          x-text="new Date(week.week).toLocaleDateString('pl-PL', {day: '2-digit', month: 'short'})">

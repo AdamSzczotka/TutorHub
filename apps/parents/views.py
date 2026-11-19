@@ -100,6 +100,8 @@ class ParentChildSelectView(LoginRequiredMixin, ParentRequiredMixin, View):
 class ParentAttendanceView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, TemplateView):
     """View attendance history for a student."""
 
+    parent_permission = 'can_view_attendance'
+
     template_name = 'parent_panel/attendance/list.html'
     partial_template_name = 'parent_panel/attendance/partials/_attendance_list.html'
 
@@ -146,6 +148,8 @@ class ParentAttendanceView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, Tem
 class ParentInvoicesView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, TemplateView):
     """View invoices for a student."""
 
+    parent_permission = 'can_view_invoices'
+
     template_name = 'parent_panel/invoices/list.html'
     partial_template_name = 'parent_panel/invoices/partials/_invoices_list.html'
 
@@ -185,6 +189,8 @@ class ParentTutorsView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, Templat
 class ParentCalendarView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, TemplateView):
     """Calendar view for parent portal."""
 
+    parent_permission = 'can_view_lessons'
+
     template_name = 'parent_panel/calendar.html'
 
     def get_context_data(self, **kwargs):
@@ -200,11 +206,15 @@ class ParentCalendarView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, Templ
 class ParentCalendarEventsView(LoginRequiredMixin, ParentAccessMixin, View):
     """API endpoint for calendar events."""
 
+    parent_permission = 'can_view_lessons'
+
     def get(self, request, *args, **kwargs):
         student = request.current_student
 
         start = request.GET.get('start')
         end = request.GET.get('end')
+        if not start or not end:
+            return JsonResponse({'error': 'start and end are required'}, status=400)
 
         from datetime import datetime
 
@@ -248,6 +258,8 @@ class ParentCalendarEventsView(LoginRequiredMixin, ParentAccessMixin, View):
 
 class ParentProgressView(LoginRequiredMixin, ParentAccessMixin, HTMXMixin, TemplateView):
     """View student progress and achievements."""
+
+    parent_permission = 'can_view_grades'
 
     template_name = 'parent_panel/progress/index.html'
     partial_template_name = 'parent_panel/progress/partials/_progress_content.html'

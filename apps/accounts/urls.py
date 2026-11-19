@@ -2,6 +2,9 @@
 
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.views.generic import RedirectView
+
+from apps.core.ratelimit import limit_posts
 
 from . import views
 
@@ -11,10 +14,10 @@ urlpatterns = [
     # Authentication
     path(
         'login/',
-        auth_views.LoginView.as_view(
+        limit_posts('10/5m', 'login')(auth_views.LoginView.as_view(
             template_name='accounts/login.html',
             redirect_authenticated_user=True,
-        ),
+        )),
         name='login',
     ),
     path('login/redirect/', views.LoginRedirectView.as_view(), name='login-redirect'),
@@ -22,12 +25,12 @@ urlpatterns = [
     # Password Reset
     path(
         'password-reset/',
-        auth_views.PasswordResetView.as_view(
+        limit_posts('5/h', 'password-reset')(auth_views.PasswordResetView.as_view(
             template_name='registration/password_reset_form.html',
             email_template_name='registration/password_reset_email.html',
             subject_template_name='registration/password_reset_subject.txt',
             success_url='/accounts/password-reset/done/',
-        ),
+        )),
         name='password_reset',
     ),
     path(
@@ -39,10 +42,7 @@ urlpatterns = [
     ),
     path(
         'password-reset-confirm/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name='registration/password_reset_confirm.html',
-            success_url='/accounts/password-reset-complete/',
-        ),
+        views.SetPasswordConfirmView.as_view(),
         name='password_reset_confirm',
     ),
     path(
@@ -112,7 +112,7 @@ urlpatterns = [
     path('relationships/create/', views.UserRelationshipCreateView.as_view(), name='relationship-create'),
     path('relationships/<int:pk>/edit/', views.UserRelationshipUpdateView.as_view(), name='relationship-update'),
     path('relationships/<int:pk>/delete/', views.UserRelationshipDeleteView.as_view(), name='relationship-delete'),
-    path('my-students/', views.TutorStudentsView.as_view(), name='my-students'),
+    path('my-students/', RedirectView.as_view(pattern_name='tutor:students'), name='my-students'),
 
     # ==========================================================================
     # Task 039: User Activity Tracking

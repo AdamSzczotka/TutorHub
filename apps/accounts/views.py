@@ -10,9 +10,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.base import ContentFile
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.contrib.auth import views as auth_views
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import (
@@ -43,10 +44,11 @@ from .forms import (
     PasswordChangeForm,
     StudentProfileForm,
     TutorProfileForm,
+    StudentSelfProfileForm,
+    TutorSelfProfileForm,
     UserEditForm,
     UserProfileForm,
     UserRelationshipForm,
-    generate_temp_password,
 )
 from .models import (
     NotificationPreference,
@@ -113,13 +115,10 @@ class UserCreateView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, CreateVi
 
     def form_valid(self, form):
         """Handle valid form submission."""
-        user, temp_password = form.save(created_by=self.request.user)
+        user, _temp_password = form.save(created_by=self.request.user)
 
-        # Send welcome email (async with Celery)
-        send_welcome_email_task.delay(
-            user_id=user.id,
-            temp_password=temp_password,
-        )
+        # Welcome email carries a one-time set-password link, never the password.
+        send_welcome_email_task.delay(user_id=user.id)
 
         # Log action
         AuditLog.objects.create(
@@ -353,17 +352,12 @@ class PasswordResetView(LoginRequiredMixin, AdminRequiredMixin, View):
         """Reset password."""
         user = get_object_or_404(User, pk=pk)
 
-        # Generate new temp password
-        temp_password = generate_temp_password()
-        user.set_password(temp_password)
+        # Invalidate the old password; the user sets a new one via one-time link.
+        user.set_unusable_password()
         user.first_login = True
         user.save(update_fields=['password', 'first_login'])
 
-        # Send email with new password
-        send_password_reset_email_task.delay(
-            user_id=user.id,
-            temp_password=temp_password,
-        )
+        send_password_reset_email_task.delay(user_id=user.id)
 
         # Log action
         AuditLog.objects.create(
@@ -398,14 +392,17 @@ class FirstLoginPasswordChangeView(LoginRequiredMixin, HTMXMixin, View):
     def get(self, request):
         """Show password change form."""
         if not request.user.first_login:
-            return redirect('accounts:user-list')
+            return redirect('accounts:login-redirect')
 
-        form = PasswordChangeForm()
+        form = PasswordChangeForm(user=request.user)
         return self.render_form(request, form)
 
     def post(self, request):
         """Handle password change."""
-        form = PasswordChangeForm(request.POST)
+        if not request.user.first_login:
+            return redirect('accounts:login-redirect')
+
+        form = PasswordChangeForm(request.POST, user=request.user)
 
         if form.is_valid():
             request.user.set_password(form.cleaned_data['new_password'])
@@ -418,7 +415,7 @@ class FirstLoginPasswordChangeView(LoginRequiredMixin, HTMXMixin, View):
             ).update(first_login_at=timezone.now())
 
             messages.success(request, 'Hasło zostało zmienione. Zaloguj się ponownie.')
-            return redirect('admin:login')
+            return redirect('accounts:login')
 
         return self.render_form(request, form)
 
@@ -573,11 +570,10 @@ class UserBulkActionView(LoginRequiredMixin, AdminRequiredMixin, View):
 
         elif action == 'send_password_reset':
             for user in users:
-                temp_password = generate_temp_password()
-                user.set_password(temp_password)
+                user.set_unusable_password()
                 user.first_login = True
                 user.save(update_fields=['password', 'first_login'])
-                send_password_reset_email_task.delay(user.id, temp_password)
+                send_password_reset_email_task.delay(user.id)
             messages.success(request, f'Wysłano reset hasła do {count} użytkowników.')
 
         elif action == 'export':
@@ -948,14 +944,12 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             return UserProfileForm
         elif step_id == 'password-changed':
             return PasswordChangeForm
-        elif step_id == 'parent-info' and user.is_student:
-            return StudentProfileForm
         elif step_id == 'academic-info' and user.is_student:
-            return StudentProfileForm
+            return StudentSelfProfileForm
         elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
-            return TutorProfileForm
+            return TutorSelfProfileForm
 
-        return UserProfileForm
+        raise Http404('Nieznany krok profilu.')
 
     def get_template_names(self):
         """Return template based on request type."""
@@ -972,9 +966,8 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
         if step_id == 'basic-info':
             kwargs['instance'] = user
         elif step_id == 'password-changed':
-            # PasswordChangeForm is not a ModelForm, no instance needed
-            pass
-        elif step_id in ('parent-info', 'academic-info') and user.is_student:
+            kwargs['user'] = user
+        elif step_id == 'academic-info' and user.is_student:
             profile, _ = StudentProfile.objects.get_or_create(user=user)
             kwargs['instance'] = profile
         elif step_id in ('professional-info', 'teaching-info') and user.is_tutor:
@@ -1077,6 +1070,8 @@ class ProfileStepView(LoginRequiredMixin, HTMXMixin, FormView):
             return reverse('tutor:dashboard')
         elif user.is_student:
             return reverse('students:dashboard')
+        elif user.is_parent:
+            return reverse('parents:dashboard')
         return reverse('accounts:profile-wizard')
 
 
@@ -1466,7 +1461,7 @@ class UserActivityDetailView(LoginRequiredMixin, AdminRequiredMixin, HTMXMixin, 
 
     model = UserActivity
     template_name = 'admin_panel/users/activity/user_activity.html'
-    partial_template_name = 'admin_panel/users/activity/partials/_user_activity_table.html'
+    partial_template_name = 'admin_panel/users/activity/partials/_activity_table.html'
     context_object_name = 'activities'
     paginate_by = 30
 
@@ -1667,7 +1662,7 @@ class VerifyTokenView(View):
 
         if verification.is_expired:
             messages.error(request, 'Link weryfikacyjny wygasł. Poproś o nowy.')
-            return redirect('admin:login')
+            return redirect('accounts:login')
 
         if verification.verify(token):
             messages.success(request, 'Weryfikacja zakończona pomyślnie!')
@@ -1687,7 +1682,7 @@ class VerifyTokenView(View):
         else:
             messages.error(request, 'Nieprawidłowy link weryfikacyjny.')
 
-        return redirect('admin:login')
+        return redirect('accounts:login')
 
 
 class VerificationStatusView(LoginRequiredMixin, HTMXMixin, TemplateView):
@@ -1710,6 +1705,10 @@ class VerificationStatusView(LoginRequiredMixin, HTMXMixin, TemplateView):
             verification_type=UserVerification.VerificationType.PHONE,
         ).order_by('-created_at').first()
 
+        context['verifications'] = [
+            ('Email', context['email_verification']),
+            ('Telefon', context['phone_verification']),
+        ]
         return context
 
 
@@ -1890,24 +1889,33 @@ class AcceptParentInvitationView(View):
             'student': access.student,
         })
 
+    INVITATION_VALID_DAYS = 14
+
     def post(self, request, token):
-        """Accept invitation."""
+        """Accept invitation (logged-in parent whose email matches the invite)."""
         access = get_object_or_404(
             ParentAccess,
             invitation_token=token,
             invitation_accepted_at__isnull=True,
         )
 
-        # Check if user is logged in or needs to create account
-        if request.user.is_authenticated:
-            parent = request.user
-        else:
-            # Check if account exists
-            parent = User.objects.filter(email=access.invited_email).first()
-            if not parent:
-                # Redirect to registration
-                messages.info(request, 'Utwórz konto, aby zaakceptować zaproszenie.')
-                return redirect('admin:login')
+        if not request.user.is_authenticated:
+            messages.info(request, 'Zaloguj się, aby zaakceptować zaproszenie.')
+            return redirect(f"{reverse('accounts:login')}?next={request.path}")
+
+        parent = request.user
+        if (
+            not parent.is_parent
+            or (parent.email or '').lower() != (access.invited_email or '').lower()
+        ):
+            messages.error(request, 'To zaproszenie zostało wysłane na inny adres email.')
+            return redirect('accounts:login-redirect')
+
+        if access.invitation_sent_at and (
+            timezone.now() - access.invitation_sent_at
+        ).days > self.INVITATION_VALID_DAYS:
+            messages.error(request, 'Zaproszenie wygasło. Poproś szkołę o nowe.')
+            return redirect('accounts:login-redirect')
 
         # Accept invitation
         access.accept_invitation(parent)
@@ -1972,3 +1980,18 @@ class ChildDetailView(LoginRequiredMixin, HTMXMixin, DetailView):
             context['attendance_summary'] = {}
 
         return context
+
+
+class SetPasswordConfirmView(auth_views.PasswordResetConfirmView):
+    """Password set/reset via one-time link; completes the first-login step."""
+
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('accounts:password_reset_complete')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.user
+        if user.first_login:
+            user.first_login = False
+            user.save(update_fields=['first_login'])
+        return response

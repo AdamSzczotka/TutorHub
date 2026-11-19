@@ -88,6 +88,53 @@ class PrivacyPolicyView(TemplateView):
     template_name = 'landing/privacy_policy.html'
 
 
+class RobotsTxtView(View):
+    """Serve robots.txt for SEO."""
+
+    def get(self, request):
+        domain = request.get_host()
+        lines = [
+            "User-agent: *",
+            "Allow: /",
+            "",
+            "# Disallow admin and CMS areas",
+            "Disallow: /admin/",
+            "Disallow: /cms/",
+            "Disallow: /panel/",
+            "Disallow: /accounts/",
+            "",
+            f"Sitemap: https://{domain}/sitemap.xml",
+        ]
+        return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+class SitemapXmlView(View):
+    """Serve sitemap.xml for SEO."""
+
+    def get(self, request):
+        domain = request.get_host()
+        urls = [
+            ("", "1.0", "weekly"),  # Homepage - highest priority
+            ("polityka-prywatnosci/", "0.3", "yearly"),
+        ]
+
+        xml_lines = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ]
+
+        for path, priority, changefreq in urls:
+            xml_lines.append("  <url>")
+            xml_lines.append(f"    <loc>https://{domain}/{path}</loc>")
+            xml_lines.append(f"    <priority>{priority}</priority>")
+            xml_lines.append(f"    <changefreq>{changefreq}</changefreq>")
+            xml_lines.append("  </url>")
+
+        xml_lines.append("</urlset>")
+
+        return HttpResponse("\n".join(xml_lines), content_type="application/xml")
+
+
 class ContactFormView(CreateView):
     """Handle contact form submission with HTMX."""
 

@@ -49,8 +49,19 @@ class CalendarEventsAPIView(LoginRequiredMixin, View):
             lessons = Lesson.objects.filter(
                 lesson_students__student_id=user.id, **filters
             )
-        else:
+        elif user.role == 'parent':
+            from apps.accounts.models import ParentAccess
+
+            children = ParentAccess.objects.filter(
+                parent=user, is_active=True, can_view_lessons=True
+            ).values('student_id')
+            lessons = Lesson.objects.filter(
+                lesson_students__student_id__in=children, **filters
+            ).distinct()
+        elif user.is_admin:
             lessons = Lesson.objects.filter(**filters)
+        else:
+            lessons = Lesson.objects.none()
 
         lessons = lessons.select_related(
             'subject', 'level', 'tutor', 'room'
@@ -210,7 +221,7 @@ class EventResizeAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class ResourcesAPIView(LoginRequiredMixin, View):
+class ResourcesAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
     """API endpoint for FullCalendar resources (rooms/tutors)."""
 
     def get(self, request):

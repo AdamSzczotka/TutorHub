@@ -351,7 +351,7 @@ class RemoveStudentFromLessonView(LoginRequiredMixin, AdminRequiredMixin, View):
         return JsonResponse(result)
 
 
-class CheckStudentAvailabilityView(LoginRequiredMixin, View):
+class CheckStudentAvailabilityView(LoginRequiredMixin, AdminRequiredMixin, View):
     """API endpoint to check student availability."""
 
     def post(self, request, pk):
@@ -405,10 +405,12 @@ class ICalExportView(LoginRequiredMixin, View):
                 lesson_students__student=user,
                 status__in=['scheduled', 'ongoing'],
             ).select_related('subject', 'level', 'tutor', 'room')
-        else:
+        elif user.is_admin:
             lessons = Lesson.objects.filter(
                 status__in=['scheduled', 'ongoing'],
             ).select_related('subject', 'level', 'tutor', 'room')
+        else:
+            lessons = Lesson.objects.none()
 
         filename = f'kalendarz-{user.email}.ics'
         return exporter.to_response(lessons, filename)

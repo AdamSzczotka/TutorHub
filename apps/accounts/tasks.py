@@ -11,6 +11,24 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
+def _password_set_url(user) -> str:
+    """One-time link to set a password (Django password-reset token).
+
+    Passwords are never passed through the Celery broker/result backend:
+    tasks receive only the user id and the user chooses their own password.
+    The token expires after PASSWORD_RESET_TIMEOUT and is invalidated once used.
+    """
+    from django.contrib.auth.tokens import default_token_generator
+    from django.urls import reverse
+    from django.utils.encoding import force_bytes
+    from django.utils.http import urlsafe_base64_encode
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    path = reverse('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+    return f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}{path}"
+
+
 @shared_task(
     bind=True,
     autoretry_for=(Exception,),
@@ -18,13 +36,13 @@ logger = logging.getLogger(__name__)
     retry_backoff_max=600,
     retry_kwargs={'max_retries': 3},
 )
-def send_welcome_email_task(self, user_id: int, temp_password: str) -> bool:
-    """Send welcome email with temporary password.
+def send_welcome_email_task(self, user_id: int, *_legacy_args) -> bool:
+    """Send welcome email with a one-time link to set the password.
 
     Args:
         self: Celery task instance (bound).
         user_id: ID of the user to send email to.
-        temp_password: Temporary password to include in email.
+        _legacy_args: ignored (old messages queued with a plaintext password).
 
     Returns:
         True if email was sent successfully, False otherwise.
@@ -37,14 +55,15 @@ def send_welcome_email_task(self, user_id: int, temp_password: str) -> bool:
     try:
         user = User.objects.get(id=user_id)
 
-        subject = 'Witamy w Na Piątkę - Twoje dane logowania'
+        subject = 'Witamy w Na Piątkę - ustaw swoje hasło'
+        set_password_url = _password_set_url(user)
 
         # Try to render HTML template, fallback to plain text
         try:
             html_message = render_to_string('emails/welcome.html', {
                 'user': user,
-                'temp_password': temp_password,
-                'login_url': f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/login/",
+                'set_password_url': set_password_url,
+                'login_url': f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/accounts/login/",
             })
         except Exception:
             html_message = None
@@ -55,11 +74,10 @@ Witaj {user.first_name}!
 
 Twoje konto w systemie Na Piątkę zostało utworzone.
 
-Dane logowania:
-Email: {user.email}
-Hasło tymczasowe: {temp_password}
+Twój login: {user.email}
 
-Po pierwszym zalogowaniu zostaniesz poproszony/a o zmianę hasła.
+Ustaw swoje hasło, korzystając z jednorazowego linku:
+{set_password_url}
 
 Pozdrawiamy,
 Zespół Na Piątkę
@@ -96,13 +114,13 @@ Zespół Na Piątkę
     retry_backoff_max=600,
     retry_kwargs={'max_retries': 3},
 )
-def send_password_reset_email_task(self, user_id: int, temp_password: str) -> bool:
-    """Send password reset email with new temporary password.
+def send_password_reset_email_task(self, user_id: int, *_legacy_args) -> bool:
+    """Send admin-initiated password reset email with a one-time link.
 
     Args:
         self: Celery task instance (bound).
         user_id: ID of the user to send email to.
-        temp_password: New temporary password.
+        _legacy_args: ignored (old messages queued with a plaintext password).
 
     Returns:
         True if email was sent successfully, False otherwise.
@@ -122,9 +140,8 @@ Witaj {user.first_name}!
 
 Twoje hasło zostało zresetowane przez administratora.
 
-Nowe hasło tymczasowe: {temp_password}
-
-Po zalogowaniu zostaniesz poproszony/a o zmianę hasła.
+Ustaw nowe hasło, korzystając z jednorazowego linku:
+{_password_set_url(user)}
 
 Pozdrawiamy,
 Zespół Na Piątkę
