@@ -51,4 +51,6 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@napiatke.pl')  #
 
 # Celery - run tasks synchronously in development (no need for worker)
 CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+# Don't let a failing task (e.g. SMTP down -> autoretry) turn the request into
+# a 500; in production .delay() never raises either.
+CELERY_TASK_EAGER_PROPAGATES = False

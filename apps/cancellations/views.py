@@ -240,7 +240,7 @@ class ScheduleMakeupView(LoginRequiredMixin, View):
         makeup_lesson = get_object_or_404(makeup_qs, id=makeup_id)
         new_lesson_id = request.POST.get('new_lesson_id')
 
-        if not new_lesson_id:
+        if not new_lesson_id or not str(new_lesson_id).isdigit():
             return HttpResponse(
                 '<div class="alert alert-error">Wybierz termin zajec.</div>',
                 status=400,
